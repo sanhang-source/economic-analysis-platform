@@ -1,0 +1,182 @@
+/* Tailwind CSS 基础导入 */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* 全局样式 */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
+    'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
+    'Noto Color Emoji';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Ant Design 样式覆盖 */
+.ant-layout {
+  background: #f5f5f5;
+}
+
+.ant-layout-sider {
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+}
+
+/* 侧边栏滚动条样式 - 适配白色主题 */
+.ant-layout-sider {
+  background: #ffffff !important;
+}
+
+.ant-layout-sider-children {
+  display: flex;
+  flex-direction: column;
+}
+
+.ant-layout-sider-children .ant-menu {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: #ffffff !important;
+}
+
+/* 白色侧边栏的滚动条 */
+.ant-layout-sider-children .ant-menu::-webkit-scrollbar {
+  width: 4px;
+}
+
+.ant-layout-sider-children .ant-menu::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.ant-layout-sider-children .ant-menu::-webkit-scrollbar-thumb {
+  background: rgba(0,0,0,0.1);
+  border-radius: 2px;
+}
+
+.ant-layout-sider-children .ant-menu::-webkit-scrollbar-thumb:hover {
+  background: rgba(0,0,0,0.2);
+}
+
+/* 浅色菜单选中项的左边框效果 */
+.ant-menu-light .ant-menu-item-selected {
+  position: relative;
+}
+
+.ant-menu-light .ant-menu-item-selected::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 24px;
+  background: #1677ff;
+  border-radius: 0 2px 2px 0;
+}
+
+/* 菜单项悬停效果 */
+.ant-menu-light .ant-menu-item:hover,
+.ant-menu-light .ant-menu-submenu-title:hover {
+  border-radius: 6px;
+}
+
+/* 子菜单样式优化 */
+.ant-menu-light .ant-menu-submenu .ant-menu {
+  background: #fafafa !important;
+  border-radius: 8px;
+  margin: 4px 8px;
+}
+
+/* Logo 区域 */
+.ant-layout-sider .ant-layout-sider-children > div:first-child {
+  background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+}
+
+/* 菜单项样式优化 */
+.ant-menu-dark.ant-menu-inline .ant-menu-item,
+.ant-menu-dark.ant-menu-inline .ant-menu-submenu-title {
+  margin: 4px 8px;
+  border-radius: 4px;
+  width: calc(100% - 16px);
+}
+
+/* 搜索框样式 - 覆盖Ant Design默认样式 */
+.ant-input-search > .ant-input-group > .ant-input-group-addon:first-child .ant-input,
+.ant-input-search .ant-input-affix-wrapper,
+.ant-input-search .ant-input {
+  border-top-left-radius: 20px !important;
+  border-bottom-left-radius: 20px !important;
+  border-top-right-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+}
+
+.ant-input-search > .ant-input-group > .ant-input-group-addon:last-child,
+.ant-input-search .ant-input-group-addon {
+  border-top-right-radius: 20px !important;
+  border-bottom-right-radius: 20px !important;
+  border-top-left-radius: 0 !important;
+  border-bottom-left-radius: 0 !important;
+  overflow: hidden;
+}
+
+.ant-input-search .ant-input-search-button,
+.ant-input-search > .ant-input-group > .ant-input-group-addon:last-child .ant-btn {
+  border-top-right-radius: 20px !important;
+  border-bottom-right-radius: 20px !important;
+  border-top-left-radius: 0 !important;
+  border-bottom-left-radius: 0 !important;
+}
+
+/* 卡片悬停效果 */
+.ant-card {
+  transition: all 0.3s ease;
+}
+
+.ant-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* 滚动条样式 */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* 统计数字动画 */
+.ant-statistic-content-value {
+  transition: all 0.3s ease;
+}
+
+/* 面包屑样式 */
+.ant-breadcrumb {
+  font-size: 14px;
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+  .ant-layout-header {
+    padding: 0 16px;
+  }
+  
+  .ant-input-search {
+    display: none;
+  }
+}

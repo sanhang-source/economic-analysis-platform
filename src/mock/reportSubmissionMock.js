@@ -1,0 +1,202 @@
+/**
+ * ReportSubmission Mock Data - 报表填报模拟数据
+ */
+
+// 进行中的任务
+export const activeTasks = [
+  {
+    id: 1,
+    name: '2025年12月工业产值月报',
+    period: '2025年12月',
+    deadline: '2026-01-15',
+    daysLeft: 3,
+    urgency: 'high',
+    total: 156,
+    submitted: 128,
+    progress: 82,
+  },
+  {
+    id: 2,
+    name: '2025年度研发投入统计',
+    period: '2025年全年',
+    deadline: '2026-01-31',
+    daysLeft: 19,
+    urgency: 'medium',
+    total: 86,
+    submitted: 45,
+    progress: 52,
+  },
+];
+
+// 填报详情数据
+export const submissionData = [
+  {
+    id: 1,
+    name: '华为技术有限公司',
+    code: '91440300192383298W',
+    status: 'submitted',
+    submitTime: '2026-01-10 09:30:00',
+    auditStatus: 'approved',
+    progress: 100,
+    logoColor: '#FF0000',
+    data: {
+      '工业总产值（万元）': { current: '586,920', last: '542,340', change: 8.2 },
+      '研发投入（万元）': { current: '89,230', last: '82,500', change: 8.2 },
+      '税收（万元）': { current: '45,680', last: '42,300', change: 8.0 },
+      '用电量（万度）': { current: '1,258', last: '1,189', change: 5.8 },
+    },
+  },
+  {
+    id: 2,
+    name: '腾讯科技（深圳）有限公司',
+    code: '9144030071526726XG',
+    status: 'submitted',
+    submitTime: '2026-01-10 14:20:00',
+    auditStatus: 'pending',
+    progress: 100,
+    logoColor: '#0052D9',
+    data: {
+      '工业总产值（万元）': { current: '466,720', last: '428,960', change: 8.8 },
+      '研发投入（万元）': { current: '125,680', last: '115,800', change: 8.5 },
+      '税收（万元）': { current: '38,560', last: '35,600', change: 8.3 },
+      '用电量（万度）': { current: '856', last: '812', change: 5.4 },
+    },
+  },
+  {
+    id: 3,
+    name: '深圳大疆创新科技有限公司',
+    code: '91440300589150582C',
+    status: 'draft',
+    submitTime: null,
+    auditStatus: '-',
+    progress: 75,
+    logoColor: '#00C1DE',
+    data: {
+      '工业总产值（万元）': { current: '25,120', last: '23,450', change: 7.1 },
+      '研发投入（万元）': { current: '6,820', last: '6,350', change: 7.4 },
+    },
+  },
+  {
+    id: 4,
+    name: '比亚迪股份有限公司',
+    code: '91440300192348886G',
+    status: 'submitted',
+    submitTime: '2026-01-09 16:45:00',
+    auditStatus: 'approved',
+    progress: 100,
+    logoColor: '#1E4D2B',
+    data: {
+      '工业总产值（万元）': { current: '501,920', last: '425,680', change: 17.9 },
+      '研发投入（万元）': { current: '15,680', last: '13,200', change: 18.8 },
+      '税收（万元）': { current: '18,620', last: '15,800', change: 17.8 },
+      '用电量（万度）': { current: '4,568', last: '3,892', change: 17.4 },
+    },
+  },
+  {
+    id: 5,
+    name: '中兴通讯股份有限公司',
+    code: '91440300192381899W',
+    status: 'submitted',
+    submitTime: '2026-01-11 10:00:00',
+    auditStatus: 'rejected',
+    progress: 100,
+    logoColor: '#0066CC',
+    data: {
+      '工业总产值（万元）': { current: '102,340', last: '96,850', change: 5.7 },
+      '研发投入（万元）': { current: '12,560', last: '11,890', change: 5.6 },
+    },
+  },
+  {
+    id: 6,
+    name: '迈瑞生物医疗电子股份有限公司',
+    code: '914403007084678371',
+    status: 'draft',
+    submitTime: null,
+    auditStatus: '-',
+    progress: 45,
+    logoColor: '#00A0E9',
+    data: null,
+  },
+  {
+    id: 7,
+    name: '深圳市优必选科技股份有限公司',
+    code: '9144030030582935X0',
+    status: 'notStarted',
+    submitTime: null,
+    auditStatus: '-',
+    progress: 0,
+    logoColor: '#FF6A00',
+    data: null,
+  },
+  {
+    id: 8,
+    name: '深圳云天励飞技术股份有限公司',
+    code: '91440300319601467W',
+    status: 'notStarted',
+    submitTime: null,
+    auditStatus: '-',
+    progress: 0,
+    logoColor: '#1890FF',
+    data: null,
+  },
+  {
+    id: 9,
+    name: '深圳市新产业生物医学工程股份有限公司',
+    code: '91440300715269059M',
+    status: 'submitted',
+    submitTime: '2026-01-10 11:30:00',
+    auditStatus: 'pending',
+    progress: 100,
+    logoColor: '#2FC25B',
+    data: {
+      '工业总产值（万元）': { current: '33,200', last: '31,250', change: 6.2 },
+      '研发投入（万元）': { current: '5,680', last: '5,350', change: 6.2 },
+    },
+  },
+  {
+    id: 10,
+    name: '深圳光峰科技股份有限公司',
+    code: '91440300757643115C',
+    status: 'draft',
+    submitTime: null,
+    auditStatus: '-',
+    progress: 60,
+    logoColor: '#722ED1',
+    data: {
+      '工业总产值（万元）': { current: '21,400', last: '20,250', change: 5.7 },
+    },
+  },
+  {
+    id: 11,
+    name: '深圳市德方纳米科技股份有限公司',
+    code: '9144030066418112X9',
+    status: 'submitted',
+    submitTime: '2026-01-08 15:20:00',
+    auditStatus: 'approved',
+    progress: 100,
+    logoColor: '#FAAD14',
+    data: {
+      '工业总产值（万元）': { current: '187,600', last: '165,800', change: 13.1 },
+      '研发投入（万元）': { current: '8,920', last: '7,850', change: 13.6 },
+    },
+  },
+  {
+    id: 12,
+    name: '深圳微芯生物科技股份有限公司',
+    code: '91440300715269059M',
+    status: 'notStarted',
+    submitTime: null,
+    auditStatus: '-',
+    progress: 0,
+    logoColor: '#EB2F96',
+    data: null,
+  },
+];
+
+// 汇总导出
+export const reportSubmissionMock = {
+  activeTasks,
+  submissionData,
+};
+
+export default reportSubmissionMock;
