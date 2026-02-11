@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { HashRouter, Routes, Route } from 'react-router-dom';
 import { ConfigProvider } from 'antd';
 import zhCN from 'antd/locale/zh_CN';
 import { MainLayout } from './components/layout';
@@ -52,7 +52,7 @@ const App = () => {
         },
       }}
     >
-      <BrowserRouter>
+      <HashRouter>
         <Routes>
           {/* 登录页 - 独立布局 */}
           <Route path="/login" element={<LoginPage />} />
@@ -93,7 +93,7 @@ const App = () => {
 
           </Route>
         </Routes>
-      </BrowserRouter>
+      </HashRouter>
     </ConfigProvider>
   );
 };
