@@ -239,9 +239,6 @@ const TradeEcosystem = () => {
           show: true,
           width: 20,
         },
-        pointer: {
-          show: false,
-        },
         axisLine: {
           lineStyle: {
             width: 20,
