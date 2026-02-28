@@ -7,7 +7,7 @@ export default defineConfig({
   base: '/economic-analysis-platform/',
   server: {
     port: 3000,
-    open: true,
+    open: '/#/login',
   },
   build: {
     outDir: 'dist',
