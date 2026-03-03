@@ -1,507 +1,463 @@
 import React, { useState } from 'react';
+import { Card, Row, Col, Select } from 'antd';
 import ReactECharts from 'echarts-for-react';
-import { Select, DatePicker, Space, Progress, Statistic, Row, Col } from 'antd';
 import {
-  DashboardOutlined,
-  RiseOutlined,
-  FallOutlined,
+  ArrowUpOutlined,
+  ArrowDownOutlined,
+  BuildOutlined,
+  BankOutlined,
+  TeamOutlined,
+  TrademarkOutlined,
 } from '@ant-design/icons';
-import ChartCard from '../components/ChartCard';
 import { economyCockpitMock } from '../mock/economyCockpitMock';
 
 const { Option } = Select;
-const { QuarterPicker } = DatePicker;
 
-/**
- * EconomyCockpit - 经济驾驶舱页面
- * 3x3 Grid 布局，展示经济运行核心指标
- */
 const EconomyCockpit = () => {
-  const [year, setYear] = useState('2025');
-  const [quarter, setQuarter] = useState('Q4');
   const [region, setRegion] = useState('全市');
 
-  const { gdpData, outputTrend, industryStructure, energyData, taxTop5 } = economyCockpitMock;
+  const {
+    coreMetrics,
+    enterpriseTrend,
+    taxTrend,
+    employmentTrend,
+    patentTrend,
+    qualificationDistribution,
+    industryDistribution,
+    employmentScale,
+    lifecycleDistribution,
+    taxContribution,
+    strategicIndustries,
+  } = economyCockpitMock;
 
-  // GDP 大数字卡片
-  const GDPCard = () => (
-    <div className="h-full flex flex-col justify-center">
-      <div className="text-center mb-6">
-        <div className="text-sm text-gray-500 mb-2">地区生产总值 (GDP)</div>
-        <div className="flex items-baseline justify-center gap-1">
-          <span className="text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-cyan-500">
-            {gdpData.value}
-          </span>
-          <span className="text-xl text-gray-600">亿元</span>
-        </div>
-        <div className="flex items-center justify-center gap-2 mt-3">
-          <span className="text-2xl font-semibold text-green-500">
-            <RiseOutlined /> +{gdpData.growth}%
-          </span>
-          <span className="text-gray-400">同比</span>
-        </div>
-      </div>
-      
-      <div className="space-y-4">
+  // 统一配色方案 - 商务色系
+  const unifiedColors = {
+    blue: '#2563eb',
+    green: '#10b981',
+    orange: '#f59e0b',
+    purple: '#8b5cf6',
+    red: '#ef4444',
+    cyan: '#06b6d4',
+    gray: '#6b7280',
+  };
+
+  // 格式化数字
+  const formatNumber = (num) => {
+    if (num >= 10000) {
+      return (num / 10000).toFixed(1) + '万';
+    }
+    return num.toLocaleString();
+  };
+
+  // 核心指标卡片组件
+  const MetricCard = ({ title, value, unit, growth, growthMoM, icon, color, subText }) => (
+    <Card className="h-full hover:shadow-lg transition-shadow" bodyStyle={{ padding: 20 }}>
+      <div className="flex items-start justify-between">
         <div>
-          <div className="flex justify-between text-sm mb-1">
-            <span className="text-gray-600">年度目标完成率</span>
-            <span className="font-semibold text-blue-600">{gdpData.completion}%</span>
+          <div className="text-gray-500 text-sm mb-2">{title}</div>
+          <div className="flex items-baseline gap-1">
+            <span className="text-3xl font-bold" style={{ color }}>{value}</span>
+            <span className="text-gray-500 text-sm">{unit}</span>
           </div>
-          <Progress
-            percent={gdpData.completion}
-            strokeColor={{
-              '0%': '#1677ff',
-              '100%': '#00d4aa',
-            }}
-            strokeWidth={12}
-            showInfo={false}
-          />
+          <div className="flex items-center gap-3 mt-2">
+            <div className="flex items-center gap-1">
+              {growth >= 0 ? (
+                <ArrowUpOutlined style={{ color: '#52c41a' }} />
+              ) : (
+                <ArrowDownOutlined style={{ color: '#f5222d' }} />
+              )}
+              <span style={{ color: growth >= 0 ? '#52c41a' : '#f5222d' }}>
+                {Math.abs(growth)}%
+              </span>
+              <span className="text-gray-400 text-xs">同比</span>
+            </div>
+            <div className="flex items-center gap-1">
+              {growthMoM >= 0 ? (
+                <ArrowUpOutlined style={{ color: '#1677ff' }} />
+              ) : (
+                <ArrowDownOutlined style={{ color: '#fa8c16' }} />
+              )}
+              <span style={{ color: growthMoM >= 0 ? '#1677ff' : '#fa8c16' }}>
+                {Math.abs(growthMoM)}%
+              </span>
+              <span className="text-gray-400 text-xs">环比</span>
+            </div>
+          </div>
         </div>
-        <div className="flex justify-between text-sm">
-          <span className="text-gray-500">第一产业：{gdpData.primary}%</span>
-          <span className="text-gray-500">第二产业：{gdpData.secondary}%</span>
-          <span className="text-gray-500">第三产业：{gdpData.tertiary}%</span>
+        <div
+          className="w-12 h-12 rounded-xl flex items-center justify-center"
+          style={{ background: `${color}15` }}
+        >
+          <span style={{ color, fontSize: 24 }}>{icon}</span>
         </div>
       </div>
-    </div>
+      {subText && (
+        <div className="mt-3 pt-3 border-t border-gray-100">
+          <span className="text-xs text-gray-500">{subText}</span>
+        </div>
+      )}
+    </Card>
   );
 
-  // 产值趋势柱状图配置
-  const outputChartOption = {
-    tooltip: {
-      trigger: 'axis',
-      axisPointer: { type: 'shadow' },
-      backgroundColor: 'rgba(255, 255, 255, 0.95)',
-      borderColor: '#e8e8e8',
-      borderWidth: 1,
+  // 企业总数趋势图配置
+  const enterpriseTrendOption = {
+    tooltip: { 
+      trigger: 'axis', 
+      axisPointer: { type: 'cross' },
+      formatter: (params) => {
+        let result = params[0].name + '<br/>';
+        params.forEach(item => {
+          const value = item.seriesName === '企业总数' 
+            ? (item.value / 10000).toFixed(1) 
+            : Number(item.value).toFixed(1);
+          result += item.marker + item.seriesName + ': ' + value + '<br/>';
+        });
+        return result;
+      }
     },
-    grid: {
-      left: '3%',
-      right: '4%',
-      bottom: '3%',
-      top: '10%',
-      containLabel: true,
+    legend: { data: ['企业总数', '新增'], bottom: 0 },
+    grid: { left: '3%', right: '4%', bottom: '15%', top: '10%', containLabel: true },
+    xAxis: { type: 'category', data: enterpriseTrend.months, axisLabel: { rotate: 45, fontSize: 10 } },
+    yAxis: [
+      { type: 'value', name: '总数（万家）', position: 'left', min: 2300000, max: 2700000, interval: 100000, axisLabel: { formatter: (value) => (value / 10000).toFixed(0) } },
+      { type: 'value', name: '新增（万家）', position: 'right', min: 1, max: 3, interval: 0.5, splitLine: { show: false }, axisLabel: { formatter: '{value}' } },
+    ],
+    series: [
+      { name: '企业总数', type: 'line', data: enterpriseTrend.total, smooth: true, itemStyle: { color: unifiedColors.blue }, areaStyle: { color: { type: 'linear', x: 0, y: 0, x2: 0, y2: 1, colorStops: [{ offset: 0, color: 'rgba(37, 99, 235, 0.3)' }, { offset: 1, color: 'rgba(37, 99, 235, 0.05)' }] } } },
+      { name: '新增', type: 'bar', yAxisIndex: 1, data: enterpriseTrend.newAdded, itemStyle: { color: unifiedColors.blue, borderRadius: [4, 4, 0, 0] }, barWidth: 12 },
+    ],
+  };
+
+  // 纳税趋势图配置
+  const taxTrendOption = {
+    tooltip: { 
+      trigger: 'axis', 
+      axisPointer: { type: 'cross' },
+      formatter: (params) => {
+        let result = params[0].name + '<br/>';
+        params.forEach(item => {
+          const value = Number(item.value).toFixed(1);
+          result += item.marker + item.seriesName + ': ' + value + '<br/>';
+        });
+        return result;
+      }
     },
-    xAxis: {
-      type: 'category',
-      data: outputTrend.months,
-      axisLine: { lineStyle: { color: '#e0e0e0' } },
-      axisLabel: { color: '#666' },
+    legend: { data: ['环比', '纳税总额'], bottom: 0 },
+    grid: { left: '3%', right: '4%', bottom: '15%', top: '10%', containLabel: true },
+    xAxis: { type: 'category', data: taxTrend.months, axisLabel: { rotate: 45, fontSize: 10 } },
+    yAxis: [
+      { type: 'value', name: '总额（亿元）', position: 'left' },
+      { type: 'value', name: '环比（%）', position: 'right', min: -15, max: 15, interval: 6, splitLine: { show: false }, axisLabel: { formatter: '{value}' } },
+    ],
+    series: [
+      { name: '纳税总额', type: 'bar', data: taxTrend.values, itemStyle: { color: unifiedColors.green, borderRadius: [4, 4, 0, 0] }, barWidth: 12 },
+      { name: '环比', type: 'line', yAxisIndex: 1, data: taxTrend.momGrowth, smooth: true, itemStyle: { color: unifiedColors.green }, lineStyle: { width: 3 }, symbol: 'emptyCircle', symbolSize: 6 },
+    ],
+  };
+
+  // 用工趋势图配置
+  const employmentTrendOption = {
+    tooltip: { trigger: 'axis', axisPointer: { type: 'cross' } },
+    legend: { data: ['用工总数', '新增'], bottom: 0 },
+    grid: { left: '3%', right: '4%', bottom: '15%', top: '10%', containLabel: true },
+    xAxis: { type: 'category', data: employmentTrend.months, axisLabel: { rotate: 45, fontSize: 10 } },
+    yAxis: [
+      { type: 'value', name: '总数（万人）', position: 'left', min: 1180, max: 1200, interval: 5 },
+      { type: 'value', name: '新增（万人）', position: 'right', min: 0, max: 3, interval: 0.5, splitLine: { show: false } },
+    ],
+    series: [
+      { name: '用工总数', type: 'line', data: employmentTrend.total, smooth: true, itemStyle: { color: unifiedColors.orange }, areaStyle: { color: { type: 'linear', x: 0, y: 0, x2: 0, y2: 1, colorStops: [{ offset: 0, color: 'rgba(245, 158, 11, 0.3)' }, { offset: 1, color: 'rgba(245, 158, 11, 0.05)' }] } } },
+      { name: '新增', type: 'bar', yAxisIndex: 1, data: employmentTrend.newAdded, itemStyle: { color: unifiedColors.orange, borderRadius: [4, 4, 0, 0] }, barWidth: 12 },
+    ],
+  };
+
+  // 专利趋势图配置
+  const patentTrendOption = {
+    tooltip: { 
+      trigger: 'axis', 
+      axisPointer: { type: 'cross' },
+      formatter: (params) => {
+        let result = params[0].name + '<br/>';
+        params.forEach(item => {
+          const value = item.seriesName === '专利总数' ? (item.value / 10000).toFixed(1) : Number(item.value).toFixed(1);
+          result += item.marker + item.seriesName + ': ' + value + '<br/>';
+        });
+        return result;
+      }
     },
-    yAxis: {
-      type: 'value',
-      name: '亿元',
-      axisLine: { show: false },
-      axisLabel: { color: '#666' },
-      splitLine: { lineStyle: { color: '#f0f0f0' } },
-    },
+    legend: { data: ['专利总数', '新增'], bottom: 0 },
+    grid: { left: '3%', right: '4%', bottom: '15%', top: '10%', containLabel: true },
+    xAxis: { type: 'category', data: patentTrend.months, axisLabel: { rotate: 45, fontSize: 10 } },
+    yAxis: [
+      { type: 'value', name: '总数（万件）', position: 'left', min: 230000, max: 290000, interval: 12000, axisLabel: { formatter: (value) => (value / 10000).toFixed(0) } },
+      { type: 'value', name: '新增（万件）', position: 'right', min: 0, max: 1, interval: 0.2, splitLine: { show: false }, axisLabel: { formatter: '{value}' } },
+    ],
+    series: [
+      { name: '专利总数', type: 'line', data: patentTrend.total, smooth: true, itemStyle: { color: unifiedColors.purple }, areaStyle: { color: { type: 'linear', x: 0, y: 0, x2: 0, y2: 1, colorStops: [{ offset: 0, color: 'rgba(139, 92, 246, 0.3)' }, { offset: 1, color: 'rgba(139, 92, 246, 0.05)' }] } } },
+      { name: '新增', type: 'bar', yAxisIndex: 1, data: patentTrend.newAdded, itemStyle: { color: unifiedColors.purple, borderRadius: [4, 4, 0, 0] }, barWidth: 12 },
+    ],
+  };
+
+  // 资质企业分布图配置（横向条形图）
+  const qualificationOption = {
+    tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, formatter: '{b}: {c}家' },
+    grid: { left: '3%', right: '18%', bottom: '3%', top: '3%', containLabel: true },
+    xAxis: { type: 'value', axisLabel: { formatter: (value) => value >= 10000 ? (value / 10000) + '万' : value, fontSize: 10 }, splitLine: { lineStyle: { type: 'dashed', color: '#e5e7eb' } } },
+    yAxis: { type: 'category', data: ['独角兽', '上市公司', '专精特新', '规上企业', '国高企业'], axisLabel: { fontSize: 11 }, inverse: true },
     series: [{
-      name: '工业产值',
       type: 'bar',
-      data: outputTrend.values,
-      barWidth: '50%',
-      itemStyle: {
-        borderRadius: [4, 4, 0, 0],
-        color: {
-          type: 'linear',
-          x: 0,
-          y: 0,
-          x2: 0,
-          y2: 1,
-          colorStops: [
-            { offset: 0, color: '#1677ff' },
-            { offset: 1, color: '#00d4aa' },
-          ],
-        },
-      },
+      data: [
+        { value: 55, itemStyle: { color: unifiedColors.red, borderRadius: [0, 4, 4, 0] } },
+        { value: 420, itemStyle: { color: unifiedColors.orange, borderRadius: [0, 4, 4, 0] } },
+        { value: 8650, itemStyle: { color: unifiedColors.green, borderRadius: [0, 4, 4, 0] } },
+        { value: 12860, itemStyle: { color: unifiedColors.blue, borderRadius: [0, 4, 4, 0] } },
+        { value: 23450, itemStyle: { color: unifiedColors.gray, borderRadius: [0, 4, 4, 0] } },
+      ],
+      barWidth: 20,
+      label: { show: true, position: 'right', formatter: (params) => { const value = params.value; return value >= 10000 ? (value / 10000).toFixed(1) + '万' : value.toLocaleString(); }, fontSize: 11 },
     }],
   };
 
-  // 产业结构饼图配置
-  const industryPieOption = {
-    tooltip: {
-      trigger: 'item',
-      backgroundColor: 'rgba(255, 255, 255, 0.95)',
-      borderColor: '#e8e8e8',
-      borderWidth: 1,
-      formatter: '{b}: {c}%',
-    },
-    legend: {
-      orient: 'vertical',
-      right: '5%',
-      top: 'center',
-      itemWidth: 12,
-      itemHeight: 12,
-      textStyle: { color: '#666', fontSize: 12 },
-    },
+  // 行业分布图配置（饼图）
+  const industryOption = {
+    tooltip: { trigger: 'item', formatter: '{b}: {c}家 ({d}%)' },
+    legend: { orient: 'vertical', right: 5, top: 'middle', itemWidth: 10, itemHeight: 10, textStyle: { fontSize: 10, lineHeight: 14 }, itemGap: 6 },
     series: [{
       type: 'pie',
-      radius: ['45%', '70%'],
+      radius: ['40%', '65%'],
       center: ['35%', '50%'],
-      avoidLabelOverlap: false,
-      itemStyle: {
-        borderRadius: 6,
-        borderColor: '#fff',
-        borderWidth: 2,
-      },
-      label: {
-        show: false,
-      },
-      emphasis: {
-        label: {
-          show: true,
-          fontSize: 14,
-          fontWeight: 'bold',
-        },
-      },
-      labelLine: {
-        show: false,
-      },
+      itemStyle: { borderRadius: 4, borderColor: '#fff', borderWidth: 2 },
+      label: { show: false },
       data: [
-        { 
-          value: industryStructure.primary, 
-          name: '第一产业',
-          itemStyle: { color: '#00d4aa' }
-        },
-        { 
-          value: industryStructure.secondary, 
-          name: '第二产业',
-          itemStyle: { color: '#1677ff' }
-        },
-        { 
-          value: industryStructure.tertiary, 
-          name: '第三产业',
-          itemStyle: { color: '#722ed1' }
-        },
+        { value: 485000, name: '电子信息', itemStyle: { color: unifiedColors.blue } },
+        { value: 425000, name: '软件和信息服务', itemStyle: { color: unifiedColors.green } },
+        { value: 368000, name: '智能制造', itemStyle: { color: unifiedColors.orange } },
+        { value: 158000, name: '现代物流', itemStyle: { color: unifiedColors.purple } },
+        { value: 135000, name: '新能源', itemStyle: { color: unifiedColors.cyan } },
+        { value: 105000, name: '生物医药', itemStyle: { color: unifiedColors.red } },
+        { value: 92000, name: '金融科技', itemStyle: { color: unifiedColors.gray } },
       ],
     }],
   };
 
-  // 能耗仪表盘配置
-  const energyGaugeOption = {
+  // 企业年限结构图配置（环形图）
+  const lifecycleOption = {
+    tooltip: { trigger: 'item', formatter: '{b}: {c}家 ({d}%)' },
+    legend: { orient: 'vertical', right: 5, top: 'middle', itemWidth: 10, itemHeight: 10, textStyle: { fontSize: 10, lineHeight: 14 }, itemGap: 8 },
     series: [{
-      type: 'gauge',
-      startAngle: 180,
-      endAngle: 0,
-      min: 0,
-      max: 100,
-      splitNumber: 5,
-      radius: '90%',
-      center: ['50%', '70%'],
-      itemStyle: {
-        color: energyData.percentage > 80 ? '#f5222d' : energyData.percentage > 60 ? '#faad14' : '#1677ff',
-      },
-      progress: {
-        show: true,
-        roundCap: true,
-        width: 18,
-      },
-      pointer: {
-        icon: 'path://M2090.36389,615.30999 L2090.36389,615.30999 C2091.48372,615.30999 2092.40383,616.194028 2092.44859,617.312956 L2096.90698,728.755929 C2097.05155,732.369577 2094.23075,735.416212 2090.60697,735.47778 C2086.97388,735.539672 2084.06975,732.570018 2084.16927,728.937204 L2088.53509,617.312956 C2088.57985,616.194028 2089.4999,615.30999 2090.36389,615.30999 Z',
-        length: '75%',
-        width: 12,
-        offsetCenter: [0, '5%'],
-      },
-      axisLine: {
-        roundCap: true,
-        lineStyle: {
-          width: 18,
-          color: [[1, '#e8e8e8']],
-        },
-      },
-      axisTick: {
-        splitNumber: 2,
-        lineStyle: {
-          width: 2,
-          color: '#999',
-        },
-      },
-      splitLine: {
-        length: 12,
-        lineStyle: {
-          width: 3,
-          color: '#999',
-        },
-      },
-      axisLabel: {
-        distance: 25,
-        color: '#999',
-        fontSize: 12,
-      },
-      title: {
-        show: true,
-        offsetCenter: [0, '35%'],
-        fontSize: 12,
-        color: '#666',
-      },
-      detail: {
-        valueAnimation: true,
-        fontSize: 20,
-        fontWeight: 'bold',
-        offsetCenter: [0, '60%'],
-        formatter: '{value}%',
-        color: 'inherit',
-      },
-      data: [{
-        value: energyData.percentage,
-        name: '能耗使用率',
-      }],
+      type: 'pie',
+      radius: ['45%', '70%'],
+      center: ['35%', '50%'],
+      itemStyle: { borderRadius: 4, borderColor: '#fff', borderWidth: 2 },
+      label: { show: false },
+      data: [
+        { value: 268000, name: '1年内(新设)', itemStyle: { color: unifiedColors.blue } },
+        { value: 398000, name: '1-3年(初创)', itemStyle: { color: unifiedColors.green } },
+        { value: 485000, name: '3-5年(成长)', itemStyle: { color: unifiedColors.orange } },
+        { value: 652000, name: '5-10年(稳定)', itemStyle: { color: unifiedColors.purple } },
+        { value: 775000, name: '10年+(成熟)', itemStyle: { color: unifiedColors.gray } },
+      ],
     }],
   };
 
-  // 税收贡献Top5横向柱状图配置
-  const taxBarOption = {
-    tooltip: {
-      trigger: 'axis',
-      axisPointer: { type: 'shadow' },
-      backgroundColor: 'rgba(255, 255, 255, 0.95)',
-      borderColor: '#e8e8e8',
-      borderWidth: 1,
-      formatter: '{b}: {c}亿元',
-    },
-    grid: {
-      left: '3%',
-      right: '15%',
-      bottom: '3%',
-      top: '5%',
-      containLabel: true,
-    },
-    xAxis: {
-      type: 'value',
-      axisLine: { show: false },
-      axisLabel: { 
-        color: '#666',
-        formatter: '{value}亿',
-      },
-      splitLine: { lineStyle: { color: '#f0f0f0' } },
-    },
-    yAxis: {
-      type: 'category',
-      data: taxTop5.names,
-      axisLine: { show: false },
-      axisLabel: { 
-        color: '#666',
-        fontSize: 11,
-      },
-      axisTick: { show: false },
-    },
+  // 税收贡献分层图配置（横向条形图）
+  const taxContributionOption = {
+    tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, formatter: '{b}: {c}家' },
+    grid: { left: '3%', right: '15%', bottom: '3%', top: '3%', containLabel: true },
+    xAxis: { type: 'value', axisLabel: { formatter: (value) => value >= 10000 ? (value / 10000) + '万' : value, fontSize: 10 }, splitLine: { lineStyle: { type: 'dashed', color: '#e5e7eb' } } },
+    yAxis: { type: 'category', data: taxContribution.levels, axisLabel: { fontSize: 11 }, inverse: true },
     series: [{
       type: 'bar',
-      data: taxTop5.values,
-      barWidth: '50%',
-      itemStyle: {
-        borderRadius: [0, 4, 4, 0],
-        color: {
-          type: 'linear',
-          x: 0,
-          y: 0,
-          x2: 1,
-          y2: 0,
-          colorStops: [
-            { offset: 0, color: '#722ed1' },
-            { offset: 1, color: '#1677ff' },
-          ],
-        },
-      },
-      label: {
-        show: true,
-        position: 'right',
-        formatter: '{c}亿',
-        color: '#666',
-        fontSize: 11,
-      },
+      data: [
+        { value: 3200, itemStyle: { color: unifiedColors.red, borderRadius: [0, 4, 4, 0] } },
+        { value: 28500, itemStyle: { color: unifiedColors.orange, borderRadius: [0, 4, 4, 0] } },
+        { value: 185000, itemStyle: { color: unifiedColors.green, borderRadius: [0, 4, 4, 0] } },
+        { value: 895000, itemStyle: { color: unifiedColors.blue, borderRadius: [0, 4, 4, 0] } },
+        { value: 1473300, itemStyle: { color: unifiedColors.gray, borderRadius: [0, 4, 4, 0] } },
+      ],
+      barWidth: 20,
+      label: { show: true, position: 'right', formatter: (params) => { const value = params.value; return value >= 10000 ? (value / 10000).toFixed(1) + '万' : value; }, fontSize: 10 },
+    }],
+  };
+
+  // 产业分布图配置（饼图）
+  const strategicIndustriesOption = {
+    tooltip: { trigger: 'item', formatter: '{b}: {c}家 ({d}%)' },
+    legend: { orient: 'vertical', right: 5, top: 'middle', itemWidth: 10, itemHeight: 10, textStyle: { fontSize: 10, lineHeight: 14 }, itemGap: 8 },
+    series: [{
+      type: 'pie',
+      radius: ['40%', '65%'],
+      center: ['35%', '50%'],
+      itemStyle: { borderRadius: 4, borderColor: '#fff', borderWidth: 2 },
+      label: { show: false },
+      data: [
+        { value: 468000, name: '新一代信息技术', itemStyle: { color: unifiedColors.blue } },
+        { value: 118000, name: '高端装备制造', itemStyle: { color: unifiedColors.green } },
+        { value: 98000, name: '生物医药', itemStyle: { color: unifiedColors.orange } },
+        { value: 72000, name: '新材料', itemStyle: { color: unifiedColors.purple } },
+        { value: 45800, name: '新能源', itemStyle: { color: unifiedColors.cyan } },
+        { value: 39800, name: '节能环保', itemStyle: { color: unifiedColors.red } },
+        { value: 35200, name: '新能源汽车', itemStyle: { color: unifiedColors.gray } },
+      ],
+    }],
+  };
+
+  // 用工规模结构图配置（横向条形图）
+  const employmentScaleOption = {
+    tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
+    grid: { left: '3%', right: '4%', bottom: '3%', top: '3%', containLabel: true },
+    xAxis: { type: 'value', axisLabel: { formatter: (value) => value >= 10000 ? (value / 10000) + '万' : value } },
+    yAxis: { type: 'category', data: ['1000人以上', '500-999人', '300-499人', '100-299人', '50-99人', '50人以下'], axisLabel: { fontSize: 11 }, inverse: true },
+    series: [{
+      type: 'bar',
+      data: [920, 2150, 4850, 14200, 32800, 2536080],
+      itemStyle: { color: unifiedColors.blue, borderRadius: [0, 4, 4, 0] },
+      barWidth: 16,
+      label: { show: true, position: 'right', formatter: (params) => formatNumber(params.value), fontSize: 10 },
     }],
   };
 
   return (
-    <div className="h-full -m-6">
-      {/* 顶部工具栏 */}
-      <div className="bg-white py-4 px-6 shadow-sm flex items-center justify-between sticky top-0 z-50 rounded-lg m-6 mb-0">
-        <div className="flex items-center gap-3">
-          <DashboardOutlined className="text-blue-500 text-xl" />
-          <span className="text-xl font-semibold text-gray-800">经济运行驾驶舱</span>
+    <div className="h-full -m-6 p-5">
+      {/* 页面标题栏 */}
+      <div className="flex items-center justify-between mb-5">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-800">经济运行驾驶舱</h1>
+          <p className="text-gray-500 text-sm mt-1">实时监测企业动态，洞察经济发展趋势 · 更新时间：2026-02-15</p>
         </div>
-        
-        <Space size="middle">
-          <Select
-            value={year}
-            onChange={setYear}
-            style={{ width: 100 }}
-            placeholder="年份"
-          >
-            <Option value="2023">2023年</Option>
-            <Option value="2024">2024年</Option>
-            <Option value="2025">2025年</Option>
-          </Select>
-          
-          <Select
-            value={quarter}
-            onChange={setQuarter}
-            style={{ width: 100 }}
-            placeholder="季度"
-          >
-            <Option value="Q1">第一季度</Option>
-            <Option value="Q2">第二季度</Option>
-            <Option value="Q3">第三季度</Option>
-            <Option value="Q4">第四季度</Option>
-          </Select>
-          
-          <Select
-            value={region}
-            onChange={setRegion}
-            style={{ width: 120 }}
-            placeholder="区域"
-          >
+        <div className="flex gap-3">
+          <Select value={region} onChange={setRegion} style={{ width: 120 }}>
             <Option value="全市">全市</Option>
             <Option value="南山区">南山区</Option>
             <Option value="福田区">福田区</Option>
-            <Option value="罗湖区">罗湖区</Option>
             <Option value="宝安区">宝安区</Option>
             <Option value="龙岗区">龙岗区</Option>
+            <Option value="龙华区">龙华区</Option>
+            <Option value="罗湖区">罗湖区</Option>
             <Option value="光明区">光明区</Option>
+            <Option value="盐田区">盐田区</Option>
             <Option value="坪山区">坪山区</Option>
           </Select>
-        </Space>
+        </div>
       </div>
 
-      {/* 3x3 Grid 布局 */}
-      <div className="p-6">
-        <Row gutter={[24, 24]}>
-          {/* 第一行 */}
-          <Col span={8}>
-            <ChartCard
-              title="GDP总量"
-              subtitle={`统计时间：${year}年 ${quarter}`}
-              tooltip="地区生产总值，反映区域经济总规模"
-              height={320}
-            >
-              <GDPCard />
-            </ChartCard>
-          </Col>
-          
-          <Col span={8}>
-            <ChartCard
-              title="工业产值趋势"
-              subtitle="月度累计产值"
-              tooltip="规模以上工业企业总产值"
-              height={320}
-            >
-              <ReactECharts
-                option={outputChartOption}
-                style={{ height: 220 }}
-                opts={{ renderer: 'canvas' }}
-              />
-            </ChartCard>
-          </Col>
-          
-          <Col span={8}>
-            <ChartCard
-              title="产业结构"
-              subtitle="三次产业占比"
-              tooltip="第一、二、三产业增加值占比"
-              height={320}
-            >
-              <ReactECharts
-                option={industryPieOption}
-                style={{ height: 220 }}
-                opts={{ renderer: 'canvas' }}
-              />
-            </ChartCard>
-          </Col>
+      {/* 第一行：核心指标总量卡片 */}
+      <Row gutter={[16, 16]} className="mb-5">
+        <Col span={6}>
+          <MetricCard
+            title="企业总数"
+            value={(coreMetrics.enterpriseCount.total / 10000).toFixed(1)}
+            unit="万家"
+            growth={coreMetrics.enterpriseCount.growth}
+            growthMoM={coreMetrics.enterpriseCount.growthMoM}
+            icon={<BuildOutlined />}
+            color={unifiedColors.blue}
+            subText={`本月新增 ${(coreMetrics.enterpriseCount.newThisMonth / 10000).toFixed(1)} 万家`}
+          />
+        </Col>
+        <Col span={6}>
+          <MetricCard
+            title="纳税总额"
+            value={coreMetrics.taxRevenue.total}
+            unit="亿元"
+            growth={coreMetrics.taxRevenue.growth}
+            growthMoM={coreMetrics.taxRevenue.growthMoM}
+            icon={<BankOutlined />}
+            color={unifiedColors.green}
+            subText={`本年累计 ${coreMetrics.taxRevenue.total} 亿元 · 本月新增 ${coreMetrics.taxRevenue.monthTotal} 亿元`}
+          />
+        </Col>
+        <Col span={6}>
+          <MetricCard
+            title="用工总数"
+            value={coreMetrics.employment.total}
+            unit="万人"
+            growth={coreMetrics.employment.growth}
+            growthMoM={coreMetrics.employment.growthMoM}
+            icon={<TeamOutlined />}
+            color={unifiedColors.orange}
+            subText={`本月新增 0.1 万人`}
+          />
+        </Col>
+        <Col span={6}>
+          <MetricCard
+            title="专利总数"
+            value={(coreMetrics.patents.total / 10000).toFixed(1)}
+            unit="万件"
+            growth={coreMetrics.patents.growth}
+            growthMoM={coreMetrics.patents.growthMoM}
+            icon={<TrademarkOutlined />}
+            color={unifiedColors.purple}
+            subText={`本月新增 ${((coreMetrics.patents.invention + coreMetrics.patents.utility + coreMetrics.patents.design) / 10000).toFixed(1)} 万件`}
+          />
+        </Col>
+      </Row>
 
-          {/* 第二行 */}
-          <Col span={8}>
-            <ChartCard
-              title="能耗双控"
-              subtitle={`年度能耗指标：${energyData.target}万吨标煤`}
-              tooltip="单位GDP能耗降低率及能耗总量控制"
-              height={320}
-            >
-              <ReactECharts
-                option={energyGaugeOption}
-                style={{ height: 200 }}
-                opts={{ renderer: 'canvas' }}
-              />
-              <div className="text-center mt-2">
-                <span className="text-sm text-gray-500">
-                  已用 {energyData.used} / 目标 {energyData.target} 万吨标煤
-                </span>
-              </div>
-            </ChartCard>
-          </Col>
-          
-          <Col span={8}>
-            <ChartCard
-              title="税收贡献Top5"
-              subtitle="企业纳税排名"
-              tooltip="全口径税收收入前5名企业"
-              height={320}
-            >
-              <ReactECharts
-                option={taxBarOption}
-                style={{ height: 220 }}
-                opts={{ renderer: 'canvas' }}
-              />
-            </ChartCard>
-          </Col>
-          
-          <Col span={8}>
-            <ChartCard
-              title="固定资产投资"
-              subtitle="累计增速"
-              tooltip="固定资产投资完成额及增速"
-              height={320}
-            >
-              <EmptyPlaceholder />
-            </ChartCard>
-          </Col>
+      {/* 第二行：趋势分析（2x2布局） */}
+      <Row gutter={[16, 16]} className="mb-5">
+        <Col span={12}>
+          <Card title="企业总数趋势（近12个月）" bodyStyle={{ padding: 12, height: 320 }}>
+            <ReactECharts key="enterprise-trend" option={enterpriseTrendOption} style={{ height: '100%' }} />
+          </Card>
+        </Col>
+        <Col span={12}>
+          <Card title="纳税总额趋势（近12个月）" bodyStyle={{ padding: 12, height: 320 }}>
+            <ReactECharts option={taxTrendOption} style={{ height: '100%' }} />
+          </Card>
+        </Col>
+      </Row>
+      <Row gutter={[16, 16]} className="mb-5">
+        <Col span={12}>
+          <Card title="用工总数趋势（近12个月）" bodyStyle={{ padding: 12, height: 320 }}>
+            <ReactECharts key="employment-trend" option={employmentTrendOption} style={{ height: '100%' }} />
+          </Card>
+        </Col>
+        <Col span={12}>
+          <Card title="专利总数趋势（近12个月）" bodyStyle={{ padding: 12, height: 320 }}>
+            <ReactECharts option={patentTrendOption} style={{ height: '100%' }} />
+          </Card>
+        </Col>
+      </Row>
 
-          {/* 第三行 */}
-          <Col span={8}>
-            <ChartCard
-              title="社会消费品零售"
-              subtitle="总额及增速"
-              tooltip="社会消费品零售总额"
-              height={320}
-            >
-              <EmptyPlaceholder />
-            </ChartCard>
-          </Col>
-          
-          <Col span={8}>
-            <ChartCard
-              title="进出口贸易"
-              subtitle="进出口总额"
-              tooltip="货物进出口总额"
-              height={320}
-            >
-              <EmptyPlaceholder />
-            </ChartCard>
-          </Col>
-          
-          <Col span={8}>
-            <ChartCard
-              title="居民收入"
-              subtitle="人均可支配收入"
-              tooltip="城镇居民人均可支配收入"
-              height={320}
-            >
-              <EmptyPlaceholder />
-            </ChartCard>
-          </Col>
-        </Row>
-      </div>
+      {/* 第三行：结构分析（第一行：3列） */}
+      <Row gutter={[16, 16]} className="mb-5">
+        <Col span={8}>
+          <Card title={<span>资质企业分布<span className="text-gray-400 text-xs ml-1">（家）</span></span>} bodyStyle={{ padding: 12, height: 300 }}>
+            <ReactECharts option={qualificationOption} style={{ height: '100%' }} />
+          </Card>
+        </Col>
+        <Col span={8}>
+          <Card title={<span>行业分布<span className="text-gray-400 text-xs ml-1">（家）</span></span>} bodyStyle={{ padding: 12, height: 300 }}>
+            <ReactECharts option={industryOption} style={{ height: '100%' }} />
+          </Card>
+        </Col>
+        <Col span={8}>
+          <Card title={<span>企业年限结构<span className="text-gray-400 text-xs ml-1">（家）</span></span>} bodyStyle={{ padding: 12, height: 300 }}>
+            <ReactECharts option={lifecycleOption} style={{ height: '100%' }} />
+          </Card>
+        </Col>
+      </Row>
+
+      {/* 第四行：结构分析（第二行：3列） */}
+      <Row gutter={[16, 16]}>
+        <Col span={8}>
+          <Card title={<span>税收贡献分层<span className="text-gray-400 text-xs ml-1">（家）</span></span>} bodyStyle={{ padding: 12, height: 300 }}>
+            <ReactECharts option={taxContributionOption} style={{ height: '100%' }} />
+          </Card>
+        </Col>
+        <Col span={8}>
+          <Card title={<span>产业分布<span className="text-gray-400 text-xs ml-1">（家）</span></span>} bodyStyle={{ padding: 12, height: 300 }}>
+            <ReactECharts option={strategicIndustriesOption} style={{ height: '100%' }} />
+          </Card>
+        </Col>
+        <Col span={8}>
+          <Card title={<span>用工规模结构<span className="text-gray-400 text-xs ml-1">（家）</span></span>} bodyStyle={{ padding: 12, height: 300 }}>
+            <ReactECharts option={employmentScaleOption} style={{ height: '100%' }} />
+          </Card>
+        </Col>
+      </Row>
     </div>
   );
 };
-
-// 空占位组件
-const EmptyPlaceholder = () => (
-  <div className="h-full flex flex-col items-center justify-center text-gray-400">
-    <div className="text-4xl mb-2">📊</div>
-    <div className="text-sm">数据开发中</div>
-  </div>
-);
 
 export default EconomyCockpit;
