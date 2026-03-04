@@ -7,12 +7,7 @@ import {
   Statistic,
   DatePicker,
 } from 'antd';
-import {
-  LineChartOutlined,
-  BankOutlined,
-  ClusterOutlined,
-  EnvironmentOutlined,
-} from '@ant-design/icons';
+
 import { economicMonitorMock } from '../mock/economicMonitorMock';
 import { useState } from 'react';
 
@@ -177,36 +172,23 @@ const EconomicMonitor = () => {
     series: [
       {
         name: '企业总数（万家）',
-        type: 'line',
+        type: 'bar',
         data: chartData.enterprise.total.map(v => (v / 10000).toFixed(1)),
-        smooth: true,
-        symbol: 'circle',
-        symbolSize: 6,
-        lineStyle: { color: unifiedColors.blue, width: 3 },
-        itemStyle: { color: unifiedColors.blue },
-        areaStyle: {
+        barWidth: 12,
+        itemStyle: {
+          borderRadius: [4, 4, 0, 0],
           color: {
             type: 'linear',
             x: 0, y: 0, x2: 0, y2: 1,
             colorStops: [
-              { offset: 0, color: 'rgba(37, 99, 235, 0.3)' },
-              { offset: 1, color: 'rgba(37, 99, 235, 0.05)' },
+              { offset: 0, color: '#2563eb' },
+              { offset: 1, color: '#60a5fa' },
             ],
           },
         },
       },
       {
-        name: '企业数',
-        type: 'bar',
-        data: chartData.enterprise.total,
-        barWidth: '40%',
-        itemStyle: {
-          borderRadius: [4, 4, 0, 0],
-          color: unifiedColors.blue,
-        },
-      },
-      {
-        name: '环比增长率（%）',
+        name: '环比增长率',
         type: 'line',
         yAxisIndex: 1,
         data: chartData.enterprise.mom,
@@ -295,7 +277,14 @@ const EconomicMonitor = () => {
         barWidth: 12,
         itemStyle: {
           borderRadius: [4, 4, 0, 0],
-          color: unifiedColors.green,
+          color: {
+            type: 'linear',
+            x: 0, y: 0, x2: 0, y2: 1,
+            colorStops: [
+              { offset: 0, color: '#10b981' },
+              { offset: 1, color: '#34d399' },
+            ],
+          },
         },
       },
       {
@@ -388,20 +377,17 @@ const EconomicMonitor = () => {
     series: [
       {
         name: '用工总数（万人）',
-        type: 'line',
+        type: 'bar',
         data: chartData.employment.values,
-        smooth: true,
-        symbol: 'circle',
-        symbolSize: 6,
-        lineStyle: { color: unifiedColors.orange, width: 3 },
-        itemStyle: { color: unifiedColors.orange },
-        areaStyle: {
+        barWidth: 12,
+        itemStyle: {
+          borderRadius: [4, 4, 0, 0],
           color: {
             type: 'linear',
             x: 0, y: 0, x2: 0, y2: 1,
             colorStops: [
-              { offset: 0, color: 'rgba(245, 158, 11, 0.3)' },
-              { offset: 1, color: 'rgba(245, 158, 11, 0.05)' },
+              { offset: 0, color: '#f59e0b' },
+              { offset: 1, color: '#fbbf24' },
             ],
           },
         },
@@ -456,7 +442,7 @@ const EconomicMonitor = () => {
       borderWidth: 1,
     },
     legend: {
-      data: ['申请量', '授权量', '申请环比', '申请同比'],
+      data: ['专利数量'],
       top: 0,
       textStyle: { fontSize: 12 },
     },
@@ -473,100 +459,30 @@ const EconomicMonitor = () => {
       axisLine: { lineStyle: { color: '#e5e7eb' } },
       axisLabel: { color: '#6b7280', fontSize: 10, rotate: 45 },
     },
-    yAxis: [
-      {
-        type: 'value',
-        name: '专利数(件)',
-        position: 'left',
-        axisLine: { show: true, lineStyle: { color: '#666' } },
-        axisLabel: { color: '#666', fontSize: 11 },
-        splitLine: { lineStyle: { color: '#f0f0f0' } },
-      },
-      {
-        type: 'value',
-        name: '增长率(%)',
-        position: 'right',
-        axisLine: { show: true, lineStyle: { color: unifiedColors.orange } },
-        axisLabel: { formatter: '{value}%', color: unifiedColors.orange, fontSize: 11 },
-        splitLine: { show: false },
-      },
-    ],
+    yAxis: {
+      type: 'value',
+      name: '专利数(件)',
+      position: 'left',
+      axisLine: { show: true, lineStyle: { color: '#666' } },
+      axisLabel: { color: '#666', fontSize: 11 },
+      splitLine: { lineStyle: { color: '#f0f0f0' } },
+    },
     series: [
       {
-        name: '申请量',
+        name: '专利数量',
         type: 'bar',
         data: chartData.patent.apply,
-        barWidth: '30%',
+        barWidth: 12,
         itemStyle: {
           borderRadius: [4, 4, 0, 0],
           color: {
             type: 'linear',
-            x: 0,
-            y: 0,
-            x2: 0,
-            y2: 1,
+            x: 0, y: 0, x2: 0, y2: 1,
             colorStops: [
-              { offset: 0, color: unifiedColors.blue },
-              { offset: 1, color: '#60a5fa' },
+              { offset: 0, color: '#8b5cf6' },
+              { offset: 1, color: '#c4b5fd' },
             ],
           },
-        },
-      },
-      {
-        name: '授权量',
-        type: 'bar',
-        data: chartData.patent.grant,
-        barWidth: '30%',
-        itemStyle: {
-          borderRadius: [4, 4, 0, 0],
-          color: {
-            type: 'linear',
-            x: 0,
-            y: 0,
-            x2: 0,
-            y2: 1,
-            colorStops: [
-              { offset: 0, color: unifiedColors.green },
-              { offset: 1, color: '#34d399' },
-            ],
-          },
-        },
-      },
-      {
-        name: '申请环比',
-        type: 'line',
-        yAxisIndex: 1,
-        data: chartData.patent.applyMom,
-        smooth: true,
-        symbol: 'circle',
-        symbolSize: 5,
-        lineStyle: {
-          color: unifiedColors.orange,
-          width: 2,
-        },
-        itemStyle: {
-          color: unifiedColors.orange,
-          borderWidth: 2,
-          borderColor: '#fff',
-        },
-      },
-      {
-        name: '申请同比',
-        type: 'line',
-        yAxisIndex: 1,
-        data: chartData.patent.applyYoy,
-        smooth: true,
-        symbol: 'emptyCircle',
-        symbolSize: 5,
-        lineStyle: {
-          color: unifiedColors.purple,
-          width: 2,
-          type: 'dashed',
-        },
-        itemStyle: {
-          color: unifiedColors.purple,
-          borderWidth: 2,
-          borderColor: '#fff',
         },
       },
     ],
@@ -906,14 +822,8 @@ const EconomicMonitor = () => {
       <Row gutter={[16, 16]}>
         <Col span={12}>
           <Card
-            title={
-              <div className="flex items-center gap-2">
-                <LineChartOutlined style={{ color: unifiedColors.blue }} />
-                <span className="font-semibold text-gray-800">企业数量趋势</span>
-              </div>
-            }
+            title="企业数量趋势"
             className="shadow-sm h-full"
-            extra={<Text type="secondary" style={{ fontSize: '12px' }}>市监局</Text>}
             bodyStyle={{ padding: '12px' }}
           >
             <ReactECharts
@@ -925,14 +835,8 @@ const EconomicMonitor = () => {
         </Col>
         <Col span={12}>
           <Card
-            title={
-              <div className="flex items-center gap-2">
-                <BankOutlined style={{ color: unifiedColors.green }} />
-                <span className="font-semibold text-gray-800">纳税金额趋势</span>
-              </div>
-            }
+            title="纳税金额趋势"
             className="shadow-sm h-full"
-            extra={<Text type="secondary" style={{ fontSize: '12px' }}>税务局</Text>}
             bodyStyle={{ padding: '12px' }}
           >
             <ReactECharts
@@ -944,14 +848,8 @@ const EconomicMonitor = () => {
         </Col>
         <Col span={12}>
           <Card
-            title={
-              <div className="flex items-center gap-2">
-                <ClusterOutlined style={{ color: unifiedColors.orange }} />
-                <span className="font-semibold text-gray-800">用工人数趋势</span>
-              </div>
-            }
+            title="用工人数趋势"
             className="shadow-sm h-full"
-            extra={<Text type="secondary" style={{ fontSize: '12px' }}>人社局</Text>}
             bodyStyle={{ padding: '12px' }}
           >
             <ReactECharts
@@ -963,14 +861,8 @@ const EconomicMonitor = () => {
         </Col>
         <Col span={12}>
           <Card
-            title={
-              <div className="flex items-center gap-2">
-                <EnvironmentOutlined style={{ color: unifiedColors.purple }} />
-                <span className="font-semibold text-gray-800">专利数量趋势</span>
-              </div>
-            }
+            title="专利数量趋势"
             className="shadow-sm h-full"
-            extra={<Text type="secondary" style={{ fontSize: '12px' }}>知识产权局</Text>}
             bodyStyle={{ padding: '12px' }}
           >
             <ReactECharts
