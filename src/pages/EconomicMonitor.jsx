@@ -1,110 +1,492 @@
-import React, { useState } from 'react';
 import ReactECharts from 'echarts-for-react';
 import {
   Card,
-  Tree,
-  DatePicker,
-  Select,
-  Alert,
-  Table,
-  Button,
-  Space,
-  Tag,
-  Badge,
   Typography,
   Row,
   Col,
   Statistic,
 } from 'antd';
 import {
-  WarningOutlined,
   LineChartOutlined,
-  FilterOutlined,
-  DownOutlined,
-  UpOutlined,
-  EyeOutlined,
-  ExportOutlined,
-  BellOutlined,
+  BankOutlined,
+  ClusterOutlined,
+  EnvironmentOutlined,
 } from '@ant-design/icons';
 import { economicMonitorMock } from '../mock/economicMonitorMock';
-
-const { Title, Text } = Typography;
+const { Title } = Typography;
 const { RangePicker } = DatePicker;
-const { Option } = Select;
-
 /**
  * EconomicMonitor - 经济监测页面
- * 左侧树形筛选 + 右侧图表和数据分析
+ * 统一配色方案 - 与数字驾驶舱一致
+ */
+*/
+* 顶部维度选择 + 2x2图表布局
  */
 const EconomicMonitor = () => {
-  const [selectedKeys, setSelectedKeys] = useState(['all']);
-  const [selectedMetrics, setSelectedMetrics] = useState(['output', 'tax']);
-  const [dateRange, setDateRange] = useState(null);
-  const [expandedRowKeys, setExpandedRowKeys] = useState([]);
-
-  const { treeData, chartData, alertData, enterpriseData, summaryStats } = economicMonitorMock;
-
-  // 指标选项
-  const metricOptions = [
-    { label: '工业总产值', value: 'output', color: '#1677ff' },
-    { label: '税收总额', value: 'tax', color: '#52c41a' },
-    { label: '用电量', value: 'electricity', color: '#faad14' },
-    { label: '用工人数', value: 'employees', color: '#722ed1' },
-    { label: '利润总额', value: 'profit', color: '#eb2f96' },
-  ];
-
-  // 双轴图表配置
-  const chartOption = {
+  const [districts, setDistricts] = useState([]);
+  const [gbIndustries, setGbIndustries] = useState([]);
+  const [industries, setIndustries] = useState([]);
+  const [parks, setParks] = useState([]);
+  const [showMoreDistricts, setShowMoreDistricts] = useState(false);
+  const [showMoreGB, setShowMoreGB] = useState(false);
+  const [showMoreIndustry, setShowMoreIndustry] = useState(false);
+  const [showMoreParks, setShowMoreParks] = useState(false);
+  // 计算每行能显示的标签数量（根据屏幕宽度自适应）
+   const VISIBLE_COUNT = 12;
+  const { districts: districtsData, gbIndustries: gbIndustriesData, industries: industriesData, parks: parksData, chartData, summaryStats } = economicMonitorMock;
+  // 统一配色方案 - 与数字驾驶舱一致
+  const unifiedColors = {
+    blue: '#2563eb',
+    green: '#10b981',
+    orange: '#f59e0b',
+    purple: '#8b5cf6',
+    red: '#ef4444',
+    cyan: '#06b6d4',
+    gray: '#6b7280',
+  };
+  // 获取已选维度标签
+  const getSelectedTags = () => {
+    const tags = [];
+    if (selectedGBIndustry) {
+      const item = gbIndustries.find(i => i.key === selectedGBIndustry);
+      if (item) tags.push({ label: item.title, key: selectedGBIndustry, type: '国标行业' });
+    }
+    if (selectedIndustry) {
+      const findItem = (items) => {
+        for (const item of items) {
+          if (item.key === selectedIndustry) return item;
+          if (item.children) {
+            const found = item.children.find(c => c.key === selectedIndustry);
+            if (found) return found;
+          }
+        }
+        return null;
+      };
+      const item = findItem(industries);
+      if (item) tags.push({ label: item.title, key: selectedIndustry, type: '产业' });
+    }
+    if (selectedPark) {
+      const item = parks.find(i => i.key === selectedPark);
+      if (item) tags.push({ label: item.title, key: selectedPark, type: '园区' });
+    }
+    return tags;
+  };
+  // 移除已选标签
+  const removeTag = (type) => {
+    if (type === '国标行业') {
+      setSelectedGBIndustry(null);
+    } else if (type === '产业') {
+      setSelectedIndustry(null);
+    } else if (type === '园区') {
+      setSelectedPark(null);
+    }
+  };
+  // 清除所有选择
+  const clearAllSelections = () => {
+    setSelectedGBIndustry(null);
+    setSelectedIndustry(null);
+    setSelectedPark(null);
+  };
+  const getIndustryChildren = (parentKey) => {
+    const parent = industries.find((item) => item.key === parentKey);
+    return parent ? parent.children : [];
+  };
+  // 切换选择（多选逻辑）
+  const toggleSelection = (selected, setter, key) => {
+    if (selected.includes(key)) {
+      setter(selected.filter(k => k !== key));
+    } else {
+      setter([...selected, key]);
+    }
+  };
+   // 重置所有选择
+  const handleReset = () => {
+    setDistricts([]);
+    setGbIndustries([]);
+    setIndustries([]);
+    setParks([]);
+  };
+  // 渲染统计值
+  const renderStat = (value, suffix = '') => {
+    return (
+      <div className="text-2xl font-bold">{value.toLocaleString()}{suffix}</div>
+  // 企业数量趋势图表配置
+  const enterpriseChartOption = {
     tooltip: {
       trigger: 'axis',
-      axisPointer: {
-        type: 'cross',
-      },
+      axisPointer: { type: 'cross' },
       backgroundColor: 'rgba(255, 255, 255, 0.95)',
-      borderColor: '#e8e8e8',
-      borderWidth: 1,
+      borderColor: '#e5e7eb',
+               borderWidth: 1,
     },
     legend: {
-      data: ['工业总产值', '同比增长率'],
-      top: 10,
+      data: ['企业数', '环比增长率', '同比增长率'],
+      top: 0,
+      textStyle: { fontSize: 12 },
     },
     grid: {
       left: '3%',
       right: '4%',
-      bottom: '3%',
-      top: '15%',
+      bottom: '12%',
+      top: '10%',
       containLabel: true,
     },
     xAxis: {
       type: 'category',
       data: chartData.months,
-      axisLine: { lineStyle: { color: '#e0e0e0' } },
-      axisLabel: { color: '#666' },
+      axisLine: { lineStyle: { color: '#e5e7eb' } },
+      axisLabel: { color: '#6b7280', fontSize: 10, rotate: 45 },
     },
     yAxis: [
       {
         type: 'value',
-        name: '工业总产值（亿元）',
+        name: '企业数量（万家）',
         position: 'left',
-        axisLine: { show: true, lineStyle: { color: '#1677ff' } },
-        axisLabel: { formatter: '{value}', color: '#1677ff' },
-        splitLine: { lineStyle: { color: '#f0f0f0' } },
-      },
+        min: 230,
+        max: 270,
+        axisLine: { show: false },
+        axisLabel: { formatter: '{value}', color: unifiedColors.blue },
+        splitLine: { lineStyle: { color: '#f3f4f6', type: 'dashed' } },
+        },
       {
         type: 'value',
-        name: '同比增长率（%）',
+        name: '增长率(%)',
         position: 'right',
-        axisLine: { show: true, lineStyle: { color: '#fa8c16' } },
-        axisLabel: { formatter: '{value}%', color: '#fa8c16' },
+        axisLine: { show: true, lineStyle: { color: colors.orange } },
+        axisLabel: { formatter: '{value}%', color: colors.orange, fontSize: 11 },
         splitLine: { show: false },
       },
     ],
     series: [
       {
-        name: '工业总产值',
+        name: '企业总数（万家）',
+        type: 'line',
+        data: chartData.enterprise.total.map(v => (v / 10000).toFixed(1)),
+        smooth: true,
+        symbol: 'circle',
+        symbolSize: 6,
+        lineStyle: { color: unifiedColors.blue, width: 3 },
+        itemStyle: { color: unifiedColors.blue },
+        areaStyle: {
+          color: {
+            type: 'linear',
+            x: 0, y: 0, x2: 0, y2: 1,
+            colorStops: [
+              { offset: 0, color: 'rgba(37, 99, 235, 0.3)' },
+              { offset: 1, color: 'rgba(37, 99, 235, 0.05)' },
+            ],
+          },
+        },
+      },
+      {
+        name: '企业数',
         type: 'bar',
-        data: chartData.outputValues,
+        data: chartData.enterprise.total,
         barWidth: '40%',
+        itemStyle: {
+          borderRadius: [4, 4, 0, 0],
+          color: unifiedColors.blue,
+        },
+      },
+      {
+        name: '环比增长率（%）',
+        type: 'line',
+        yAxisIndex: 1,
+        data: chartData.enterprise.mom,
+        smooth: true,
+        symbol: 'emptyCircle',
+        symbolSize: 6,
+        lineStyle: { color: unifiedColors.cyan, width: 2, type: 'dashed' },
+        itemStyle: {
+          color: colors.orange,
+          borderWidth: 2,
+          borderColor: '#fff',
+        },
+      },
+      {
+        name: '同比增长率',
+        type: 'line',
+        yAxisIndex: 1,
+        data: chartData.enterprise.yoy,
+        smooth: true,
+        symbol: 'emptyCircle',
+        symbolSize: 6,
+        lineStyle: {
+          color: colors.green,
+          width: 2,
+          type: 'dashed',
+        },
+        itemStyle: {
+          color: colors.green,
+          borderWidth: 2,
+          borderColor: '#fff',
+        },
+      },
+    ],
+  };
+  // 纳税图表配置（绿色系）
+  const taxChartOption = {
+    tooltip: {
+      trigger: 'axis',
+      axisPointer: { type: 'cross' },
+      backgroundColor: 'rgba(255, 255, 255, 0.95)',
+      borderColor: '#e5e7eb',
+      borderWidth: 1,
+    },
+    legend: {
+      data: ['税收总额', '环比增长率', '同比增长率'],
+      top: 0,
+      textStyle: { fontSize: 12 },
+    },
+    grid: {
+      left: '3%',
+      right: '4%',
+      bottom: '12%',
+      top: '10%',
+      containLabel: true,
+    },
+    xAxis: {
+      type: 'category',
+      data: chartData.months,
+      axisLine: { lineStyle: { color: '#e5e7eb' } },
+      axisLabel: { color: '#6b7280', fontSize: 10, rotate: 45 },
+    },
+    yAxis: [
+      {
+        type: 'value',
+        name: '纳税额（亿元）',
+        position: 'left',
+        axisLine: { show: false },
+        axisLabel: { formatter: '{value}', color: unifiedColors.green },
+        splitLine: { lineStyle: { color: '#f3f4f6', type: 'dashed' } },
+      },
+      {
+        },
+      {
+        type: 'value',
+        name: '增长率(%)',
+        position: 'right',
+        axisLine: { show: true, lineStyle: { color: colors.orange } },
+        axisLabel: { formatter: '{value}%', color: colors.orange, fontSize: 11 },
+        splitLine: { show: false },
+      },
+    ],
+    series: [
+      {
+        name: '纳税总额（亿元）',
+        type: 'bar',
+        data: chartData.tax.values,
+        barWidth: 12,
+        itemStyle: {
+          borderRadius: [4, 4, 0, 0],
+          color: unifiedColors.green,
+        },
+      },
+      {
+        name: '环比增长率（%）',
+        type: 'line',
+        yAxisIndex: 1,
+        data: chartData.tax.mom,
+        smooth: true,
+        symbol: 'emptyCircle',
+        symbolSize: 6,
+        lineStyle: { color: unifiedColors.green, width: 3 },
+        itemStyle: {
+          color: colors.orange,
+          borderWidth: 2,
+          borderColor: '#fff',
+        },
+      },
+      {
+        name: '同比增长率',
+        type: 'line',
+        yAxisIndex: 1,
+        data: chartData.tax.yoy,
+        smooth: true,
+        symbol: 'emptyCircle',
+        symbolSize: 6,
+        lineStyle: {
+          color: colors.blue,
+          width: 2,
+          type: 'dashed',
+        },
+        itemStyle: {
+          color: colors.blue,
+          borderWidth: 2,
+          borderColor: '#fff',
+        },
+        markLine: {
+          data: [{ yAxis: 0, lineStyle: { color: '#d1d5db', type: 'dashed' } }],
+        },
+      },
+    ],
+  };
+  // 用工图表配置（橙色系）
+  const employmentChartOption = {
+    tooltip: {
+      trigger: 'axis',
+      axisPointer: { type: 'cross' },
+      backgroundColor: 'rgba(255, 255, 255, 0.95)',
+      borderColor: '#e5e7eb',
+      borderWidth: 1,
+    },
+    legend: {
+      data: ['用工人数', '环比增长率', '同比增长率'],
+      top: 0,
+      textStyle: { fontSize: 12 },
+    },
+    grid: {
+      left: '3%',
+      right: '4%',
+      bottom: '12%',
+      top: '10%',
+      containLabel: true,
+    },
+    xAxis: {
+      type: 'category',
+      data: chartData.months,
+      axisLine: { lineStyle: { color: '#e5e7eb' } },
+      axisLabel: { color: '#6b7280', fontSize: 10, rotate: 45 },
+    },
+    yAxis: [
+      {
+        type: 'value',
+        name: '用工数（万人）',
+         position: 'left',
+        min: 1140,
+        max: 1200,
+        axisLine: { show: false },
+        axisLabel: { formatter: '{value}', color: unifiedColors.orange },
+        splitLine: { lineStyle: { color: '#f3f4f6', type: 'dashed' } },
+      },
+      {
+         type: 'value',
+        name: '增长率(%)',
+        position: 'right',
+        axisLine: { show: true, lineStyle: { color: colors.orange } },
+        axisLabel: { formatter: '{value}%', color: colors.orange, fontSize: 11 },
+        splitLine: { show: false },
+      },
+    ],
+    series: [
+      {
+        name: '用工总数（万人）',
+        type: 'line',
+        data: chartData.employment.values,
+        smooth: true,
+        symbol: 'circle',
+        symbolSize: 6,
+        lineStyle: { color: unifiedColors.orange, width: 3 },
+        itemStyle: { color: unifiedColors.orange },
+        areaStyle: {
+          color: {
+            type: 'linear',
+            x: 0, y: 0, x2: 0, y2: 1,
+            colorStops: [
+              { offset: 0, color: 'rgba(245, 158, 11, 0.3)' },
+              { offset: 1, color: 'rgba(245, 158, 11, 0.05)' },
+            ],
+          },
+        },
+      },
+      {
+        name: '环比增长率（%）',
+        type: 'line',
+        yAxisIndex: 1,
+        data: chartData.employment.mom,
+        smooth: true,
+        symbol: 'emptyCircle',
+        symbolSize: 6,
+        lineStyle: { color: unifiedColors.red, width: 2 },
+         itemStyle: {
+          color: colors.orange,
+          borderWidth: 2,
+          borderColor: '#fff',
+        },
+      },
+      {
+        name: '同比增长率',
+        type: 'line',
+        yAxisIndex: 1,
+        data: chartData.employment.yoy,
+        smooth: true,
+        symbol: 'emptyCircle',
+        symbolSize: 6,
+        lineStyle: {
+          color: colors.red,
+          width: 2,
+          type: 'dashed',
+        },
+        itemStyle: {
+          color: colors.red,
+          borderWidth: 2,
+          borderColor: '#fff',
+        },
+        markLine: {
+          data: [{ yAxis: 0, lineStyle: { color: '#d1d5db', type: 'dashed' } }],
+        },
+      },
+    ],
+  };
+  // 专利图表配置（紫色系）
+  const patentChartOption = {
+    tooltip: {
+      trigger: 'axis',
+      axisPointer: { type: 'shadow' },
+      backgroundColor: 'rgba(255, 255, 255, 0.95)',
+      borderColor: '#e5e7eb',
+       borderWidth: 1,
+    },
+    legend: {
+      data: ['申请量', '授权量', '申请环比', '申请同比'],
+      top: 0,
+      textStyle: { fontSize: 12 },
+    },
+    grid: {
+      left: '3%',
+      right: '4%',
+      bottom: '12%',
+      top: '10%',
+      containLabel: true,
+    },
+    xAxis: {
+      type: 'category',
+      data: chartData.months,
+      axisLine: { lineStyle: { color: '#e5e7eb' } },
+      axisLabel: { color: '#6b7280', fontSize: 10, rotate: 45 },
+    },
+    yAxis: [
+      {
+        type: 'value',
+        name: '专利数量（件）',
+        position: 'left',
+        axisLine: { lineStyle: { color: '#e0e0e0' } },
+      axisLabel: { color: '#666', fontSize: 11 },
+    },
+    yAxis: [
+      {
+        type: 'value',
+        name: '专利数(件)',
+        position: 'left',
+        axisLine: { show: true, lineStyle: { color: '#666' } },
+        axisLabel: { color: '#666', fontSize: 11 },
+        splitLine: { lineStyle: { color: '#f0f0f0' } },
+      },
+      {
+        type: 'value',
+        name: '增长率(%)',
+        position: 'right',
+        axisLine: { show: true, lineStyle: { color: colors.orange } },
+        axisLabel: { formatter: '{value}%', color: colors.orange, fontSize: 11 },
+        splitLine: { show: false },
+      },
+    ],
+    series: [
+      {
+        name: '申请量',
+        type: 'bar',
+        data: chartData.patent.apply,
+        barWidth: '30%',
         itemStyle: {
           borderRadius: [4, 4, 0, 0],
           color: {
@@ -114,336 +496,490 @@ const EconomicMonitor = () => {
             x2: 0,
             y2: 1,
             colorStops: [
-              { offset: 0, color: '#1677ff' },
-              { offset: 1, color: '#69b1ff' },
+              { offset: 0, color: colors.blue },
+              { offset: 1, color: '#60a5fa' },
             ],
           },
         },
       },
       {
-        name: '同比增长率',
+        name: '授权量',
+        barWidth: '30%',
+        itemStyle: {
+          borderRadius: [4, 4, 0, 0],
+          color: {
+            type: 'linear',
+            x: 0,
+            y: 0,
+            x2: 0,
+            y2: 1,
+            colorStops: [
+              { offset: 0, color: colors.green },
+              { offset: 1, color: '#34d399' },
+            ],
+          },
+        },
+      },
+      {
+        name: '申请环比',
         type: 'line',
         yAxisIndex: 1,
-        data: chartData.growthRates,
+        data: chartData.patent.applyMom,
         smooth: true,
         symbol: 'circle',
-        symbolSize: 8,
+        symbolSize: 5,
         lineStyle: {
-          color: '#fa8c16',
-          width: 3,
+          color: colors.orange,
+          width: 2,
         },
         itemStyle: {
-          color: '#fa8c16',
+          color: colors.orange,
           borderWidth: 2,
           borderColor: '#fff',
         },
-        markLine: {
-          data: [{ yAxis: 0, lineStyle: { color: '#999', type: 'dashed' } }],
+      },
+      {
+        name: '申请同比',
+        type: 'line',
+        yAxisIndex: 1,
+        data: chartData.patent.applyYoy,
+        smooth: true,
+        symbol: 'emptyCircle',
+        symbolSize: 5,
+        lineStyle: {
+          color: colors.purple,
+          width: 2,
+          type: 'dashed',
+        },
+        itemStyle: {
+          color: colors.purple,
+          borderWidth: 2,
+          borderColor: '#fff',
         },
       },
     ],
-  };
-
-  // 表格列定义
-  const columns = [
-    {
-      title: '企业名称',
-      dataIndex: 'name',
-      key: 'name',
-      width: 220,
-      render: (text, record) => (
-        <div>
-          <div className="font-medium text-gray-800">{text}</div>
-          <Tag size="small" color="blue">{record.industry}</Tag>
-        </div>
-      ),
-    },
-    {
-      title: '本月产值（万元）',
-      dataIndex: 'currentOutput',
-      key: 'currentOutput',
-      align: 'right',
-      sorter: (a, b) => a.currentOutput - b.currentOutput,
-      render: (value) => (
-        <span className="font-medium">{value.toLocaleString()}</span>
-      ),
-    },
-    {
-      title: '上月产值（万元）',
-      dataIndex: 'lastOutput',
-      key: 'lastOutput',
-      align: 'right',
-      render: (value) => value.toLocaleString(),
-    },
-    {
-      title: '环比变化',
-      dataIndex: 'changeRate',
-      key: 'changeRate',
-      align: 'right',
-      sorter: (a, b) => a.changeRate - b.changeRate,
-      render: (value) => {
-        const isNegative = value < 0;
-        const isWarning = value < -30;
-        return (
-          <span
-            className={`font-medium ${
-              isNegative ? 'text-red-500' : 'text-green-500'
-            }`}
-          >
-            {isNegative ? <DownOutlined /> : <UpOutlined />}
-            {Math.abs(value).toFixed(1)}%
-            {isWarning && (
-              <Badge
-                count="异常"
-                style={{ backgroundColor: '#ff4d4f', marginLeft: 8 }}
-              />
-            )}
-          </span>
-        );
+      {
+        name: '授权率（%）',
+        type: 'line',
+        yAxisIndex: 1,
+        data: chartData.patent.apply.map((apply, idx) => 
+           ((chartData.patent.grant[idx] / apply) * 100).toFixed(1)
+        ),
+        smooth: true,
+        symbol: 'emptyCircle',
+        symbolSize: 6,
+        lineStyle: { color: unifiedColors.purple, width: 3 },
+        itemStyle: { color: unifiedColors.purple },
       },
-    },
-    {
-      title: '税收（万元）',
-      dataIndex: 'tax',
-      key: 'tax',
-      align: 'right',
-      render: (value) => value.toLocaleString(),
-    },
-    {
-      title: '用电量（万度）',
-      dataIndex: 'electricity',
-      key: 'electricity',
-      align: 'right',
-      render: (value) => value.toLocaleString(),
-    },
-    {
-      title: '操作',
-      key: 'action',
-      width: 120,
-      render: () => (
-        <Button type="link" size="small" icon={<EyeOutlined />}>
-          详情
-        </Button>
-      ),
-    },
-  ];
-
-  // 展开行内容
-  const expandedRowRender = (record) => (
-    <div className="p-4 bg-gray-50 rounded-lg">
-      <Row gutter={24}>
-        <Col span={6}>
-          <Statistic title="员工人数" value={record.employees} suffix="人" />
-        </Col>
-        <Col span={6}>
-          <Statistic title="利润总额" value={record.profit} suffix="万元" />
-        </Col>
-        <Col span={6}>
-          <Statistic title="研发投入" value={record.rdInvestment} suffix="万元" />
-        </Col>
-        <Col span={6}>
-          <Statistic title="亩均税收" value={record.landTax} suffix="万元/亩" />
-        </Col>
-      </Row>
-      <div className="mt-4 text-gray-500 text-sm">
-        <div className="mb-2">
-          <span className="font-medium">预警分析：</span>
-          {record.changeRate < -30 ? (
-            <span className="text-red-500">
-              该企业本月产值环比下降 {Math.abs(record.changeRate).toFixed(1)}%，
-              主要原因是 {record.reason || '订单减少，产能利用率下降'}
-            </span>
-          ) : (
-            <span>该企业生产经营正常</span>
-          )}
-        </div>
-        <div>
-          <span className="font-medium">建议措施：</span>
-          {record.changeRate < -30 ? (
-            <span>建议挂点领导走访调研，了解企业困难，协调解决问题</span>
-          ) : (
-            <span>继续保持关注</span>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-
-  return (
-    <div className="h-full flex -mx-6 -mt-6">
-      {/* 左侧筛选栏 */}
-      <div className="w-[200px] bg-white border-r border-gray-200 flex flex-col">
-        <div className="p-4 border-b border-gray-200">
-          <div className="flex items-center gap-2 font-semibold text-gray-800">
-            <FilterOutlined />
-            <span>筛选条件</span>
-          </div>
-        </div>
-        <div className="flex-1 overflow-auto p-4">
-          <div className="mb-4">
-            <Text type="secondary" className="text-xs">维度选择</Text>
-          </div>
-          <Tree
-            treeData={treeData}
-            selectedKeys={selectedKeys}
-            onSelect={setSelectedKeys}
-            defaultExpandAll
-            blockNode
-          />
-        </div>
-      </div>
-
-      {/* 右侧主内容区 */}
-      <div className="flex-1 p-6 overflow-auto">
-        {/* 顶部筛选栏 */}
-        <Card className="mb-6 shadow-sm" size="small">
+    ],
+  };
+  const selectedTags = getSelectedTags();
+     return (
+    <div className="h-full -m-6 p-5">
+       {/* 维度选择卡片 - 轻量标签样式 */}
+      <Card 
+        className="mb-5 shadow-sm" 
+        bodyStyle={{ padding: '12px 20px 16px' }}
+        headStyle={{ padding: '12px 16px' }}
+        title={
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <RangePicker
-                placeholder={['开始日期', '结束日期']}
-                onChange={setDateRange}
-              />
-              <Select
-                mode="multiple"
-                placeholder="选择监测指标"
-                value={selectedMetrics}
-                onChange={setSelectedMetrics}
-                style={{ width: 300 }}
-                maxTagCount={2}
+            <span className="text-gray-800 font-medium text-base pl-0">维度筛选</span>
+            <button 
+              onClick={handleReset}
+              className="px-3 py-1 text-sm text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded transition-all border-0 outline-none mr-0"
+            >
+              重置
+            </button>
+           </div>
+        }
+      >
+        {/* 区域 */}
+        <div className="flex items-start gap-4 mb-4">
+          <span className="text-gray-800 text-sm font-semibold whitespace-nowrap pt-0.5 w-14">区域</span>
+          <div className="flex-1">
+            <div className="flex flex-wrap gap-x-1 gap-y-2">
+              <button
+                onClick={() => setDistricts([])}
+                className={`px-3 py-0.5 text-sm rounded transition-all border-0 outline-none ${
+                  districts.length === 0
+                    ? 'bg-indigo-50 text-indigo-600'
+                    : 'text-gray-600 hover:text-indigo-600 hover:bg-gray-50'
+                }`}
               >
-                {metricOptions.map((opt) => (
-                  <Option key={opt.value} value={opt.value}>
-                    <span style={{ color: opt.color }}>●</span> {opt.label}
-                  </Option>
-                ))}
-              </Select>
+                全部
+              </button>
+              {districtsData.slice(0, VISIBLE_COUNT).map((item) => (
+                <button
+                  key={item.key}
+                  onClick={() => toggleSelection(districts, setDistricts, item.key)}
+                  className={`px-3 py-0.5 text-sm rounded transition-all border-0 outline-none ${
+                    districts.includes(item.key)
+                      ? 'bg-indigo-50 text-indigo-600'
+                      : 'text-gray-600 hover:text-indigo-600 hover:bg-gray-50'
+                  }`}
+                >
+                  {item.title}
+                </button>
+              ))}
+              {!showMoreDistricts && districtsData.length > VISIBLE_COUNT && (
+                <button
+                  onClick={() => setShowMoreDistricts(true)}
+                  className="px-3 py-0.5 text-sm rounded transition-all border-0 outline-none text-indigo-600 hover:text-indigo-700 flex items-center gap-1"
+                >
+                  更多
+                  <span>▼</span>
+                </button>
+              )}
             </div>
-            <Space>
-              <Button icon={<ExportOutlined />}>导出报告</Button>
-              <Button type="primary" icon={<BellOutlined />}>
-                设置预警
-              </Button>
-            </Space>
+            {showMoreDistricts && (
+              <div className="flex flex-wrap gap-x-1 gap-y-2 mt-2">
+                {districtsData.slice(VISIBLE_COUNT).map((item) => (
+                  <button
+                    key={item.key}
+                    onClick={() => toggleSelection(districts, setDistricts, item.key)}
+                    className={`px-3 py-0.5 text-sm rounded transition-all border-0 outline-none ${
+                      districts.includes(item.key)
+                        ? 'bg-indigo-50 text-indigo-600'
+                        : 'text-gray-600 hover:text-indigo-600 hover:bg-gray-50'
+                    }`}
+                  >
+                    {item.title}
+                  </button>
+                ))}
+                <button
+                  onClick={() => setShowMoreDistricts(false)}
+                  className="px-3 py-0.5 text-sm rounded transition-all border-0 outline-none text-indigo-600 hover:text-indigo-700 flex items-center gap-1"
+                >
+                  收起
+                  <span style={{ transform: 'rotate(180deg)' }}>▼</span>
+                </button>
+              </div>
+            )}
           </div>
-        </Card>
-
-        {/* 统计概览 */}
+        </div>
+        {/* 国标行业 */}
+        <div className="flex items-start gap-4 mb-4">
+          <span className="text-gray-800 text-sm font-semibold whitespace-nowrap pt-0.5 w-14">行业</span>
+          <div className="flex-1">
+            <div className="flex flex-wrap gap-x-1 gap-y-2">
+              <button
+                onClick={() => setGbIndustries([])}
+                className={`px-3 py-0.5 text-sm rounded transition-all border-0 outline-none ${
+                  gbIndustries.length === 0
+                    ? 'bg-blue-50 text-blue-600'
+                    : 'text-gray-600 hover:text-blue-600 hover:bg-gray-50'
+                }`}
+              >
+                全部
+              </button>
+              {gbIndustriesData.slice(0, VISIBLE_COUNT).map((item) => (
+                <button
+                  key={item.key}
+                  onClick={() => toggleSelection(gbIndustries, setGbIndustries, item.key)}
+                  className={`px-3 py-0.5 text-sm rounded transition-all border-0 outline-none ${
+                    gbIndustries.includes(item.key)
+                      ? 'bg-blue-50 text-blue-600'
+                      : 'text-gray-600 hover:text-blue-600 hover:bg-gray-50'
+                  }`}
+                >
+                  {item.title}
+                </button>
+              ))}
+              {!showMoreGB && gbIndustriesData.length > VISIBLE_COUNT && (
+                <button
+                  onClick={() => setShowMoreGB(true)}
+                  className="px-3 py-0.5 text-sm rounded transition-all border-0 outline-none text-blue-600 hover:text-blue-700 flex items-center gap-1"
+                >
+                  更多
+                  <span>▼</span>
+                </button>
+              )}
+            </div>
+            {showMoreGB && (
+              <div className="flex flex-wrap gap-x-1 gap-y-2 mt-2">
+                {gbIndustriesData.slice(VISIBLE_COUNT).map((item) => (
+                  <button
+                    key={item.key}
+                    onClick={() => toggleSelection(gbIndustries, setGbIndustries, item.key)}
+                    className={`px-3 py-0.5 text-sm rounded transition-all border-0 outline-none ${
+                      gbIndustries.includes(item.key)
+                        ? 'bg-blue-50 text-blue-600'
+                        : 'text-gray-600 hover:text-blue-600 hover:bg-gray-50'
+                    }`}
+                  >
+                    {item.title}
+                  </button>
+                ))}
+                <button
+                  onClick={() => setShowMoreGB(false)}
+                  className="px-3 py-0.5 text-sm rounded transition-all border-0 outline-none text-blue-600 hover:text-blue-700 flex items-center gap-1"
+                >
+                  收起
+                  <span style={{ transform: 'rotate(180deg)' }}>▼</span>
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+        {/* 产业 */}
+        <div className="flex items-start gap-4 mb-4">
+          <span className="text-gray-800 text-sm font-semibold whitespace-nowrap pt-0.5 w-14">产业</span>
+          <div className="flex-1">
+            <div className="flex flex-wrap gap-x-1 gap-y-2">
+              <button
+                onClick={() => setIndustries([])}
+                className={`px-3 py-0.5 text-sm rounded transition-all border-0 outline-none ${
+                  industries.length === 0
+                    ? 'bg-emerald-50 text-emerald-600'
+                    : 'text-gray-600 hover:text-emerald-600 hover:bg-gray-50'
+                }`}
+              >
+                全部
+              </button>
+              {industriesData.slice(0, VISIBLE_COUNT).map((item) => (
+                <button
+                  key={item.key}
+                  onClick={() => toggleSelection(industries, setIndustries, item.key)}
+                  className={`px-3 py-0.5 text-sm rounded transition-all border-0 outline-none ${
+                    industries.includes(item.key)
+                      ? 'bg-emerald-50 text-emerald-600'
+                      : 'text-gray-600 hover:text-emerald-600 hover:bg-gray-50'
+                  }`}
+                >
+                  {item.title}
+                </button>
+              ))}
+              {!showMoreIndustry && industriesData.length > VISIBLE_COUNT && (
+                <button
+                  onClick={() => setShowMoreIndustry(true)}
+                  className="px-3 py-0.5 text-sm rounded transition-all border-0 outline-none text-emerald-600 hover:text-emerald-700 flex items-center gap-1"
+                >
+                  更多
+                  <span>▼</span>
+                </button>
+              )}
+            </div>
+            {showMoreIndustry && (
+              <div className="flex flex-wrap gap-x-1 gap-y-2 mt-2">
+                {industriesData.slice(VISIBLE_COUNT).map((item) => (
+                  <button
+                    key={item.key}
+                    onClick={() => toggleSelection(industries, setIndustries, item.key)}
+                    className={`px-3 py-0.5 text-sm rounded transition-all border-0 outline-none ${
+                      industries.includes(item.key)
+                        ? 'bg-emerald-50 text-emerald-600'
+                        : 'text-gray-600 hover:text-emerald-600 hover:bg-gray-50'
+                    }`}
+                  >
+                    {item.title}
+                  </button>
+                ))}
+                <button
+                  onClick={() => setShowMoreIndustry(false)}
+                  className="px-3 py-0.5 text-sm rounded transition-all border-0 outline-none text-emerald-600 hover:text-emerald-700 flex items-center gap-1"
+                >
+                  收起
+                  <span style={{ transform: 'rotate(180deg)' }}>▼</span>
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+        {/* 园区 */}
+        <div className="flex items-start gap-4">
+          <span className="text-gray-800 text-sm font-semibold whitespace-nowrap pt-0.5 w-14">园区</span>
+          <div className="flex-1">
+            <div className="flex flex-wrap gap-x-1 gap-y-2">
+              <button
+                onClick={() => setParks([])}
+                className={`px-3 py-0.5 text-sm rounded transition-all border-0 outline-none ${
+                  parks.length === 0
+                    ? 'bg-amber-50 text-amber-600'
+                    : 'text-gray-600 hover:text-amber-600 hover:bg-gray-50'
+                }`}
+              >
+                全部
+              </button>
+              {parksData.slice(0, VISIBLE_COUNT).map((item) => (
+                <button
+                  key={item.key}
+                  onClick={() => toggleSelection(parks, setParks, item.key)}
+                  className={`px-3 py-0.5 text-sm rounded transition-all border-0 outline-none ${
+                    parks.includes(item.key)
+                      ? 'bg-amber-50 text-amber-600'
+                      : 'text-gray-600 hover:text-amber-600 hover:bg-gray-50'
+                  }`}
+                >
+                      {item.title}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+            {showMoreParks && (
+              <div className="flex flex-wrap gap-x-1 gap-y-2 mt-2">
+                {parksData.slice(VISIBLE_COUNT).map((item) => (
+                  <button
+                    key={item.key}
+                    onClick={() => toggleSelection(parks, setParks, item.key)}
+                    className={`px-3 py-0.5 text-sm rounded transition-all border-0 outline-none ${
+                      parks.includes(item.key)
+                        ? 'bg-amber-50 text-amber-600'
+                        : 'text-gray-600 hover:text-amber-600 hover:bg-gray-50'
+                    }`}
+                  >
+                    {item.title}
+                  </button>
+                ))}
+                {/* 其他园区 */}
+                {otherParks.map((item) => (
+                  <button
+                    key={item.key}
+                    onClick={() => toggleSelection(parks, setParks, item.key)}
+                    className={`px-3 py-0.5 text-sm rounded transition-all border-0 outline-none ${
+                      parks.includes(item.key)
+                        ? 'bg-amber-50 text-amber-600'
+                        : 'text-gray-600 hover:text-amber-600 hover:bg-gray-50'
+                    }`}
+                  >
+                    {item.title}
+                  </button>
+                ))}
+                <button
+                  onClick={() => setShowMoreParks(false)}
+                  className="px-3 py-0.5 text-sm rounded transition-all border-0 outline-none text-amber-600 hover:text-amber-700 flex items-center gap-1"
+                >
+                  收起
+                  <span style={{ transform: 'rotate(180deg)' }}>▼</span>
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </Card>
+      {/* 统计概览 */}
         <Row gutter={16} className="mb-6">
           <Col span={6}>
-            <Card size="small">
+          <Card size="small" className="shadow-sm">
               <Statistic
-                title="监测企业数"
-                value={summaryStats.enterpriseCount}
-                suffix="家"
+              title="企业数量"
+              valueRender={() => renderStat(
+                (summaryStats.enterpriseCount.total / 10000).toFixed(1),
+                ' 万家'
+              )}
+            />
+          </Card>
+          </Col>
+          <Col span={6}>
+          <Card size="small" className="shadow-sm">
+            <Statistic
+              title="纳税金额"
+              valueRender={() => renderStat(
+                summaryStats.taxRevenue.total,
+                ' 亿元'
+                valueStyle={{ color: unifiedColors.green, fontSize: '28px', fontWeight: 600 }}
               />
             </Card>
           </Col>
           <Col span={6}>
-            <Card size="small">
+            <Card size="small" className="shadow-sm hover:shadow-md transition-shadow">
               <Statistic
-                title="本月总产值"
-                value={summaryStats.totalOutput}
-                suffix="亿元"
-                valueStyle={{ color: '#1677ff' }}
+                 title="用工人数"
+              valueRender={() => renderStat(
+                summaryStats.employment.total,
+                ' 万人'
+                valueStyle={{ color: unifiedColors.orange, fontSize: '28px', fontWeight: 600 }}
               />
             </Card>
           </Col>
           <Col span={6}>
-            <Card size="small">
-              <Statistic
-                title="同比增长"
-                value={summaryStats.yoyGrowth}
-                suffix="%"
-                valueStyle={{ color: summaryStats.yoyGrowth >= 0 ? '#52c41a' : '#ff4d4f' }}
-                prefix={summaryStats.yoyGrowth >= 0 ? <UpOutlined /> : <DownOutlined />}
+          <Card size="small" className="shadow-sm">
+            <Statistic
+              title="专利数量"
+              valueRender={() => renderStat(
+                (summaryStats.patents.total / 10000).toFixed(1),
+                ' 万件'
+              )}
+            />
+          </Card>
+          </Col>
+        </Row>
+        {/* 图表区域 - 2x2 布局 */}
+        <Row gutter={[16, 16]}>
+          <Col span={12}>
+            <Card
+              title={
+                <div className="flex items-center gap-2">
+                  <LineChartOutlined style={{ color: unifiedColors.blue }} />
+                  <span className="font-semibold text-gray-800">企业数量趋势</span>
+                </div>
+              }
+              className="shadow-sm h-full"
+              extra={<Text type="secondary" style={{ fontSize: '12px' }}>市监局</Text>}
+              bodyStyle={{ padding: '12px' }}
+            >
+              <ReactECharts
+                option={enterpriseChartOption}
+                style={{ height: 280 }}
+                opts={{ renderer: 'canvas' }}
               />
             </Card>
           </Col>
-          <Col span={6}>
-            <Card size="small">
-              <Statistic
-                title="异常企业"
-                value={summaryStats.abnormalCount}
-                suffix="家"
-                valueStyle={{ color: '#ff4d4f' }}
+        <Col span={12}>
+          <Card
+            title={<span className="text-base font-medium">纳税金额趋势</span>}
+            className="shadow-sm"
+            size="small"
+          >
+              }
+              className="shadow-sm h-full"
+              extra={<Text type="secondary" style={{ fontSize: '12px' }}>税务局</Text>}
+              bodyStyle={{ padding: '12px' }}
+            >
+              <ReactECharts
+                option={taxChartOption}
+                style={{ height: 280 }}
+                opts={{ renderer: 'canvas' }}
+              />
+            </Card>
+          </Col>
+        <Col span={12}>
+          <Card
+            title={<span className="text-base font-medium">用工人数趋势</span>}
+            className="shadow-sm"
+            size="small"
+          >
+              }
+              className="shadow-sm h-full"
+              extra={<Text type="secondary" style={{ fontSize: '12px' }}>人社局</Text>}
+              bodyStyle={{ padding: '12px' }}
+            >
+              <ReactECharts
+                option={employmentChartOption}
+                style={{ height: 280 }}
+                opts={{ renderer: 'canvas' }}
+              />
+            </Card>
+          </Col>
+        <Col span={12}>
+          <Card
+            title={<span className="text-base font-medium">专利数量趋势</span>}
+            className="shadow-sm"
+            size="small"
+          >
+              }
+              className="shadow-sm h-full"
+              extra={<span style={{ color: '#999', fontSize: '12px' }}>知识产权局</span>}
+              bodyStyle={{ padding: '12px' }}
+            >
+              <ReactECharts
+                option={patentChartOption}
+                style={{ height: 280 }}
+                opts={{ renderer: 'canvas' }}
               />
             </Card>
           </Col>
         </Row>
-
-        {/* 主图表 */}
-        <Card
-          title={
-            <div className="flex items-center gap-2">
-              <LineChartOutlined className="text-blue-500" />
-              <span>经济运行趋势</span>
-            </div>
-          }
-          className="mb-6 shadow-sm"
-          extra={<Text type="secondary">数据来源：市统计局</Text>}
-        >
-          <ReactECharts
-            option={chartOption}
-            style={{ height: 400 }}
-            opts={{ renderer: 'canvas' }}
-          />
-        </Card>
-
-        {/* 异常预警 */}
-        <Alert
-          message={
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <WarningOutlined className="text-red-500" />
-                <span className="font-semibold">异常预警</span>
-                <span>
-                  本月监测到 {alertData.abnormalCount} 家企业产值异常波动（下降 &gt; 30%）
-                </span>
-              </div>
-              <Button type="link" size="small">
-                查看详情
-              </Button>
-            </div>
-          }
-          description="建议挂点领导及时走访，了解企业经营困难，协调解决问题"
-          type="warning"
-          showIcon={false}
-          className="mb-6 border-red-200"
-        />
-
-        {/* 详细数据表 */}
-        <Card
-          title={
-            <div className="flex items-center justify-between">
-              <span>企业详细数据</span>
-              <Text type="secondary" className="text-sm">
-                点击行可展开查看详情
-              </Text>
-            </div>
-          }
-          className="shadow-sm"
-        >
-          <Table
-            columns={columns}
-            dataSource={enterpriseData}
-            rowKey="id"
-            expandable={{
-              expandedRowRender,
-              expandedRowKeys,
-              onExpandedRowsChange: setExpandedRowKeys,
-            }}
-            pagination={{
-              pageSize: 10,
-              showSizeChanger: true,
-              showQuickJumper: true,
-              showTotal: (total) => `共 ${total} 家企业`,
-            }}
-            size="middle"
-          />
-        </Card>
       </div>
     </div>
   );
-};
-
-export default EconomicMonitor;
