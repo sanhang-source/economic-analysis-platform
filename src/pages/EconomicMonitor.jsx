@@ -5,6 +5,7 @@ import {
   Row,
   Col,
   Statistic,
+  DatePicker,
 } from 'antd';
 import {
   LineChartOutlined,
@@ -13,14 +14,15 @@ import {
   EnvironmentOutlined,
 } from '@ant-design/icons';
 import { economicMonitorMock } from '../mock/economicMonitorMock';
-const { Title } = Typography;
+import { useState } from 'react';
+
+const { Title, Text } = Typography;
 const { RangePicker } = DatePicker;
+
 /**
  * EconomicMonitor - 经济监测页面
  * 统一配色方案 - 与数字驾驶舱一致
- */
-*/
-* 顶部维度选择 + 2x2图表布局
+ * 顶部维度选择 + 2x2图表布局
  */
 const EconomicMonitor = () => {
   const [districts, setDistricts] = useState([]);
@@ -31,9 +33,14 @@ const EconomicMonitor = () => {
   const [showMoreGB, setShowMoreGB] = useState(false);
   const [showMoreIndustry, setShowMoreIndustry] = useState(false);
   const [showMoreParks, setShowMoreParks] = useState(false);
+  const [selectedGBIndustry, setSelectedGBIndustry] = useState(null);
+  const [selectedIndustry, setSelectedIndustry] = useState(null);
+  const [selectedPark, setSelectedPark] = useState(null);
+  
   // 计算每行能显示的标签数量（根据屏幕宽度自适应）
-   const VISIBLE_COUNT = 12;
+  const VISIBLE_COUNT = 12;
   const { districts: districtsData, gbIndustries: gbIndustriesData, industries: industriesData, parks: parksData, chartData, summaryStats } = economicMonitorMock;
+  
   // 统一配色方案 - 与数字驾驶舱一致
   const unifiedColors = {
     blue: '#2563eb',
@@ -44,6 +51,7 @@ const EconomicMonitor = () => {
     cyan: '#06b6d4',
     gray: '#6b7280',
   };
+  
   // 获取已选维度标签
   const getSelectedTags = () => {
     const tags = [];
@@ -71,6 +79,7 @@ const EconomicMonitor = () => {
     }
     return tags;
   };
+  
   // 移除已选标签
   const removeTag = (type) => {
     if (type === '国标行业') {
@@ -81,16 +90,19 @@ const EconomicMonitor = () => {
       setSelectedPark(null);
     }
   };
+  
   // 清除所有选择
   const clearAllSelections = () => {
     setSelectedGBIndustry(null);
     setSelectedIndustry(null);
     setSelectedPark(null);
   };
+  
   const getIndustryChildren = (parentKey) => {
     const parent = industries.find((item) => item.key === parentKey);
     return parent ? parent.children : [];
   };
+  
   // 切换选择（多选逻辑）
   const toggleSelection = (selected, setter, key) => {
     if (selected.includes(key)) {
@@ -99,17 +111,22 @@ const EconomicMonitor = () => {
       setter([...selected, key]);
     }
   };
-   // 重置所有选择
+  
+  // 重置所有选择
   const handleReset = () => {
     setDistricts([]);
     setGbIndustries([]);
     setIndustries([]);
     setParks([]);
   };
+  
   // 渲染统计值
   const renderStat = (value, suffix = '') => {
     return (
       <div className="text-2xl font-bold">{value.toLocaleString()}{suffix}</div>
+    );
+  };
+  
   // 企业数量趋势图表配置
   const enterpriseChartOption = {
     tooltip: {
@@ -117,7 +134,7 @@ const EconomicMonitor = () => {
       axisPointer: { type: 'cross' },
       backgroundColor: 'rgba(255, 255, 255, 0.95)',
       borderColor: '#e5e7eb',
-               borderWidth: 1,
+      borderWidth: 1,
     },
     legend: {
       data: ['企业数', '环比增长率', '同比增长率'],
@@ -147,13 +164,13 @@ const EconomicMonitor = () => {
         axisLine: { show: false },
         axisLabel: { formatter: '{value}', color: unifiedColors.blue },
         splitLine: { lineStyle: { color: '#f3f4f6', type: 'dashed' } },
-        },
+      },
       {
         type: 'value',
         name: '增长率(%)',
         position: 'right',
-        axisLine: { show: true, lineStyle: { color: colors.orange } },
-        axisLabel: { formatter: '{value}%', color: colors.orange, fontSize: 11 },
+        axisLine: { show: true, lineStyle: { color: unifiedColors.orange } },
+        axisLabel: { formatter: '{value}%', color: unifiedColors.orange, fontSize: 11 },
         splitLine: { show: false },
       },
     ],
@@ -198,7 +215,7 @@ const EconomicMonitor = () => {
         symbolSize: 6,
         lineStyle: { color: unifiedColors.cyan, width: 2, type: 'dashed' },
         itemStyle: {
-          color: colors.orange,
+          color: unifiedColors.orange,
           borderWidth: 2,
           borderColor: '#fff',
         },
@@ -212,18 +229,19 @@ const EconomicMonitor = () => {
         symbol: 'emptyCircle',
         symbolSize: 6,
         lineStyle: {
-          color: colors.green,
+          color: unifiedColors.green,
           width: 2,
           type: 'dashed',
         },
         itemStyle: {
-          color: colors.green,
+          color: unifiedColors.green,
           borderWidth: 2,
           borderColor: '#fff',
         },
       },
     ],
   };
+  
   // 纳税图表配置（绿色系）
   const taxChartOption = {
     tooltip: {
@@ -261,13 +279,11 @@ const EconomicMonitor = () => {
         splitLine: { lineStyle: { color: '#f3f4f6', type: 'dashed' } },
       },
       {
-        },
-      {
         type: 'value',
         name: '增长率(%)',
         position: 'right',
-        axisLine: { show: true, lineStyle: { color: colors.orange } },
-        axisLabel: { formatter: '{value}%', color: colors.orange, fontSize: 11 },
+        axisLine: { show: true, lineStyle: { color: unifiedColors.orange } },
+        axisLabel: { formatter: '{value}%', color: unifiedColors.orange, fontSize: 11 },
         splitLine: { show: false },
       },
     ],
@@ -292,7 +308,7 @@ const EconomicMonitor = () => {
         symbolSize: 6,
         lineStyle: { color: unifiedColors.green, width: 3 },
         itemStyle: {
-          color: colors.orange,
+          color: unifiedColors.orange,
           borderWidth: 2,
           borderColor: '#fff',
         },
@@ -306,12 +322,12 @@ const EconomicMonitor = () => {
         symbol: 'emptyCircle',
         symbolSize: 6,
         lineStyle: {
-          color: colors.blue,
+          color: unifiedColors.blue,
           width: 2,
           type: 'dashed',
         },
         itemStyle: {
-          color: colors.blue,
+          color: unifiedColors.blue,
           borderWidth: 2,
           borderColor: '#fff',
         },
@@ -321,6 +337,7 @@ const EconomicMonitor = () => {
       },
     ],
   };
+  
   // 用工图表配置（橙色系）
   const employmentChartOption = {
     tooltip: {
@@ -352,7 +369,7 @@ const EconomicMonitor = () => {
       {
         type: 'value',
         name: '用工数（万人）',
-         position: 'left',
+        position: 'left',
         min: 1140,
         max: 1200,
         axisLine: { show: false },
@@ -360,11 +377,11 @@ const EconomicMonitor = () => {
         splitLine: { lineStyle: { color: '#f3f4f6', type: 'dashed' } },
       },
       {
-         type: 'value',
+        type: 'value',
         name: '增长率(%)',
         position: 'right',
-        axisLine: { show: true, lineStyle: { color: colors.orange } },
-        axisLabel: { formatter: '{value}%', color: colors.orange, fontSize: 11 },
+        axisLine: { show: true, lineStyle: { color: unifiedColors.orange } },
+        axisLabel: { formatter: '{value}%', color: unifiedColors.orange, fontSize: 11 },
         splitLine: { show: false },
       },
     ],
@@ -398,8 +415,8 @@ const EconomicMonitor = () => {
         symbol: 'emptyCircle',
         symbolSize: 6,
         lineStyle: { color: unifiedColors.red, width: 2 },
-         itemStyle: {
-          color: colors.orange,
+        itemStyle: {
+          color: unifiedColors.orange,
           borderWidth: 2,
           borderColor: '#fff',
         },
@@ -413,12 +430,12 @@ const EconomicMonitor = () => {
         symbol: 'emptyCircle',
         symbolSize: 6,
         lineStyle: {
-          color: colors.red,
+          color: unifiedColors.red,
           width: 2,
           type: 'dashed',
         },
         itemStyle: {
-          color: colors.red,
+          color: unifiedColors.red,
           borderWidth: 2,
           borderColor: '#fff',
         },
@@ -428,6 +445,7 @@ const EconomicMonitor = () => {
       },
     ],
   };
+  
   // 专利图表配置（紫色系）
   const patentChartOption = {
     tooltip: {
@@ -435,7 +453,7 @@ const EconomicMonitor = () => {
       axisPointer: { type: 'shadow' },
       backgroundColor: 'rgba(255, 255, 255, 0.95)',
       borderColor: '#e5e7eb',
-       borderWidth: 1,
+      borderWidth: 1,
     },
     legend: {
       data: ['申请量', '授权量', '申请环比', '申请同比'],
@@ -458,14 +476,6 @@ const EconomicMonitor = () => {
     yAxis: [
       {
         type: 'value',
-        name: '专利数量（件）',
-        position: 'left',
-        axisLine: { lineStyle: { color: '#e0e0e0' } },
-      axisLabel: { color: '#666', fontSize: 11 },
-    },
-    yAxis: [
-      {
-        type: 'value',
         name: '专利数(件)',
         position: 'left',
         axisLine: { show: true, lineStyle: { color: '#666' } },
@@ -476,8 +486,8 @@ const EconomicMonitor = () => {
         type: 'value',
         name: '增长率(%)',
         position: 'right',
-        axisLine: { show: true, lineStyle: { color: colors.orange } },
-        axisLabel: { formatter: '{value}%', color: colors.orange, fontSize: 11 },
+        axisLine: { show: true, lineStyle: { color: unifiedColors.orange } },
+        axisLabel: { formatter: '{value}%', color: unifiedColors.orange, fontSize: 11 },
         splitLine: { show: false },
       },
     ],
@@ -496,7 +506,7 @@ const EconomicMonitor = () => {
             x2: 0,
             y2: 1,
             colorStops: [
-              { offset: 0, color: colors.blue },
+              { offset: 0, color: unifiedColors.blue },
               { offset: 1, color: '#60a5fa' },
             ],
           },
@@ -504,6 +514,8 @@ const EconomicMonitor = () => {
       },
       {
         name: '授权量',
+        type: 'bar',
+        data: chartData.patent.grant,
         barWidth: '30%',
         itemStyle: {
           borderRadius: [4, 4, 0, 0],
@@ -514,7 +526,7 @@ const EconomicMonitor = () => {
             x2: 0,
             y2: 1,
             colorStops: [
-              { offset: 0, color: colors.green },
+              { offset: 0, color: unifiedColors.green },
               { offset: 1, color: '#34d399' },
             ],
           },
@@ -529,11 +541,11 @@ const EconomicMonitor = () => {
         symbol: 'circle',
         symbolSize: 5,
         lineStyle: {
-          color: colors.orange,
+          color: unifiedColors.orange,
           width: 2,
         },
         itemStyle: {
-          color: colors.orange,
+          color: unifiedColors.orange,
           borderWidth: 2,
           borderColor: '#fff',
         },
@@ -547,36 +559,24 @@ const EconomicMonitor = () => {
         symbol: 'emptyCircle',
         symbolSize: 5,
         lineStyle: {
-          color: colors.purple,
+          color: unifiedColors.purple,
           width: 2,
           type: 'dashed',
         },
         itemStyle: {
-          color: colors.purple,
+          color: unifiedColors.purple,
           borderWidth: 2,
           borderColor: '#fff',
         },
       },
     ],
-      {
-        name: '授权率（%）',
-        type: 'line',
-        yAxisIndex: 1,
-        data: chartData.patent.apply.map((apply, idx) => 
-           ((chartData.patent.grant[idx] / apply) * 100).toFixed(1)
-        ),
-        smooth: true,
-        symbol: 'emptyCircle',
-        symbolSize: 6,
-        lineStyle: { color: unifiedColors.purple, width: 3 },
-        itemStyle: { color: unifiedColors.purple },
-      },
-    ],
   };
+  
   const selectedTags = getSelectedTags();
-     return (
+  
+  return (
     <div className="h-full -m-6 p-5">
-       {/* 维度选择卡片 - 轻量标签样式 */}
+      {/* 维度选择卡片 - 轻量标签样式 */}
       <Card 
         className="mb-5 shadow-sm" 
         bodyStyle={{ padding: '12px 20px 16px' }}
@@ -590,7 +590,7 @@ const EconomicMonitor = () => {
             >
               重置
             </button>
-           </div>
+          </div>
         }
       >
         {/* 区域 */}
@@ -657,6 +657,7 @@ const EconomicMonitor = () => {
             )}
           </div>
         </div>
+        
         {/* 国标行业 */}
         <div className="flex items-start gap-4 mb-4">
           <span className="text-gray-800 text-sm font-semibold whitespace-nowrap pt-0.5 w-14">行业</span>
@@ -721,6 +722,7 @@ const EconomicMonitor = () => {
             )}
           </div>
         </div>
+        
         {/* 产业 */}
         <div className="flex items-start gap-4 mb-4">
           <span className="text-gray-800 text-sm font-semibold whitespace-nowrap pt-0.5 w-14">产业</span>
@@ -785,6 +787,7 @@ const EconomicMonitor = () => {
             )}
           </div>
         </div>
+        
         {/* 园区 */}
         <div className="flex items-start gap-4">
           <span className="text-gray-800 text-sm font-semibold whitespace-nowrap pt-0.5 w-14">园区</span>
@@ -810,29 +813,22 @@ const EconomicMonitor = () => {
                       : 'text-gray-600 hover:text-amber-600 hover:bg-gray-50'
                   }`}
                 >
-                      {item.title}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
+                  {item.title}
+                </button>
+              ))}
+              {!showMoreParks && parksData.length > VISIBLE_COUNT && (
+                <button
+                  onClick={() => setShowMoreParks(true)}
+                  className="px-3 py-0.5 text-sm rounded transition-all border-0 outline-none text-amber-600 hover:text-amber-700 flex items-center gap-1"
+                >
+                  更多
+                  <span>▼</span>
+                </button>
+              )}
+            </div>
             {showMoreParks && (
               <div className="flex flex-wrap gap-x-1 gap-y-2 mt-2">
                 {parksData.slice(VISIBLE_COUNT).map((item) => (
-                  <button
-                    key={item.key}
-                    onClick={() => toggleSelection(parks, setParks, item.key)}
-                    className={`px-3 py-0.5 text-sm rounded transition-all border-0 outline-none ${
-                      parks.includes(item.key)
-                        ? 'bg-amber-50 text-amber-600'
-                        : 'text-gray-600 hover:text-amber-600 hover:bg-gray-50'
-                    }`}
-                  >
-                    {item.title}
-                  </button>
-                ))}
-                {/* 其他园区 */}
-                {otherParks.map((item) => (
                   <button
                     key={item.key}
                     onClick={() => toggleSelection(parks, setParks, item.key)}
@@ -857,11 +853,12 @@ const EconomicMonitor = () => {
           </div>
         </div>
       </Card>
+      
       {/* 统计概览 */}
-        <Row gutter={16} className="mb-6">
-          <Col span={6}>
+      <Row gutter={16} className="mb-6">
+        <Col span={6}>
           <Card size="small" className="shadow-sm">
-              <Statistic
+            <Statistic
               title="企业数量"
               valueRender={() => renderStat(
                 (summaryStats.enterpriseCount.total / 10000).toFixed(1),
@@ -869,30 +866,30 @@ const EconomicMonitor = () => {
               )}
             />
           </Card>
-          </Col>
-          <Col span={6}>
+        </Col>
+        <Col span={6}>
           <Card size="small" className="shadow-sm">
             <Statistic
               title="纳税金额"
               valueRender={() => renderStat(
                 summaryStats.taxRevenue.total,
                 ' 亿元'
-                valueStyle={{ color: unifiedColors.green, fontSize: '28px', fontWeight: 600 }}
-              />
-            </Card>
-          </Col>
-          <Col span={6}>
-            <Card size="small" className="shadow-sm hover:shadow-md transition-shadow">
-              <Statistic
-                 title="用工人数"
+              )}
+            />
+          </Card>
+        </Col>
+        <Col span={6}>
+          <Card size="small" className="shadow-sm hover:shadow-md transition-shadow">
+            <Statistic
+              title="用工人数"
               valueRender={() => renderStat(
                 summaryStats.employment.total,
                 ' 万人'
-                valueStyle={{ color: unifiedColors.orange, fontSize: '28px', fontWeight: 600 }}
-              />
-            </Card>
-          </Col>
-          <Col span={6}>
+              )}
+            />
+          </Card>
+        </Col>
+        <Col span={6}>
           <Card size="small" className="shadow-sm">
             <Statistic
               title="专利数量"
@@ -902,84 +899,90 @@ const EconomicMonitor = () => {
               )}
             />
           </Card>
-          </Col>
-        </Row>
-        {/* 图表区域 - 2x2 布局 */}
-        <Row gutter={[16, 16]}>
-          <Col span={12}>
-            <Card
-              title={
-                <div className="flex items-center gap-2">
-                  <LineChartOutlined style={{ color: unifiedColors.blue }} />
-                  <span className="font-semibold text-gray-800">企业数量趋势</span>
-                </div>
-              }
-              className="shadow-sm h-full"
-              extra={<Text type="secondary" style={{ fontSize: '12px' }}>市监局</Text>}
-              bodyStyle={{ padding: '12px' }}
-            >
-              <ReactECharts
-                option={enterpriseChartOption}
-                style={{ height: 280 }}
-                opts={{ renderer: 'canvas' }}
-              />
-            </Card>
-          </Col>
+        </Col>
+      </Row>
+      
+      {/* 图表区域 - 2x2 布局 */}
+      <Row gutter={[16, 16]}>
         <Col span={12}>
           <Card
-            title={<span className="text-base font-medium">纳税金额趋势</span>}
-            className="shadow-sm"
-            size="small"
+            title={
+              <div className="flex items-center gap-2">
+                <LineChartOutlined style={{ color: unifiedColors.blue }} />
+                <span className="font-semibold text-gray-800">企业数量趋势</span>
+              </div>
+            }
+            className="shadow-sm h-full"
+            extra={<Text type="secondary" style={{ fontSize: '12px' }}>市监局</Text>}
+            bodyStyle={{ padding: '12px' }}
           >
-              }
-              className="shadow-sm h-full"
-              extra={<Text type="secondary" style={{ fontSize: '12px' }}>税务局</Text>}
-              bodyStyle={{ padding: '12px' }}
-            >
-              <ReactECharts
-                option={taxChartOption}
-                style={{ height: 280 }}
-                opts={{ renderer: 'canvas' }}
-              />
-            </Card>
-          </Col>
+            <ReactECharts
+              option={enterpriseChartOption}
+              style={{ height: 280 }}
+              opts={{ renderer: 'canvas' }}
+            />
+          </Card>
+        </Col>
         <Col span={12}>
           <Card
-            title={<span className="text-base font-medium">用工人数趋势</span>}
-            className="shadow-sm"
-            size="small"
+            title={
+              <div className="flex items-center gap-2">
+                <BankOutlined style={{ color: unifiedColors.green }} />
+                <span className="font-semibold text-gray-800">纳税金额趋势</span>
+              </div>
+            }
+            className="shadow-sm h-full"
+            extra={<Text type="secondary" style={{ fontSize: '12px' }}>税务局</Text>}
+            bodyStyle={{ padding: '12px' }}
           >
-              }
-              className="shadow-sm h-full"
-              extra={<Text type="secondary" style={{ fontSize: '12px' }}>人社局</Text>}
-              bodyStyle={{ padding: '12px' }}
-            >
-              <ReactECharts
-                option={employmentChartOption}
-                style={{ height: 280 }}
-                opts={{ renderer: 'canvas' }}
-              />
-            </Card>
-          </Col>
+            <ReactECharts
+              option={taxChartOption}
+              style={{ height: 280 }}
+              opts={{ renderer: 'canvas' }}
+            />
+          </Card>
+        </Col>
         <Col span={12}>
           <Card
-            title={<span className="text-base font-medium">专利数量趋势</span>}
-            className="shadow-sm"
-            size="small"
+            title={
+              <div className="flex items-center gap-2">
+                <ClusterOutlined style={{ color: unifiedColors.orange }} />
+                <span className="font-semibold text-gray-800">用工人数趋势</span>
+              </div>
+            }
+            className="shadow-sm h-full"
+            extra={<Text type="secondary" style={{ fontSize: '12px' }}>人社局</Text>}
+            bodyStyle={{ padding: '12px' }}
           >
-              }
-              className="shadow-sm h-full"
-              extra={<span style={{ color: '#999', fontSize: '12px' }}>知识产权局</span>}
-              bodyStyle={{ padding: '12px' }}
-            >
-              <ReactECharts
-                option={patentChartOption}
-                style={{ height: 280 }}
-                opts={{ renderer: 'canvas' }}
-              />
-            </Card>
-          </Col>
-        </Row>
-      </div>
+            <ReactECharts
+              option={employmentChartOption}
+              style={{ height: 280 }}
+              opts={{ renderer: 'canvas' }}
+            />
+          </Card>
+        </Col>
+        <Col span={12}>
+          <Card
+            title={
+              <div className="flex items-center gap-2">
+                <EnvironmentOutlined style={{ color: unifiedColors.purple }} />
+                <span className="font-semibold text-gray-800">专利数量趋势</span>
+              </div>
+            }
+            className="shadow-sm h-full"
+            extra={<Text type="secondary" style={{ fontSize: '12px' }}>知识产权局</Text>}
+            bodyStyle={{ padding: '12px' }}
+          >
+            <ReactECharts
+              option={patentChartOption}
+              style={{ height: 280 }}
+              opts={{ renderer: 'canvas' }}
+            />
+          </Card>
+        </Col>
+      </Row>
     </div>
   );
+};
+
+export default EconomicMonitor;
