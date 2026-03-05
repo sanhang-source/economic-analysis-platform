@@ -1,723 +1,441 @@
-import React, { useState, useMemo } from 'react';
-import { Card, Progress, Tag, Tooltip, Badge, Statistic, Row, Col, Input, Empty } from 'antd';
-import { 
-  DownOutlined, 
-  RightOutlined, 
+﻿import React, { useState, useMemo } from 'react';
+import {
+  Card,
+  Input,
+  Table,
+  Tag,
+  Space,
+  Collapse,
+  Badge,
+  Button,
+  Tabs,
+  Empty
+} from 'antd';
+import {
   SearchOutlined,
   GlobalOutlined,
-  HomeOutlined,
   ApartmentOutlined,
-  TagOutlined,
-  InfoCircleOutlined
+  BankOutlined,
+  ShopOutlined,
+  ShoppingOutlined,
+  DownOutlined,
+  RightOutlined,
+  TeamOutlined
 } from '@ant-design/icons';
 import { industryChains, industryChainStats } from '../mock/industryChainMock';
 
 const { Search } = Input;
+const { Panel } = Collapse;
+const { TabPane } = Tabs;
 
-/**
- * 产业链图谱概览页
- * 展示深圳市所有产业链列表，按深圳企业占比排序
- * 支持展开查看层级树（产业链→产业→细分行业→产品服务）
- */
-const IndustryGraph = () => {
-  const [expandedChains, setExpandedChains] = useState(new Set());
+// 生成企业列表数据
+const generateEnterprises = (count, type) => {
+  const prefixes = ['深圳', '广东', '华南', '南方', '鹏城', '宝安', '南山', '龙岗'];
+  const suffixes = {
+    chain: ['科技有限公司', '股份有限公司', '集团有限公司', '实业有限公司'],
+    industry: ['通信设备', '电子科技', '网络技术', '信息工程', '智能制造'],
+    segment: ['基站设备', '终端制造', '芯片设计', '软件开发', '系统集成'],
+    product: ['产品制造', '技术服务', '解决方案', '研发中心', '生产基地']
+  };
+
+  return Array.from({ length: Math.min(count, 10) }, (_, i) => {
+    const prefix = prefixes[Math.floor(Math.random() * prefixes.length)];
+    const suffix = suffixes[type][Math.floor(Math.random() * suffixes[type].length)];
+    const name = `${prefix}${suffix}${i + 1}号`;
+    return {
+      key: i,
+      name: name,
+      location: Math.random() > 0.3 ? '深圳市' : ['广州市', '东莞市', '惠州市', '上海市'][Math.floor(Math.random() * 4)],
+      type: Math.random() > 0.5 ? '生产企业' : '服务企业',
+      scale: ['大型', '中型', '小型'][Math.floor(Math.random() * 3)],
+      registeredCapital: Math.floor(Math.random() * 9000 + 1000) + '万',
+      establishedYear: 2000 + Math.floor(Math.random() * 24),
+      isShenzhen: Math.random() > 0.3
+    };
+  });
+};
+
+// 企业列表表格
+const EnterpriseTable = ({ data }) => {
+  const columns = [
+    {
+      title: '企业名称',
+      dataIndex: 'name',
+      key: 'name',
+      render: (text, record) => (
+        <Space>
+          <BankOutlined className="text-gray-400" />
+          <span className="font-medium">{text}</span>
+          {record.isShenzhen && <Tag color="blue" size="small">深圳</Tag>}
+        </Space>
+      )
+    },
+    {
+      title: '所在地区',
+      dataIndex: 'location',
+      key: 'location',
+      width: 100
+    },
+    {
+      title: '企业类型',
+      dataIndex: 'type',
+      key: 'type',
+      width: 90,
+      render: (type) => <Tag size="small">{type}</Tag>
+    },
+    {
+      title: '规模',
+      dataIndex: 'scale',
+      key: 'scale',
+      width: 80,
+      render: (scale) => {
+        const colors = { '大型': 'red', '中型': 'orange', '小型': 'green' };
+        return <Tag color={colors[scale]} size="small">{scale}</Tag>;
+      }
+    },
+    {
+      title: '注册资本',
+      dataIndex: 'registeredCapital',
+      key: 'registeredCapital',
+      width: 100
+    },
+    {
+      title: '成立年份',
+      dataIndex: 'establishedYear',
+      key: 'establishedYear',
+      width: 90
+    }
+  ];
+
+  return (
+    <Table
+      columns={columns}
+      dataSource={data}
+      pagination={false}
+      size="small"
+      scroll={{ x: 'max-content' }}
+    />
+  );
+};
+
+// 统计标签组件
+const StatTags = ({ shenzhenCount, nationalCount, percentage, color }) => {
+  const formatNum = (n) => n >= 10000 ? (n / 10000).toFixed(1) + '万' : n.toLocaleString();
+
+  return (
+    <Space size="middle">
+      <Tag color={color} style={{ fontSize: '12px', padding: '2px 8px' }}>
+        深圳: {formatNum(shenzhenCount)}
+      </Tag>
+      <Tag style={{ fontSize: '12px', padding: '2px 8px' }}>
+        全国: {formatNum(nationalCount)}
+      </Tag>
+      <Tag color="blue" style={{ fontSize: '12px', padding: '2px 8px' }}>
+        占比: {percentage}%
+      </Tag>
+    </Space>
+  );
+};
+
+export default function IndustryGraph() {
+  const [selectedChainId, setSelectedChainId] = useState(industryChains[0]?.id);
   const [searchText, setSearchText] = useState('');
+  const [activeTab, setActiveTab] = useState('overview');
+  const [selectedNode, setSelectedNode] = useState(null);
 
-  // 切换产业链展开状态
-  const toggleChain = (chainId) => {
-    const newExpanded = new Set(expandedChains);
-    if (newExpanded.has(chainId)) {
-      newExpanded.delete(chainId);
-    } else {
-      newExpanded.add(chainId);
-    }
-    setExpandedChains(newExpanded);
+  const selectedChain = useMemo(() =>
+    industryChains.find(c => c.id === selectedChainId) || industryChains[0] || {}
+  , [selectedChainId]);
+
+  const filteredChains = useMemo(() =>
+    searchText ? industryChains.filter(c => c.name.includes(searchText)) : industryChains
+  , [searchText]);
+
+  const formatNum = (n) => n >= 10000 ? (n / 10000).toFixed(1) + '万' : n.toLocaleString();
+
+  // 计算统计数据
+  const calculateStats = (enterpriseCount) => {
+    const percentage = selectedChain?.stats?.percentage || 0;
+    const shenzhenCount = Math.round(enterpriseCount * (percentage / 100));
+    return { shenzhenCount, nationalCount: enterpriseCount, percentage };
   };
 
-  // 根据搜索文本过滤产业链
-  const filteredChains = useMemo(() => {
-    if (!searchText.trim()) return industryChains;
-    
-    const lowerSearch = searchText.toLowerCase();
-    return industryChains.filter(chain => {
-      // 搜索产业链名称
-      if (chain.name.toLowerCase().includes(lowerSearch)) return true;
-      
-      // 搜索层级树
-      const searchHierarchy = (items) => {
-        for (const item of items) {
-          if (item.name.toLowerCase().includes(lowerSearch)) return true;
-          if (item.children && searchHierarchy(item.children)) return true;
-        }
-        return false;
-      };
-      
-      return searchHierarchy(chain.hierarchy);
-    });
-  }, [searchText]);
-
-  // 格式化数字
-  const formatNumber = (num) => {
-    if (num >= 10000) {
-      return (num / 10000).toFixed(1) + '万';
-    }
-    return num.toLocaleString();
+  // 处理节点点击
+  const handleNodeClick = (node, type) => {
+    setSelectedNode({ ...node, type });
+    setActiveTab('enterprises');
   };
 
-  // 渲染层级树
-  const renderHierarchy = (items, level = 0) => {
+  // 获取选中节点的企业列表
+  const getNodeEnterprises = () => {
+    if (!selectedNode) return [];
+    return generateEnterprises(selectedNode.enterpriseCount || 10, selectedNode.type);
+  };
+
+  // 渲染产品服务层级
+  const renderProducts = (products, parentColor) => {
+    if (!products?.length) return null;
+
     return (
-      <div className={`hierarchy-level-${level}`}>
-        {items.map((item, index) => (
-          <div key={`${item.name}-${index}`} className="hierarchy-item">
-            <div 
-              className={`hierarchy-row level-${level}`}
-              style={{ paddingLeft: level * 24 }}
+      <div className="ml-8 mt-2 space-y-2">
+        {products.map((product, idx) => {
+          const stats = calculateStats(product.enterpriseCount);
+          return (
+            <div
+              key={idx}
+              className="flex items-center justify-between p-3 bg-orange-50 rounded-lg border border-orange-100 hover:border-orange-300 hover:shadow-sm cursor-pointer transition-all"
+              onClick={() => handleNodeClick(product, 'product')}
             >
-              {/* 缩进指示器 */}
-              {level > 0 && (
-                <span className="indent-line">
-                  {level === 1 && '├─ '}
-                  {level === 2 && '│  ├─ '}
-                </span>
-              )}
-              
-              {/* 层级图标 */}
-              <span className="hierarchy-icon">
-                {level === 0 && <ApartmentOutlined />}
-                {level === 1 && <TagOutlined />}
-                {level === 2 && <InfoCircleOutlined />}
-              </span>
-              
-              {/* 名称 */}
-              <span className="hierarchy-name">{item.name}</span>
-              
-              {/* 企业数量 */}
-              <Badge 
-                count={formatNumber(item.enterpriseCount)} 
-                style={{ 
-                  backgroundColor: level === 0 ? '#1677ff' : level === 1 ? '#52c41a' : '#fa8c16',
-                  fontSize: '12px',
-                  fontWeight: 500
-                }}
-                className="enterprise-badge"
-              />
+              <div className="flex items-center gap-3">
+                <ShoppingOutlined className="text-orange-500" />
+                <span className="font-medium text-gray-800">{product.name}</span>
+              </div>
+              <StatTags {...stats} color="#fa8c16" />
             </div>
-            
-            {/* 递归渲染子层级 */}
-            {item.children && renderHierarchy(item.children, level + 1)}
-          </div>
-        ))}
+          );
+        })}
       </div>
     );
   };
 
-  return (
-    <div className="industry-chain-overview">
-      {/* 页面标题和统计 */}
-      <div className="overview-header">
-        <div className="header-title">
-          <GlobalOutlined className="title-icon" />
-          <div>
-            <h1>深圳市产业链图谱</h1>
-            <p className="subtitle">按深圳企业全国占比排序，覆盖深圳20+8产业集群</p>
+  // 渲染细分行业层级
+  const renderSegments = (segments, parentColor) => {
+    if (!segments?.length) return null;
+
+    return (
+      <div className="ml-6 mt-2 space-y-2">
+        {segments.map((segment, idx) => {
+          const stats = calculateStats(segment.enterpriseCount);
+          const hasChildren = segment.children?.length > 0;
+
+          return (
+            <div key={idx} className="border-l-2 border-green-200 pl-4">
+              <div
+                className="flex items-center justify-between p-3 bg-green-50 rounded-lg border border-green-100 hover:border-green-300 hover:shadow-sm cursor-pointer transition-all"
+                onClick={() => handleNodeClick(segment, 'segment')}
+              >
+                <div className="flex items-center gap-3">
+                  <ShopOutlined className="text-green-600" />
+                  <span className="font-medium text-gray-800">{segment.name}</span>
+                  {hasChildren && (
+                    <Badge count={segment.children.length} style={{ backgroundColor: '#52c41a' }} />
+                  )}
+                </div>
+                <StatTags {...stats} color="#52c41a" />
+              </div>
+              {hasChildren && renderProducts(segment.children, parentColor)}
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
+
+  // 渲染产业层级
+  const renderIndustries = () => {
+    if (!selectedChain?.hierarchy?.length) {
+      return <Empty description="暂无数据" />;
+    }
+
+    return (
+      <div className="space-y-4">
+        {selectedChain.hierarchy.map((industry, idx) => {
+          const stats = calculateStats(industry.enterpriseCount);
+          const hasChildren = industry.children?.length > 0;
+
+          return (
+            <Card
+              key={idx}
+              size="small"
+              className="border-l-4"
+              style={{ borderLeftColor: selectedChain.color }}
+              title={
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <ApartmentOutlined style={{ color: selectedChain.color, fontSize: 18 }} />
+                    <span className="font-semibold text-gray-800">{industry.name}</span>
+                    {hasChildren && (
+                      <Badge count={industry.children.length} style={{ backgroundColor: selectedChain.color }} />
+                    )}
+                  </div>
+                  <StatTags {...stats} color={selectedChain.color} />
+                </div>
+              }
+            >
+              {hasChildren && renderSegments(industry.children, selectedChain.color)}
+            </Card>
+          );
+        })}
+      </div>
+    );
+  };
+
+  // 渲染产业链列表
+  const renderChainList = () => (
+    <div className="space-y-3">
+      {filteredChains.map((chain) => (
+        <div
+          key={chain.id}
+          onClick={() => { setSelectedChainId(chain.id); setSelectedNode(null); setActiveTab('overview'); }}
+          className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
+            selectedChainId === chain.id
+              ? 'border-blue-500 bg-blue-50'
+              : 'border-gray-200 hover:border-blue-300 hover:shadow-sm'
+          }`}
+        >
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-3">
+              <div
+                className="w-12 h-12 rounded-lg flex items-center justify-center text-white text-xl font-bold"
+                style={{ backgroundColor: chain.color }}
+              >
+                {chain.name.charAt(0)}
+              </div>
+              <div>
+                <div className="font-semibold text-gray-800">{chain.name}</div>
+                <div className="text-xs text-gray-500">{chain.description}</div>
+              </div>
+            </div>
+            <RightOutlined className="text-gray-400" />
+          </div>
+          <div className="grid grid-cols-3 gap-2 text-center">
+            <div className="bg-white rounded p-2">
+              <div className="text-sm font-bold" style={{ color: chain.color }}>
+                {formatNum(chain.stats.shenzhenCount)}
+              </div>
+              <div className="text-xs text-gray-500">深圳企业</div>
+            </div>
+            <div className="bg-white rounded p-2">
+              <div className="text-sm font-bold text-gray-700">
+                {formatNum(chain.stats.nationalCount)}
+              </div>
+              <div className="text-xs text-gray-500">全国企业</div>
+            </div>
+            <div className="bg-white rounded p-2">
+              <div className="text-sm font-bold text-blue-600">
+                {chain.stats.percentage}%
+              </div>
+              <div className="text-xs text-gray-500">深圳占比</div>
+            </div>
           </div>
         </div>
-        
-        {/* 统计卡片 */}
-        <Row gutter={16} className="stats-row">
-          <Col span={6}>
-            <Card className="stat-card">
-              <Statistic 
-                title="产业链数量" 
-                value={industryChainStats.totalChains}
-                suffix="个"
-                valueStyle={{ color: '#1677ff' }}
-              />
-            </Card>
-          </Col>
-          <Col span={6}>
-            <Card className="stat-card">
-              <Statistic 
-                title="深圳企业总数" 
-                value={formatNumber(industryChainStats.totalShenzhenEnterprises)}
-                valueStyle={{ color: '#52c41a' }}
-              />
-            </Card>
-          </Col>
-          <Col span={6}>
-            <Card className="stat-card">
-              <Statistic 
-                title="全国企业总数" 
-                value={formatNumber(industryChainStats.totalNationalEnterprises)}
-                valueStyle={{ color: '#722ed1' }}
-              />
-            </Card>
-          </Col>
-          <Col span={6}>
-            <Card className="stat-card">
-              <Statistic 
-                title="平均占比" 
-                value={industryChainStats.averagePercentage}
-                suffix="%"
-                valueStyle={{ color: '#fa8c16' }}
-              />
-            </Card>
-          </Col>
-        </Row>
-      </div>
-
-      {/* 搜索框 */}
-      <div className="search-section">
-        <Search
-          placeholder="搜索产业链、行业或产品服务..."
-          allowClear
-          enterButton={<><SearchOutlined /> 搜索</>}
-          size="large"
-          value={searchText}
-          onChange={(e) => setSearchText(e.target.value)}
-          className="search-input"
-        />
-      </div>
-
-      {/* 产业链列表 */}
-      <div className="chains-list">
-        {filteredChains.length === 0 ? (
-          <Empty 
-            description="未找到匹配的产业链" 
-            image={Empty.PRESENTED_IMAGE_SIMPLE}
-            className="empty-state"
-          />
-        ) : (
-          filteredChains.map((chain, index) => (
-            <Card 
-              key={chain.id}
-              className={`chain-card ${expandedChains.has(chain.id) ? 'expanded' : ''}`}
-              bordered={false}
-            >
-              {/* 产业链头部 - 始终显示 */}
-              <div 
-                className="chain-header"
-                onClick={() => toggleChain(chain.id)}
-              >
-                {/* 展开图标 */}
-                <div className="expand-icon">
-                  {expandedChains.has(chain.id) ? <DownOutlined /> : <RightOutlined />}
-                </div>
-                
-                {/* 排名序号 */}
-                <div className={`rank-badge rank-${index + 1}`}>
-                  {index + 1}
-                </div>
-                
-                {/* 产业链图标和名称 */}
-                <div className="chain-icon" style={{ backgroundColor: chain.color }}>
-                  {chain.icon}
-                </div>
-                
-                <div className="chain-info">
-                  <div className="chain-name-row">
-                    <h3 className="chain-name">{chain.name}</h3>
-                    <Tooltip title={chain.description}>
-                      <InfoCircleOutlined className="info-icon" />
-                    </Tooltip>
-                  </div>
-                  <Tag color={chain.color} className="chain-tag">
-                    <HomeOutlined /> 深圳占比 {chain.stats.percentage}%
-                  </Tag>
-                </div>
-                
-                {/* 统计信息 */}
-                <div className="chain-stats">
-                  <div className="stat-item">
-                    <span className="stat-label">深圳企业</span>
-                    <span className="stat-value shenzhen">{formatNumber(chain.stats.shenzhenCount)}</span>
-                  </div>
-                  <div className="stat-divider" />
-                  <div className="stat-item">
-                    <span className="stat-label">全国企业</span>
-                    <span className="stat-value national">{formatNumber(chain.stats.nationalCount)}</span>
-                  </div>
-                  <div className="stat-divider" />
-                  <div className="stat-item percentage">
-                    <Progress
-                      percent={chain.stats.percentage}
-                      size="small"
-                      strokeColor={chain.color}
-                      showInfo={false}
-                      className="percentage-bar"
-                    />
-                    <span className="percentage-text">{chain.stats.percentage}%</span>
-                  </div>
-                </div>
-              </div>
-              
-              {/* 展开的层级树 */}
-              {expandedChains.has(chain.id) && (
-                <div className="chain-hierarchy">
-                  <div className="hierarchy-header">
-                    <ApartmentOutlined />
-                    <span>产业链层级结构</span>
-                    <span className="hierarchy-desc">产业 → 细分行业 → 产品服务</span>
-                  </div>
-                  <div className="hierarchy-content">
-                    {renderHierarchy(chain.hierarchy)}
-                  </div>
-                </div>
-              )}
-            </Card>
-          ))
-        )}
-      </div>
-
-      {/* 样式 */}
-      <style>{`
-        .industry-chain-overview {
-          padding: 24px;
-          background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%);
-          min-height: calc(100vh - 64px);
-        }
-
-        /* 页面头部 */
-        .overview-header {
-          margin-bottom: 24px;
-        }
-
-        .header-title {
-          display: flex;
-          align-items: center;
-          gap: 16px;
-          margin-bottom: 20px;
-        }
-
-        .title-icon {
-          font-size: 36px;
-          color: #1677ff;
-          background: linear-gradient(135deg, #1677ff 0%, #36cfc9 100%);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-        }
-
-        .header-title h1 {
-          font-size: 24px;
-          font-weight: 600;
-          margin: 0;
-          color: #1f2937;
-        }
-
-        .subtitle {
-          margin: 4px 0 0;
-          color: #6b7280;
-          font-size: 14px;
-        }
-
-        /* 统计卡片 */
-        .stats-row {
-          margin-top: 16px;
-        }
-
-        .stat-card {
-          border-radius: 12px;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-          transition: all 0.3s ease;
-        }
-
-        .stat-card:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 4px 16px rgba(0,0,0,0.1);
-        }
-
-        .stat-card .ant-statistic-title {
-          font-size: 14px;
-          color: #6b7280;
-        }
-
-        .stat-card .ant-statistic-content {
-          font-size: 28px;
-          font-weight: 600;
-        }
-
-        /* 搜索框 */
-        .search-section {
-          margin-bottom: 24px;
-        }
-
-        .search-input {
-          max-width: 600px;
-        }
-
-        .search-input .ant-input {
-          border-radius: 8px 0 0 8px;
-        }
-
-        .search-input .ant-input-search-button {
-          border-radius: 0 8px 8px 0;
-        }
-
-        /* 产业链列表 */
-        .chains-list {
-          display: flex;
-          flex-direction: column;
-          gap: 16px;
-        }
-
-        .chain-card {
-          border-radius: 12px;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-          transition: all 0.3s ease;
-          overflow: hidden;
-        }
-
-        .chain-card:hover {
-          box-shadow: 0 4px 16px rgba(0,0,0,0.1);
-        }
-
-        .chain-card.expanded {
-          box-shadow: 0 4px 20px rgba(0,0,0,0.12);
-        }
-
-        .chain-card .ant-card-body {
-          padding: 0;
-        }
-
-        /* 产业链头部 */
-        .chain-header {
-          display: flex;
-          align-items: center;
-          padding: 20px 24px;
-          cursor: pointer;
-          transition: background-color 0.2s ease;
-          gap: 16px;
-        }
-
-        .chain-header:hover {
-          background-color: #f8fafc;
-        }
-
-        .expand-icon {
-          color: #9ca3af;
-          font-size: 14px;
-          transition: all 0.2s ease;
-          width: 20px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-
-        .chain-card.expanded .expand-icon {
-          color: #1677ff;
-        }
-
-        .rank-badge {
-          width: 28px;
-          height: 28px;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-weight: 600;
-          font-size: 13px;
-          flex-shrink: 0;
-        }
-
-        .rank-badge.rank-1 {
-          background: linear-gradient(135deg, #ffd700 0%, #ffed4a 100%);
-          color: #8b6914;
-        }
-
-        .rank-badge.rank-2 {
-          background: linear-gradient(135deg, #c0c0c0 0%, #e8e8e8 100%);
-          color: #666;
-        }
-
-        .rank-badge.rank-3 {
-          background: linear-gradient(135deg, #cd7f32 0%, #daa520 100%);
-          color: #fff;
-        }
-
-        .rank-badge:not(.rank-1):not(.rank-2):not(.rank-3) {
-          background: #f3f4f6;
-          color: #6b7280;
-        }
-
-        .chain-icon {
-          width: 48px;
-          height: 48px;
-          border-radius: 12px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 24px;
-          flex-shrink: 0;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-
-        .chain-info {
-          flex: 1;
-          min-width: 0;
-        }
-
-        .chain-name-row {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          margin-bottom: 6px;
-        }
-
-        .chain-name {
-          font-size: 17px;
-          font-weight: 600;
-          color: #1f2937;
-          margin: 0;
-        }
-
-        .info-icon {
-          color: #9ca3af;
-          font-size: 14px;
-          cursor: help;
-        }
-
-        .info-icon:hover {
-          color: #1677ff;
-        }
-
-        .chain-tag {
-          font-size: 12px;
-          border: none;
-          padding: 2px 8px;
-          border-radius: 4px;
-        }
-
-        .chain-tag .anticon {
-          margin-right: 4px;
-        }
-
-        /* 统计信息 */
-        .chain-stats {
-          display: flex;
-          align-items: center;
-          gap: 24px;
-        }
-
-        .stat-item {
-          display: flex;
-          flex-direction: column;
-          align-items: flex-start;
-          min-width: 80px;
-        }
-
-        .stat-label {
-          font-size: 12px;
-          color: #9ca3af;
-          margin-bottom: 4px;
-        }
-
-        .stat-value {
-          font-size: 18px;
-          font-weight: 600;
-        }
-
-        .stat-value.shenzhen {
-          color: #1677ff;
-        }
-
-        .stat-value.national {
-          color: #52c41a;
-        }
-
-        .stat-divider {
-          width: 1px;
-          height: 40px;
-          background: #e5e7eb;
-        }
-
-        .stat-item.percentage {
-          min-width: 120px;
-          align-items: stretch;
-        }
-
-        .percentage-bar {
-          margin-bottom: 4px;
-        }
-
-        .percentage-bar .ant-progress-inner {
-          background-color: #f3f4f6;
-          border-radius: 4px;
-        }
-
-        .percentage-bar .ant-progress-bg {
-          border-radius: 4px;
-        }
-
-        .percentage-text {
-          font-size: 14px;
-          font-weight: 600;
-          color: #374151;
-          text-align: right;
-        }
-
-        /* 层级树 */
-        .chain-hierarchy {
-          border-top: 1px solid #e5e7eb;
-          background: #f8fafc;
-        }
-
-        .hierarchy-header {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          padding: 12px 24px;
-          background: #f1f5f9;
-          font-size: 13px;
-          color: #6b7280;
-          border-bottom: 1px solid #e2e8f0;
-        }
-
-        .hierarchy-header .anticon {
-          color: #1677ff;
-        }
-
-        .hierarchy-desc {
-          margin-left: auto;
-          font-size: 12px;
-          color: #9ca3af;
-        }
-
-        .hierarchy-content {
-          padding: 16px 24px;
-        }
-
-        .hierarchy-row {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          padding: 10px 12px;
-          border-radius: 8px;
-          transition: all 0.2s ease;
-          margin-bottom: 4px;
-        }
-
-        .hierarchy-row:hover {
-          background: #e2e8f0;
-        }
-
-        .hierarchy-row.level-0 {
-          background: #eff6ff;
-          font-weight: 600;
-        }
-
-        .hierarchy-row.level-0:hover {
-          background: #dbeafe;
-        }
-
-        .hierarchy-row.level-1 {
-          background: #f0fdf4;
-        }
-
-        .hierarchy-row.level-1:hover {
-          background: #dcfce7;
-        }
-
-        .hierarchy-row.level-2 {
-          background: transparent;
-          padding: 8px 12px;
-        }
-
-        .indent-line {
-          color: #9ca3af;
-          font-family: monospace;
-          font-size: 13px;
-          width: 40px;
-          flex-shrink: 0;
-        }
-
-        .hierarchy-icon {
-          color: #9ca3af;
-          font-size: 14px;
-          width: 20px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-
-        .hierarchy-row.level-0 .hierarchy-icon {
-          color: #1677ff;
-        }
-
-        .hierarchy-row.level-1 .hierarchy-icon {
-          color: #52c41a;
-        }
-
-        .hierarchy-row.level-2 .hierarchy-icon {
-          color: #fa8c16;
-        }
-
-        .hierarchy-name {
-          flex: 1;
-          font-size: 14px;
-          color: #374151;
-        }
-
-        .hierarchy-row.level-0 .hierarchy-name {
-          color: #1e40af;
-          font-size: 15px;
-        }
-
-        .enterprise-badge {
-          margin-left: auto;
-        }
-
-        .enterprise-badge .ant-badge-count {
-          box-shadow: none;
-        }
-
-        /* 空状态 */
-        .empty-state {
-          padding: 60px 0;
-          background: #fff;
-          border-radius: 12px;
-        }
-
-        /* 响应式 */
-        @media (max-width: 1200px) {
-          .chain-stats {
-            flex-wrap: wrap;
-            gap: 12px;
-          }
-
-          .stat-divider {
-            display: none;
-          }
-        }
-
-        @media (max-width: 768px) {
-          .industry-chain-overview {
-            padding: 16px;
-          }
-
-          .chain-header {
-            flex-wrap: wrap;
-            padding: 16px;
-          }
-
-          .chain-stats {
-            width: 100%;
-            margin-top: 12px;
-            padding-top: 12px;
-            border-top: 1px solid #e5e7eb;
-          }
-
-          .hierarchy-content {
-            padding: 12px 16px;
-          }
-
-          .hierarchy-row {
-            padding: 8px;
-          }
-        }
-      `}</style>
+      ))}
     </div>
   );
-};
 
-export default IndustryGraph;
+  const nodeEnterprises = getNodeEnterprises();
+
+  return (
+    <div className="h-full flex flex-col">
+      {/* Header */}
+      <div className="mb-4">
+        <h1 className="text-xl font-semibold flex items-center gap-2">
+          <GlobalOutlined className="text-blue-500" />
+          产业链图谱
+        </h1>
+        <p className="text-gray-500 text-sm mt-1">
+          共 <span className="text-blue-600 font-semibold">{industryChainStats.totalChains}</span> 个产业链，
+          覆盖 <span className="text-blue-600 font-semibold">{formatNum(industryChainStats.totalShenzhenEnterprises)}</span> 家深圳企业
+        </p>
+      </div>
+
+      <div className="flex-1 flex gap-4 min-h-0">
+        {/* Left Sidebar */}
+        <Card
+          className="w-80 flex-shrink-0"
+          bodyStyle={{ padding: 0, height: '100%' }}
+          title="产业链列表"
+        >
+          <div className="p-3 border-b">
+            <Search
+              placeholder="搜索产业链..."
+              allowClear
+              size="small"
+              value={searchText}
+              onChange={e => setSearchText(e.target.value)}
+              prefix={<SearchOutlined />}
+            />
+          </div>
+          <div className="overflow-auto h-[calc(100%-60px)] p-3">
+            {renderChainList()}
+          </div>
+        </Card>
+
+        {/* Right Content */}
+        <Card
+          className="flex-1"
+          bodyStyle={{ padding: 16, height: 'calc(100% - 57px)', overflow: 'auto' }}
+          title={
+            <div className="flex items-center justify-between">
+              <span className="font-semibold">{selectedChain?.name} - 产业层级结构</span>
+              {selectedNode && (
+                <Button type="primary" size="small" onClick={() => setActiveTab('enterprises')}>
+                  <TeamOutlined /> 查看企业清单
+                </Button>
+              )}
+            </div>
+          }
+        >
+          <Tabs activeKey={activeTab} onChange={setActiveTab}>
+            <TabPane tab="层级概览" key="overview">
+              {/* 产业链总体统计 */}
+              <Card size="small" className="mb-4 bg-gray-50">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div
+                      className="w-12 h-12 rounded-lg flex items-center justify-center text-white text-xl font-bold"
+                      style={{ backgroundColor: selectedChain?.color || '#1677ff' }}
+                    >
+                      {selectedChain?.name?.charAt(0) || '-'}
+                    </div>
+                    <div>
+                      <div className="font-semibold text-gray-800">{selectedChain?.name || '-'}</div>
+                      <div className="text-xs text-gray-500">{selectedChain?.description || ''}</div>
+                    </div>
+                  </div>
+                  <StatTags
+                    shenzhenCount={selectedChain?.stats?.shenzhenCount || 0}
+                    nationalCount={selectedChain?.stats?.nationalCount || 0}
+                    percentage={selectedChain?.stats?.percentage || 0}
+                    color={selectedChain?.color || '#1677ff'}
+                  />
+                </div>
+              </Card>
+
+              {/* 树形层级结构 */}
+              {renderIndustries()}
+            </TabPane>
+
+            <TabPane
+              tab={selectedNode ? `${selectedNode.name} - 企业清单` : '企业清单'}
+              key="enterprises"
+              disabled={!selectedNode}
+            >
+              {selectedNode ? (
+                <div>
+                  <Card size="small" className="mb-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        {selectedNode.type === 'industry' && <ApartmentOutlined style={{ color: selectedChain?.color, fontSize: 20 }} />}
+                        {selectedNode.type === 'segment' && <ShopOutlined style={{ color: '#52c41a', fontSize: 20 }} />}
+                        {selectedNode.type === 'product' && <ShoppingOutlined style={{ color: '#fa8c16', fontSize: 20 }} />}
+                        <span className="font-semibold text-lg">{selectedNode.name}</span>
+                      </div>
+                      <StatTags
+                        {...calculateStats(selectedNode.enterpriseCount)}
+                        color={selectedNode.type === 'industry' ? selectedChain?.color : selectedNode.type === 'segment' ? '#52c41a' : '#fa8c16'}
+                      />
+                    </div>
+                  </Card>
+                  <EnterpriseTable data={nodeEnterprises} />
+                </div>
+              ) : (
+                <Empty description="请点击层级节点查看企业清单" />
+              )}
+            </TabPane>
+          </Tabs>
+        </Card>
+      </div>
+    </div>
+  );
+}
