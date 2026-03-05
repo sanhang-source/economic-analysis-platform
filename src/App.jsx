@@ -16,7 +16,7 @@ import ChainAnalysis from './pages/ChainAnalysis';
 import CapitalGenealogy from './pages/CapitalGenealogy';
 import TradeEcosystem from './pages/TradeEcosystem';
 import EconomicMonitor from './pages/EconomicMonitor';
-import ReportSubmission from './pages/ReportSubmission';
+
 import PolicySimulation from './pages/PolicySimulation';
 import PolicyEvaluation from './pages/PolicyEvaluation';
 import EnterpriseRadar from './pages/EnterpriseRadar';
@@ -81,7 +81,6 @@ const App = () => {
             
             {/* 经济运行子页面 */}
             <Route path="economy/monitor" element={<EconomicMonitor />} />
-            <Route path="economy/reports" element={<ReportSubmission />} />
             
             {/* 政策服务子页面 */}
             <Route path="policy/simulation" element={<PolicySimulation />} />

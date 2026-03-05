@@ -22,7 +22,7 @@ import {
   BellOutlined,
   UserOutlined,
   DownOutlined,
-  SearchOutlined,
+
   AimOutlined,
   ProjectOutlined,
   ShareAltOutlined,
@@ -30,7 +30,7 @@ import {
   FileTextOutlined,
   FileSearchOutlined,
   BarChartOutlined,
-  FormOutlined,
+
   FileProtectOutlined,
   CalculatorOutlined,
   RadarChartOutlined,
@@ -40,7 +40,7 @@ import {
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 
 const { Header, Sider, Content } = Layout;
-const { Search } = Input;
+
 
 /**
  * MainLayout - 经济运行分析平台 平台主布局
@@ -71,11 +71,6 @@ const MainLayout = () => {
           key: '/economy/monitor',
           icon: <BarChartOutlined />,
           label: '经济监测',
-        },
-        {
-          key: '/economy/reports',
-          icon: <FormOutlined />,
-          label: '报表填报',
         },
       ],
     },
@@ -218,7 +213,7 @@ const MainLayout = () => {
     '/enterprise/radar': ['企业档案', '企业雷达'],
     '/economy': ['经济运行'],
     '/economy/monitor': ['经济运行', '经济监测'],
-    '/economy/reports': ['经济运行', '报表填报'],
+
     '/policy': ['政策服务'],
     '/policy/simulation': ['政策服务', '政策试算'],
     '/policy/evaluation': ['政策服务', '政策评估'],
@@ -315,21 +310,6 @@ const MainLayout = () => {
               className="text-gray-600 hover:text-gray-900"
             />
             <Breadcrumb items={getBreadcrumbs()} />
-          </div>
-
-          {/* 中间：全局搜索框 */}
-          <div className="flex-1 flex items-center justify-center max-w-2xl mx-8">
-            <Search
-              placeholder="搜索企业、项目、政策、数据..."
-              allowClear
-              enterButton={<SearchOutlined />}
-              size="large"
-              className="w-full"
-              style={{ 
-                borderRadius: '20px',
-              }}
-              onSearch={(value) => console.log('搜索:', value)}
-            />
           </div>
 
           {/* 右侧：消息、驾驶舱、用户 */}

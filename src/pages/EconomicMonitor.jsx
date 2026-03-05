@@ -11,8 +11,7 @@ import {
 import { economicMonitorMock } from '../mock/economicMonitorMock';
 import { useState } from 'react';
 
-const { Title, Text } = Typography;
-const { RangePicker } = DatePicker;
+const { Text } = Typography;
 
 /**
  * EconomicMonitor - 经济监测页面
@@ -28,9 +27,6 @@ const EconomicMonitor = () => {
   const [showMoreGB, setShowMoreGB] = useState(false);
   const [showMoreIndustry, setShowMoreIndustry] = useState(false);
   const [showMoreParks, setShowMoreParks] = useState(false);
-  const [selectedGBIndustry, setSelectedGBIndustry] = useState(null);
-  const [selectedIndustry, setSelectedIndustry] = useState(null);
-  const [selectedPark, setSelectedPark] = useState(null);
   
   // 计算每行能显示的标签数量（根据屏幕宽度自适应）
   const VISIBLE_COUNT = 12;
@@ -43,49 +39,10 @@ const EconomicMonitor = () => {
     orange: '#f59e0b',
     purple: '#8b5cf6',
     red: '#ef4444',
-    cyan: '#06b6d4',
-    gray: '#6b7280',
+
   };
   
-  // 获取已选维度标签
-  const getSelectedTags = () => {
-    const tags = [];
-    if (selectedGBIndustry) {
-      const item = gbIndustries.find(i => i.key === selectedGBIndustry);
-      if (item) tags.push({ label: item.title, key: selectedGBIndustry, type: '国标行业' });
-    }
-    if (selectedIndustry) {
-      const findItem = (items) => {
-        for (const item of items) {
-          if (item.key === selectedIndustry) return item;
-          if (item.children) {
-            const found = item.children.find(c => c.key === selectedIndustry);
-            if (found) return found;
-          }
-        }
-        return null;
-      };
-      const item = findItem(industries);
-      if (item) tags.push({ label: item.title, key: selectedIndustry, type: '产业' });
-    }
-    if (selectedPark) {
-      const item = parks.find(i => i.key === selectedPark);
-      if (item) tags.push({ label: item.title, key: selectedPark, type: '园区' });
-    }
-    return tags;
-  };
-  
-  // 移除已选标签
-  const removeTag = (type) => {
-    if (type === '国标行业') {
-      setSelectedGBIndustry(null);
-    } else if (type === '产业') {
-      setSelectedIndustry(null);
-    } else if (type === '园区') {
-      setSelectedPark(null);
-    }
-  };
-  
+
   // 清除所有选择
   const clearAllSelections = () => {
     setSelectedGBIndustry(null);
@@ -521,8 +478,6 @@ const EconomicMonitor = () => {
       },
     ],
   };
-  
-  const selectedTags = getSelectedTags();
   
   return (
     <div className="h-full -m-6 p-5">
