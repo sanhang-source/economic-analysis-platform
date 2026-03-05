@@ -87,7 +87,7 @@ export const parks = [
    { title: '深圳国家高新区', key: 'park-hitech', count: 18500, important: false },
 ];
 // // 12个月份数据（2025-02 到 2026-01）
-const months = ['2025-02', '2025-03', '2025-04', '2025-05', '2025-06', '2025-07', '2025-08', '2025-09', '2025-10', '2025-11', '2025-12', '2026-01'];
+const months = ['2024-02', '2024-03', '2024-04', '2024-05', '2024-06', '2024-07', '2024-08', '2024-09', '2024-10', '2024-11', '2024-12', '2025-01', '2025-02', '2025-03', '2025-04', '2025-05', '2025-06', '2025-07', '2025-08', '2025-09', '2025-10', '2025-11', '2025-12', '2026-01'];
 /**
  * 深圳真实经济数据 Mock（2025-02 至 2026-01）
  * 数据结构：总数、环比、同比 三者逻辑一致
@@ -97,67 +97,114 @@ const months = ['2025-02', '2025-03', '2025-04', '2025-05', '2025-06', '2025-07'
 // 深圳企业存量约280万家，月新增约2-3万家
 // 总数（家）、环比（%）、同比（%）
 const enterpriseData = [
-  { total: 2558200, mom: 0.8, yoy: 8.5 },   // 2025-02 春节月
-  { total: 2586400, mom: 1.1, yoy: 8.8 },   // 2025-03 返工高峰
-  { total: 2615800, mom: 1.1, yoy: 9.0 },   // 2025-04
-  { total: 2639200, mom: 0.9, yoy: 8.9 },   // 2025-05
-  { total: 2661800, mom: 0.9, yoy: 8.7 },   // 2025-06
-  { total: 2684500, mom: 0.9, yoy: 8.6 },   // 2025-07
-  { total: 2706800, mom: 0.8, yoy: 8.4 },   // 2025-08
-  { total: 2728900, mom: 0.8, yoy: 8.3 },   // 2025-09
-  { total: 2745600, mom: 0.6, yoy: 8.1 },   // 2025-10
-  { total: 2762300, mom: 0.6, yoy: 7.9 },   // 2025-11
-  { total: 2779800, mom: 0.6, yoy: 7.8 },   // 2025-12
-  { total: 2796500, mom: 0.6, yoy: 7.6 },   // 2026-01
+  { total: 2208333, mom: 0.0, yoy: 8.0 },   // 2024-02
+  { total: 2233333, mom: 1.1, yoy: 8.0 },   // 2024-03
+  { total: 2257407, mom: 1.1, yoy: 8.0 },   // 2024-04
+  { total: 2282407, mom: 1.1, yoy: 8.0 },   // 2024-05
+  { total: 2307407, mom: 1.1, yoy: 8.0 },   // 2024-06
+  { total: 2331481, mom: 1.0, yoy: 8.0 },   // 2024-07
+  { total: 2354629, mom: 1.0, yoy: 8.0 },   // 2024-08
+  { total: 2376851, mom: 0.9, yoy: 8.0 },   // 2024-09
+  { total: 2399074, mom: 0.9, yoy: 8.0 },   // 2024-10
+  { total: 2421296, mom: 0.9, yoy: 8.0 },   // 2024-11
+  { total: 2444444, mom: 1.0, yoy: 8.0 },   // 2024-12
+  { total: 2464814, mom: 0.8, yoy: 8.0 },   // 2025-01
+  { total: 2385000, mom: -3.2, yoy: 8.0 },    // 2025-02
+  { total: 2412000, mom: 1.1, yoy: 8.2 },    // 2025-03
+  { total: 2438000, mom: 1.1, yoy: 7.8 },    // 2025-04
+  { total: 2465000, mom: 1.1, yoy: 8.5 },    // 2025-05
+  { total: 2492000, mom: 1.1, yoy: 8.0 },    // 2025-06
+  { total: 2518000, mom: 1.0, yoy: 7.9 },    // 2025-07
+  { total: 2543000, mom: 1.0, yoy: 8.3 },    // 2025-08
+  { total: 2567000, mom: 0.9, yoy: 8.0 },    // 2025-09
+  { total: 2591000, mom: 0.9, yoy: 7.6 },    // 2025-10
+  { total: 2615000, mom: 0.9, yoy: 8.1 },    // 2025-11
+  { total: 2640000, mom: 1.0, yoy: 7.9 },    // 2025-12
+  { total: 2662000, mom: 0.8, yoy: 8.4 },    // 2026-01
 ];
 // ==================== 2. 纳税数据 ====================
 // 深圳月度税收约600-900亿元，年累计约9500亿
 // 季度申报月（1、4、7、10月）较高，春节月较低
 const taxData = [
-  { total: 628.5, mom: -18.5, yoy: 5.2 },   // 2025-02 春节低谷
-  { total: 765.2, mom: 21.8, yoy: 6.8 },    // 2025-03 恢复增长
-  { total: 892.4, mom: 16.6, yoy: 8.5 },    // 2025-04 季报高峰
-  { total: 738.6, mom: -17.2, yoy: 7.2 },   // 2025-05
-  { total: 712.3, mom: -3.6, yoy: 6.5 },    // 2025-06
-  { total: 845.8, mom: 18.7, yoy: 7.8 },    // 2025-07 季报高峰
-  { total: 798.4, mom: -5.6, yoy: 6.9 },    // 2025-08
-  { total: 756.2, mom: -5.3, yoy: 6.2 },    // 2025-09
-  { total: 825.6, mom: 9.2, yoy: 7.5 },     // 2025-10 季报高峰
-  { total: 788.9, mom: -4.4, yoy: 6.8 },    // 2025-11
-  { total: 742.3, mom: -5.9, yoy: 5.9 },    // 2025-12
-  { total: 865.4, mom: 16.6, yoy: 7.2 },    // 2026-01 年末高峰
+  { total: 587.1, mom: 0.0, yoy: 6.5 },     // 2024-02
+  { total: 672.1, mom: 14.5, yoy: 6.5 },    // 2024-03
+  { total: 643.4, mom: -4.3, yoy: 6.5 },    // 2024-04
+  { total: 655.9, mom: 1.9, yoy: 6.5 },     // 2024-05
+  { total: 737.7, mom: 12.5, yoy: 6.5 },    // 2024-06
+  { total: 643.5, mom: -12.8, yoy: 6.5 },   // 2024-07
+  { total: 650.5, mom: 1.1, yoy: 6.5 },     // 2024-08
+  { total: 699.7, mom: 7.6, yoy: 6.5 },     // 2024-09
+  { total: 669.1, mom: -4.4, yoy: 6.5 },    // 2024-10
+  { total: 712.0, mom: 6.4, yoy: 6.5 },     // 2024-11
+  { total: 791.1, mom: 11.1, yoy: 6.5 },    // 2024-12
+  { total: 749.8, mom: -5.2, yoy: 6.5 },    // 2025-01
+  { total: 625.3, mom: -16.6, yoy: 6.5 },    // 2025-02
+  { total: 715.8, mom: 14.5, yoy: 6.8 },    // 2025-03
+  { total: 685.2, mom: -4.3, yoy: 6.2 },    // 2025-04
+  { total: 698.5, mom: 1.9, yoy: 6.9 },     // 2025-05
+  { total: 785.6, mom: 12.5, yoy: 6.3 },    // 2025-06
+  { total: 685.3, mom: -12.8, yoy: 6.7 },   // 2025-07
+  { total: 692.8, mom: 1.1, yoy: 6.4 },     // 2025-08
+  { total: 745.2, mom: 7.6, yoy: 6.6 },     // 2025-09
+  { total: 712.6, mom: -4.4, yoy: 6.1 },    // 2025-10
+  { total: 758.3, mom: 6.4, yoy: 6.8 },     // 2025-11
+  { total: 842.5, mom: 11.1, yoy: 6.2 },    // 2025-12
+  { total: 798.5, mom: -5.2, yoy: 6.9 },    // 2026-01
 ];
 // ==================== 3. 用工数据 ====================
 // 深圳就业人口约1200万人，春节后3月回流高峰
 const employmentData = [
-  { total: 1128.5, mom: -3.2, yoy: 0.8 },   // 2025-02 春节返乡
-  { total: 1185.6, mom: 5.1, yoy: 1.2 },    // 2025-03 返工高峰
-  { total: 1192.3, mom: 0.6, yoy: 1.0 },    // 2025-04
-  { total: 1195.8, mom: 0.3, yoy: 0.9 },    // 2025-05
-  { total: 1196.5, mom: 0.1, yoy: 0.8 },    // 2025-06
-  { total: 1197.2, mom: 0.1, yoy: 0.7 },    // 2025-07
-  { total: 1196.8, mom: -0.0, yoy: 0.6 },   // 2025-08
-  { total: 1197.5, mom: 0.1, yoy: 0.6 },    // 2025-09
-  { total: 1198.2, mom: 0.1, yoy: 0.5 },    // 2025-10
-  { total: 1198.8, mom: 0.0, yoy: 0.5 },    // 2025-11
-  { total: 1199.2, mom: 0.0, yoy: 0.4 },    // 2025-12
-  { total: 1198.6, mom: -0.0, yoy: 0.3 },   // 2026-01 春节前夕
+  { total: 1178.1, mom: 0.0, yoy: 0.6 },    // 2024-02
+  { total: 1178.3, mom: 0.0, yoy: 0.6 },    // 2024-03
+  { total: 1181.0, mom: 0.2, yoy: 0.6 },    // 2024-04
+  { total: 1182.3, mom: 0.1, yoy: 0.6 },    // 2024-05
+  { total: 1183.6, mom: 0.1, yoy: 0.6 },    // 2024-06
+  { total: 1184.6, mom: 0.1, yoy: 0.6 },    // 2024-07
+  { total: 1185.6, mom: 0.1, yoy: 0.6 },    // 2024-08
+  { total: 1186.5, mom: 0.1, yoy: 0.6 },    // 2024-09
+  { total: 1187.4, mom: 0.1, yoy: 0.6 },    // 2024-10
+  { total: 1188.1, mom: 0.1, yoy: 0.6 },    // 2024-11
+  { total: 1188.8, mom: 0.1, yoy: 0.6 },    // 2024-12
+  { total: 1188.9, mom: 0.0, yoy: 0.6 },    // 2025-01
+  { total: 1185.2, mom: -0.3, yoy: 0.6 },    // 2025-02
+  { total: 1185.4, mom: 0.0, yoy: 0.8 },    // 2025-03
+  { total: 1188.1, mom: 0.2, yoy: 0.5 },    // 2025-04
+  { total: 1189.4, mom: 0.1, yoy: 0.7 },    // 2025-05
+  { total: 1190.7, mom: 0.1, yoy: 0.4 },    // 2025-06
+  { total: 1191.7, mom: 0.1, yoy: 0.6 },    // 2025-07
+  { total: 1192.7, mom: 0.1, yoy: 0.9 },    // 2025-08
+  { total: 1193.6, mom: 0.1, yoy: 0.3 },    // 2025-09
+  { total: 1194.5, mom: 0.1, yoy: 0.7 },    // 2025-10
+  { total: 1195.2, mom: 0.1, yoy: 0.5 },    // 2025-11
+  { total: 1195.9, mom: 0.1, yoy: 0.8 },    // 2025-12
+  { total: 1196.0, mom: 0.0, yoy: 0.4 },    // 2026-01
 ];
 // ==================== 4. 专利数据 ====================
-// 深圳月度专利申请2-3万件，授权1.2-1.8万件，授权率55-60%
 const patentData = [
-  { apply: 21800, grant: 12500, applyMom: -12.5, applyYoy: 8.2, grantMom: -8.2, grantYoy: 12.5 },   // 2025-02 春节
-  { apply: 28500, grant: 16200, applyMom: 30.7, applyYoy: 15.6, grantMom: 29.6, grantYoy: 18.2 },  // 2025-03 高峰
-  { apply: 26800, grant: 15400, applyMom: -6.0, applyYoy: 12.8, grantMom: -4.9, grantYoy: 15.6 },  // 2025-04
-  { apply: 24200, grant: 13800, applyMom: -9.7, applyYoy: 10.5, grantMom: -10.4, grantYoy: 12.8 }, // 2025-05
-  { apply: 22800, grant: 13200, applyMom: -5.8, applyYoy: 8.9, grantMom: -4.3, grantYoy: 11.2 },  // 2025-06
-  { apply: 25600, grant: 14800, applyMom: 12.3, applyYoy: 11.2, grantMom: 12.1, grantYoy: 13.5 }, // 2025-07
-  { apply: 23800, grant: 13600, applyMom: -7.0, applyYoy: 9.8, grantMom: -8.1, grantYoy: 10.8 },  // 2025-08
-  { apply: 26500, grant: 15200, applyMom: 11.3, applyYoy: 12.5, grantMom: 11.8, grantYoy: 14.2 }, // 2025-09
-  { apply: 27200, grant: 15800, applyMom: 2.6, applyYoy: 13.8, grantMom: 3.9, grantYoy: 15.6 },   // 2025-10
-  { apply: 25800, grant: 14800, applyMom: -5.1, applyYoy: 11.5, grantMom: -6.3, grantYoy: 12.8 }, // 2025-11
-  { apply: 28900, grant: 16800, applyMom: 12.0, applyYoy: 14.2, grantMom: 13.5, grantYoy: 16.8 }, // 2025-12 年底高峰
-  { apply: 31200, grant: 18200, applyMom: 8.0, applyYoy: 16.5, grantMom: 8.3, grantYoy: 18.5 },   // 2026-01 年初高峰
+  { total: 213000, mom: 0.0, yoy: 12.0 },   // 2024-02
+  { total: 215946, mom: 1.4, yoy: 12.0 },   // 2024-03
+  { total: 219071, mom: 1.4, yoy: 12.0 },   // 2024-04
+  { total: 222196, mom: 1.4, yoy: 12.0 },   // 2024-05
+  { total: 225500, mom: 1.5, yoy: 12.0 },   // 2024-06
+  { total: 228982, mom: 1.5, yoy: 12.0 },   // 2024-07
+  { total: 232553, mom: 1.6, yoy: 12.0 },   // 2024-08
+  { total: 236125, mom: 1.5, yoy: 12.0 },   // 2024-09
+  { total: 239875, mom: 1.6, yoy: 12.0 },   // 2024-10
+  { total: 243714, mom: 1.6, yoy: 12.0 },   // 2024-11
+  { total: 249339, mom: 2.3, yoy: 12.0 },   // 2024-12
+  { total: 255589, mom: 2.5, yoy: 12.0 },   // 2025-01
+  { total: 238560, mom: -6.7, yoy: 12.0 },   // 2025-02
+  { total: 241860, mom: 1.4, yoy: 11.7 },   // 2025-03
+  { total: 245360, mom: 1.4, yoy: 12.3 },   // 2025-04
+  { total: 248860, mom: 1.4, yoy: 11.5 },   // 2025-05
+  { total: 252560, mom: 1.5, yoy: 12.8 },   // 2025-06
+  { total: 256460, mom: 1.5, yoy: 11.2 },   // 2025-07
+  { total: 260460, mom: 1.6, yoy: 12.5 },   // 2025-08
+  { total: 264460, mom: 1.5, yoy: 11.9 },   // 2025-09
+  { total: 268660, mom: 1.6, yoy: 12.4 },   // 2025-10
+  { total: 272960, mom: 1.6, yoy: 11.6 },   // 2025-11
+  { total: 279260, mom: 2.3, yoy: 12.1 },   // 2025-12
+  { total: 286260, mom: 2.5, yoy: 11.8 },   // 2026-01
 ];
 // 图表数据导出
 export const chartData = {
@@ -183,13 +230,11 @@ export const chartData = {
     yoy: employmentData.map(d => d.yoy),
     raw: employmentData,
   },
-  // 专利（申请/授权 + 环比 + 同比）
+  // 专利（万件 + 环比 + 同比）
   patent: {
-    apply: patentData.map(d => d.apply),
-    grant: patentData.map(d => d.grant),
-    applyMom: patentData.map(d => d.applyMom),
-    applyYoy: patentData.map(d => d.applyYoy),
-    grantRate: patentData.map(d => ((d.grant / d.apply) * 100).toFixed(1)),
+    total: patentData.map(d => d.total),
+    mom: patentData.map(d => d.mom),
+    yoy: patentData.map(d => d.yoy),
     raw: patentData,
   },
 };
@@ -211,10 +256,9 @@ export const summaryStats = {
     yoy: employmentData[11].yoy,
   },
   patents: {
-    total: patentData.reduce((sum, d) => sum + d.apply, 0), // 12个月累计
-    apply: patentData[11].apply,
-    grant: patentData[11].grant,
-    grantRate: ((patentData[11].grant / patentData[11].apply) * 100).toFixed(1),
+    total: patentData[11].total, // 使用最新月份数据
+    mom: patentData[11].mom,
+    yoy: patentData[11].yoy,
    },
 };
 // 区域数据 - 深圳行政区
