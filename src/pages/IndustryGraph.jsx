@@ -8,6 +8,7 @@ import {
   Button,
   Tabs,
   Empty,
+  Select,
 } from 'antd';
 import {
   SearchOutlined,
@@ -18,12 +19,14 @@ import {
   ApartmentOutlined,
   ShopOutlined,
   ShoppingOutlined,
+  EnvironmentOutlined,
 } from '@ant-design/icons';
 import { industryChains, industryChainStats, getAllNodePaths } from '../mock/industryChainMock';
 import TreeNode from '../components/industry/TreeNode';
 
 const { Search } = Input;
 const { TabPane } = Tabs;
+const { Option } = Select;
 
 // 生成企业列表数据
 const generateEnterprises = (count, type) => {
@@ -340,6 +343,23 @@ export default function IndustryGraph() {
     return findNode(selectedChain.hierarchy);
   }, [selectedNodeId, selectedChain]);
 
+  // 区域选择状态
+  const [region, setRegion] = useState('全市');
+
+  // 区域选项（与数字驾驶舱一致）
+  const regionOptions = [
+    { value: '全市', label: '全市' },
+    { value: '南山区', label: '南山区' },
+    { value: '福田区', label: '福田区' },
+    { value: '宝安区', label: '宝安区' },
+    { value: '龙岗区', label: '龙岗区' },
+    { value: '龙华区', label: '龙华区' },
+    { value: '罗湖区', label: '罗湖区' },
+    { value: '光明区', label: '光明区' },
+    { value: '盐田区', label: '盐田区' },
+    { value: '坪山区', label: '坪山区' },
+  ];
+
   // 计算统计数据
   const stats = useMemo(() => {
     // 计算产业总数
@@ -391,6 +411,24 @@ export default function IndustryGraph() {
 
   return (
     <div className="h-full flex flex-col">
+      {/* 页面标题和区域选择 */}
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+            <EnvironmentOutlined className="text-blue-500" />
+            区域产业
+          </h1>
+          <p className="text-gray-500 text-sm mt-1">
+            分析区域产业结构，洞察产业发展态势
+          </p>
+        </div>
+        <Select value={region} onChange={setRegion} style={{ width: 120 }}>
+          {regionOptions.map(option => (
+            <Option key={option.value} value={option.value}>{option.label}</Option>
+          ))}
+        </Select>
+      </div>
+
       {/* 数据概览卡片 */}
       <div className="grid grid-cols-6 gap-3 mb-4">
         <StatCard
