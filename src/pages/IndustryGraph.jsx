@@ -1,31 +1,39 @@
-﻿import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import {
   Card,
   Input,
   Table,
   Tag,
   Space,
-  Collapse,
-  Badge,
   Button,
   Tabs,
-  Empty
+  Empty,
+  Radio,
+  Tooltip,
+  Badge,
+  Checkbox,
+  Divider,
 } from 'antd';
 import {
   SearchOutlined,
   GlobalOutlined,
-  ApartmentOutlined,
   BankOutlined,
+  RightOutlined,
+  TeamOutlined,
+  ApartmentOutlined,
   ShopOutlined,
   ShoppingOutlined,
-  DownOutlined,
-  RightOutlined,
-  TeamOutlined
+  BarChartOutlined,
+  ShareAltOutlined,
+  CloseCircleOutlined,
+  CheckCircleFilled,
 } from '@ant-design/icons';
-import { industryChains, industryChainStats } from '../mock/industryChainMock';
+import { industryChains, industryChainStats, getAllNodePaths } from '../mock/industryChainMock';
+import TreeNode from '../components/industry/TreeNode';
+import ChainComparison from '../components/industry/ChainComparison';
+import GraphView from '../components/industry/GraphView';
 
 const { Search } = Input;
-const { Panel } = Collapse;
 const { TabPane } = Tabs;
 
 // 生成企业列表数据
@@ -118,156 +126,119 @@ const EnterpriseTable = ({ data }) => {
   );
 };
 
-// 统计标签组件
-const StatTags = ({ shenzhenCount, nationalCount, percentage, color }) => {
-  const formatNum = (n) => n >= 10000 ? (n / 10000).toFixed(1) + '万' : n.toLocaleString();
-
-  return (
-    <Space size="middle">
-      <Tag color={color} style={{ fontSize: '12px', padding: '2px 8px' }}>
-        深圳: {formatNum(shenzhenCount)}
-      </Tag>
-      <Tag style={{ fontSize: '12px', padding: '2px 8px' }}>
-        全国: {formatNum(nationalCount)}
-      </Tag>
-      <Tag color="blue" style={{ fontSize: '12px', padding: '2px 8px' }}>
-        占比: {percentage}%
-      </Tag>
-    </Space>
-  );
-};
+// 格式化数字
+const formatNum = (n) => n >= 10000 ? (n / 10000).toFixed(1) + '万' : n.toLocaleString();
 
 export default function IndustryGraph() {
+  // 状态管理
   const [selectedChainId, setSelectedChainId] = useState(industryChains[0]?.id);
   const [searchText, setSearchText] = useState('');
+  const [treeSearchText, setTreeSearchText] = useState('');
   const [activeTab, setActiveTab] = useState('overview');
-  const [selectedNode, setSelectedNode] = useState(null);
+  const [viewMode, setViewMode] = useState('list'); // 'list' | 'graph'
+  const [selectedNodeId, setSelectedNodeId] = useState(null);
+  const [expandedKeys, setExpandedKeys] = useState([]);
+  const [compareMode, setCompareMode] = useState(false);
+  const [selectedCompareChains, setSelectedCompareChains] = useState([]);
 
+  // 计算选中产业链
   const selectedChain = useMemo(() =>
     industryChains.find(c => c.id === selectedChainId) || industryChains[0] || {}
   , [selectedChainId]);
 
+  // 过滤产业链列表
   const filteredChains = useMemo(() =>
     searchText ? industryChains.filter(c => c.name.includes(searchText)) : industryChains
   , [searchText]);
 
-  const formatNum = (n) => n >= 10000 ? (n / 10000).toFixed(1) + '万' : n.toLocaleString();
+  // 搜索树节点
+  const searchResults = useMemo(() => {
+    if (!treeSearchText || !selectedChainId) return [];
+    const paths = getAllNodePaths(selectedChainId);
+    return paths.filter(p => 
+      p.name.toLowerCase().includes(treeSearchText.toLowerCase())
+    );
+  }, [treeSearchText, selectedChainId]);
 
-  // 计算统计数据
-  const calculateStats = (enterpriseCount) => {
-    const percentage = selectedChain?.stats?.percentage || 0;
-    const shenzhenCount = Math.round(enterpriseCount * (percentage / 100));
-    return { shenzhenCount, nationalCount: enterpriseCount, percentage };
-  };
+  // 处理展开/收起
+  const handleToggle = useCallback((nodeId) => {
+    setExpandedKeys(prev => 
+      prev.includes(nodeId) 
+        ? prev.filter(id => id !== nodeId)
+        : [...prev, nodeId]
+    );
+  }, []);
 
-  // 处理节点点击
-  const handleNodeClick = (node, type) => {
-    setSelectedNode({ ...node, type });
+  // 处理节点选择
+  const handleSelectNode = useCallback((node) => {
+    setSelectedNodeId(node.id);
     setActiveTab('enterprises');
-  };
+  }, []);
+
+  // 处理图谱节点点击
+  const handleGraphNodeClick = useCallback((nodeData) => {
+    setSelectedNodeId(nodeData.id);
+    setActiveTab('enterprises');
+  }, []);
 
   // 获取选中节点的企业列表
   const getNodeEnterprises = () => {
-    if (!selectedNode) return [];
-    return generateEnterprises(selectedNode.enterpriseCount || 10, selectedNode.type);
+    if (!selectedNodeId) return [];
+    // 查找节点数据
+    const findNode = (nodes) => {
+      for (const node of nodes) {
+        if (node.id === selectedNodeId) return node;
+        if (node.children) {
+          const found = findNode(node.children);
+          if (found) return found;
+        }
+      }
+      return null;
+    };
+    
+    const node = findNode(selectedChain.hierarchy || []);
+    if (!node) return [];
+    
+    // 根据层级确定类型
+    const getTypeByLevel = (id) => {
+      const parts = id.split('-');
+      return parts.length <= 2 ? 'industry' : parts.length === 3 ? 'segment' : 'product';
+    };
+    
+    return generateEnterprises(node.enterpriseCount || 10, getTypeByLevel(selectedNodeId));
   };
 
-  // 渲染产品服务层级
-  const renderProducts = (products, parentColor) => {
-    if (!products?.length) return null;
+  // 展开全部
+  const expandAll = useCallback(() => {
+    const allIds = [];
+    const collectIds = (nodes) => {
+      nodes.forEach(node => {
+        if (node.children?.length > 0) {
+          allIds.push(node.id);
+          collectIds(node.children);
+        }
+      });
+    };
+    collectIds(selectedChain.hierarchy || []);
+    setExpandedKeys(allIds);
+  }, [selectedChain]);
 
-    return (
-      <div className="ml-8 mt-2 space-y-2">
-        {products.map((product, idx) => {
-          const stats = calculateStats(product.enterpriseCount);
-          return (
-            <div
-              key={idx}
-              className="flex items-center justify-between p-3 bg-orange-50 rounded-lg border border-orange-100 hover:border-orange-300 hover:shadow-sm cursor-pointer transition-all"
-              onClick={() => handleNodeClick(product, 'product')}
-            >
-              <div className="flex items-center gap-3">
-                <ShoppingOutlined className="text-orange-500" />
-                <span className="font-medium text-gray-800">{product.name}</span>
-              </div>
-              <StatTags {...stats} color="#fa8c16" />
-            </div>
-          );
-        })}
-      </div>
-    );
-  };
+  // 收起全部
+  const collapseAll = useCallback(() => {
+    setExpandedKeys([]);
+  }, []);
 
-  // 渲染细分行业层级
-  const renderSegments = (segments, parentColor) => {
-    if (!segments?.length) return null;
-
-    return (
-      <div className="ml-6 mt-2 space-y-2">
-        {segments.map((segment, idx) => {
-          const stats = calculateStats(segment.enterpriseCount);
-          const hasChildren = segment.children?.length > 0;
-
-          return (
-            <div key={idx} className="border-l-2 border-green-200 pl-4">
-              <div
-                className="flex items-center justify-between p-3 bg-green-50 rounded-lg border border-green-100 hover:border-green-300 hover:shadow-sm cursor-pointer transition-all"
-                onClick={() => handleNodeClick(segment, 'segment')}
-              >
-                <div className="flex items-center gap-3">
-                  <ShopOutlined className="text-green-600" />
-                  <span className="font-medium text-gray-800">{segment.name}</span>
-                  {hasChildren && (
-                    <Badge count={segment.children.length} style={{ backgroundColor: '#52c41a' }} />
-                  )}
-                </div>
-                <StatTags {...stats} color="#52c41a" />
-              </div>
-              {hasChildren && renderProducts(segment.children, parentColor)}
-            </div>
-          );
-        })}
-      </div>
-    );
-  };
-
-  // 渲染产业层级
-  const renderIndustries = () => {
-    if (!selectedChain?.hierarchy?.length) {
-      return <Empty description="暂无数据" />;
-    }
-
-    return (
-      <div className="space-y-4">
-        {selectedChain.hierarchy.map((industry, idx) => {
-          const stats = calculateStats(industry.enterpriseCount);
-          const hasChildren = industry.children?.length > 0;
-
-          return (
-            <Card
-              key={idx}
-              size="small"
-              className="border-l-4"
-              style={{ borderLeftColor: selectedChain.color }}
-              title={
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <ApartmentOutlined style={{ color: selectedChain.color, fontSize: 18 }} />
-                    <span className="font-semibold text-gray-800">{industry.name}</span>
-                    {hasChildren && (
-                      <Badge count={industry.children.length} style={{ backgroundColor: selectedChain.color }} />
-                    )}
-                  </div>
-                  <StatTags {...stats} color={selectedChain.color} />
-                </div>
-              }
-            >
-              {hasChildren && renderSegments(industry.children, selectedChain.color)}
-            </Card>
-          );
-        })}
-      </div>
-    );
+  // 切换产业链选择（用于对比）
+  const toggleCompareChain = (chainId) => {
+    setSelectedCompareChains(prev => {
+      if (prev.includes(chainId)) {
+        return prev.filter(id => id !== chainId);
+      }
+      if (prev.length >= 2) {
+        return [prev[1], chainId];
+      }
+      return [...prev, chainId];
+    });
   };
 
   // 渲染产业链列表
@@ -276,46 +247,71 @@ export default function IndustryGraph() {
       {filteredChains.map((chain) => (
         <div
           key={chain.id}
-          onClick={() => { setSelectedChainId(chain.id); setSelectedNode(null); setActiveTab('overview'); }}
-          className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
-            selectedChainId === chain.id
+          className={`
+            relative p-4 rounded-lg border-2 cursor-pointer transition-all
+            ${selectedChainId === chain.id
               ? 'border-blue-500 bg-blue-50'
               : 'border-gray-200 hover:border-blue-300 hover:shadow-sm'
-          }`}
+            }
+          `}
         >
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-3">
-              <div
-                className="w-12 h-12 rounded-lg flex items-center justify-center text-white text-xl font-bold"
-                style={{ backgroundColor: chain.color }}
-              >
-                {chain.name.charAt(0)}
-              </div>
-              <div>
-                <div className="font-semibold text-gray-800">{chain.name}</div>
-                <div className="text-xs text-gray-500">{chain.description}</div>
-              </div>
+          {/* 对比模式选择框 */}
+          {compareMode && (
+            <div className="absolute top-2 right-2 z-10">
+              <Checkbox
+                checked={selectedCompareChains.includes(chain.id)}
+                onChange={(e) => {
+                  e.stopPropagation();
+                  toggleCompareChain(chain.id);
+                }}
+              />
             </div>
-            <RightOutlined className="text-gray-400" />
-          </div>
-          <div className="grid grid-cols-3 gap-2 text-center">
-            <div className="bg-white rounded p-2">
-              <div className="text-sm font-bold" style={{ color: chain.color }}>
-                {formatNum(chain.stats.shenzhenCount)}
+          )}
+          
+          <div 
+            onClick={() => {
+              if (!compareMode) {
+                setSelectedChainId(chain.id);
+                setSelectedNodeId(null);
+                setExpandedKeys([]);
+                setActiveTab('overview');
+              }
+            }}
+          >
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-3">
+                <div
+                  className="w-12 h-12 rounded-lg flex items-center justify-center text-white text-xl font-bold"
+                  style={{ backgroundColor: chain.color }}
+                >
+                  {chain.name.charAt(0)}
+                </div>
+                <div>
+                  <div className="font-semibold text-gray-800">{chain.name}</div>
+                  <div className="text-xs text-gray-500">{chain.description}</div>
+                </div>
               </div>
-              <div className="text-xs text-gray-500">深圳企业</div>
+              {!compareMode && <RightOutlined className="text-gray-400" />}
             </div>
-            <div className="bg-white rounded p-2">
-              <div className="text-sm font-bold text-gray-700">
-                {formatNum(chain.stats.nationalCount)}
+            <div className="grid grid-cols-3 gap-2 text-center">
+              <div className="bg-white rounded p-2">
+                <div className="text-sm font-bold" style={{ color: chain.color }}>
+                  {formatNum(chain.stats.shenzhenCount)}
+                </div>
+                <div className="text-xs text-gray-500">深圳企业</div>
               </div>
-              <div className="text-xs text-gray-500">全国企业</div>
-            </div>
-            <div className="bg-white rounded p-2">
-              <div className="text-sm font-bold text-blue-600">
-                {chain.stats.percentage}%
+              <div className="bg-white rounded p-2">
+                <div className="text-sm font-bold text-gray-700">
+                  {formatNum(chain.stats.nationalCount)}
+                </div>
+                <div className="text-xs text-gray-500">全国企业</div>
               </div>
-              <div className="text-xs text-gray-500">深圳占比</div>
+              <div className="bg-white rounded p-2">
+                <div className="text-sm font-bold text-blue-600">
+                  {chain.stats.percentage}%
+                </div>
+                <div className="text-xs text-gray-500">深圳占比</div>
+              </div>
             </div>
           </div>
         </div>
@@ -323,119 +319,270 @@ export default function IndustryGraph() {
     </div>
   );
 
+  // 渲染树形层级
+  const renderTree = () => {
+    if (!selectedChain?.hierarchy?.length) {
+      return <Empty description="暂无数据" />;
+    }
+
+    // 如果有搜索结果，高亮显示
+    const highlightIds = searchResults.map(r => r.id);
+
+    return (
+      <div className="tree-container">
+        {/* 树搜索和操作栏 */}
+        <div className="flex items-center gap-2 mb-4">
+          <Search
+            placeholder="搜索节点..."
+            allowClear
+            size="small"
+            value={treeSearchText}
+            onChange={e => setTreeSearchText(e.target.value)}
+            className="flex-1"
+          />
+          <Button size="small" onClick={expandAll}>展开全部</Button>
+          <Button size="small" onClick={collapseAll}>收起全部</Button>
+        </div>
+
+        {/* 搜索结果提示 */}
+        {treeSearchText && (
+          <div className="mb-3 px-3 py-2 bg-blue-50 rounded text-sm text-blue-700">
+            找到 {searchResults.length} 个匹配项
+          </div>
+        )}
+
+        {/* 树节点 */}
+        <div className="space-y-1">
+          {selectedChain.hierarchy.map((node) => (
+            <TreeNode
+              key={node.id}
+              node={node}
+              level={0}
+              chainColor={selectedChain.color}
+              expandedKeys={expandedKeys}
+              selectedKey={selectedNodeId}
+              onToggle={handleToggle}
+              onSelect={handleSelectNode}
+              searchHighlight={highlightIds}
+            />
+          ))}
+        </div>
+      </div>
+    );
+  };
+
   const nodeEnterprises = getNodeEnterprises();
+
+  // 获取当前选中的节点信息
+  const selectedNodeInfo = useMemo(() => {
+    if (!selectedNodeId || !selectedChain?.hierarchy) return null;
+    
+    const findNode = (nodes) => {
+      for (const node of nodes) {
+        if (node.id === selectedNodeId) return node;
+        if (node.children) {
+          const found = findNode(node.children);
+          if (found) return found;
+        }
+      }
+      return null;
+    };
+    
+    return findNode(selectedChain.hierarchy);
+  }, [selectedNodeId, selectedChain]);
 
   return (
     <div className="h-full flex flex-col">
       {/* Header */}
       <div className="mb-4">
-        <h1 className="text-xl font-semibold flex items-center gap-2">
-          <GlobalOutlined className="text-blue-500" />
-          产业链图谱
-        </h1>
+        <div className="flex items-center justify-between">
+          <h1 className="text-xl font-semibold flex items-center gap-2">
+            <GlobalOutlined className="text-blue-500" />
+            产业链图谱
+          </h1>
+          <Space>
+            <Button 
+              type={compareMode ? 'primary' : 'default'}
+              size="small"
+              icon={<BarChartOutlined />}
+              onClick={() => {
+                setCompareMode(!compareMode);
+                if (!compareMode) {
+                  setSelectedCompareChains([]);
+                }
+              }}
+            >
+              {compareMode ? '退出对比' : '对比模式'}
+            </Button>
+            {compareMode && selectedCompareChains.length >= 2 && (
+              <Button
+                type="primary"
+                size="small"
+                onClick={() => setActiveTab('comparison')}
+              >
+                查看对比 ({selectedCompareChains.length})
+              </Button>
+            )}
+          </Space>
+        </div>
         <p className="text-gray-500 text-sm mt-1">
           共 <span className="text-blue-600 font-semibold">{industryChainStats.totalChains}</span> 个产业链，
           覆盖 <span className="text-blue-600 font-semibold">{formatNum(industryChainStats.totalShenzhenEnterprises)}</span> 家深圳企业
         </p>
       </div>
 
-      <div className="flex-1 flex gap-4 min-h-0">
-        {/* Left Sidebar */}
-        <Card
-          className="w-80 flex-shrink-0"
-          bodyStyle={{ padding: 0, height: '100%' }}
-          title="产业链列表"
-        >
-          <div className="p-3 border-b">
-            <Search
-              placeholder="搜索产业链..."
-              allowClear
-              size="small"
-              value={searchText}
-              onChange={e => setSearchText(e.target.value)}
-              prefix={<SearchOutlined />}
-            />
-          </div>
-          <div className="overflow-auto h-[calc(100%-60px)] p-3">
-            {renderChainList()}
-          </div>
-        </Card>
-
-        {/* Right Content */}
+      {/* 对比模式下的对比结果 */}
+      {compareMode && activeTab === 'comparison' ? (
         <Card
           className="flex-1"
-          bodyStyle={{ padding: 16, height: 'calc(100% - 57px)', overflow: 'auto' }}
           title={
             <div className="flex items-center justify-between">
-              <span className="font-semibold">{selectedChain?.name} - 产业层级结构</span>
-              {selectedNode && (
-                <Button type="primary" size="small" onClick={() => setActiveTab('enterprises')}>
-                  <TeamOutlined /> 查看企业清单
-                </Button>
-              )}
+              <span>产业链对比分析</span>
+              <Button size="small" onClick={() => setActiveTab('overview')}>
+                返回概览
+              </Button>
             </div>
           }
+          bodyStyle={{ height: 'calc(100% - 57px)', overflow: 'auto' }}
         >
-          <Tabs activeKey={activeTab} onChange={setActiveTab}>
-            <TabPane tab="层级概览" key="overview">
-              {/* 产业链总体统计 */}
-              <Card size="small" className="mb-4 bg-gray-50">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div
-                      className="w-12 h-12 rounded-lg flex items-center justify-center text-white text-xl font-bold"
-                      style={{ backgroundColor: selectedChain?.color || '#1677ff' }}
-                    >
-                      {selectedChain?.name?.charAt(0) || '-'}
-                    </div>
-                    <div>
-                      <div className="font-semibold text-gray-800">{selectedChain?.name || '-'}</div>
-                      <div className="text-xs text-gray-500">{selectedChain?.description || ''}</div>
-                    </div>
-                  </div>
-                  <StatTags
-                    shenzhenCount={selectedChain?.stats?.shenzhenCount || 0}
-                    nationalCount={selectedChain?.stats?.nationalCount || 0}
-                    percentage={selectedChain?.stats?.percentage || 0}
-                    color={selectedChain?.color || '#1677ff'}
-                  />
-                </div>
-              </Card>
-
-              {/* 树形层级结构 */}
-              {renderIndustries()}
-            </TabPane>
-
-            <TabPane
-              tab={selectedNode ? `${selectedNode.name} - 企业清单` : '企业清单'}
-              key="enterprises"
-              disabled={!selectedNode}
-            >
-              {selectedNode ? (
-                <div>
-                  <Card size="small" className="mb-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        {selectedNode.type === 'industry' && <ApartmentOutlined style={{ color: selectedChain?.color, fontSize: 20 }} />}
-                        {selectedNode.type === 'segment' && <ShopOutlined style={{ color: '#52c41a', fontSize: 20 }} />}
-                        {selectedNode.type === 'product' && <ShoppingOutlined style={{ color: '#fa8c16', fontSize: 20 }} />}
-                        <span className="font-semibold text-lg">{selectedNode.name}</span>
-                      </div>
-                      <StatTags
-                        {...calculateStats(selectedNode.enterpriseCount)}
-                        color={selectedNode.type === 'industry' ? selectedChain?.color : selectedNode.type === 'segment' ? '#52c41a' : '#fa8c16'}
-                      />
-                    </div>
-                  </Card>
-                  <EnterpriseTable data={nodeEnterprises} />
-                </div>
-              ) : (
-                <Empty description="请点击层级节点查看企业清单" />
-              )}
-            </TabPane>
-          </Tabs>
+          <ChainComparison 
+            chains={industryChains.filter(c => selectedCompareChains.includes(c.id))} 
+          />
         </Card>
-      </div>
+      ) : (
+        <div className="flex-1 flex gap-4 min-h-0">
+          {/* Left Sidebar */}
+          <Card
+            className="w-80 flex-shrink-0"
+            bodyStyle={{ padding: 0, height: '100%' }}
+            title="产业链列表"
+          >
+            <div className="p-3 border-b">
+              <Search
+                placeholder="搜索产业链..."
+                allowClear
+                size="small"
+                value={searchText}
+                onChange={e => setSearchText(e.target.value)}
+                prefix={<SearchOutlined />}
+              />
+            </div>
+            <div className="overflow-auto h-[calc(100%-60px)] p-3">
+              {renderChainList()}
+            </div>
+          </Card>
+
+          {/* Right Content */}
+          <Card
+            className="flex-1"
+            bodyStyle={{ padding: 16, height: 'calc(100% - 57px)', overflow: 'auto' }}
+            title={
+              <div className="flex items-center justify-between">
+                <span className="font-semibold">{selectedChain?.name} - 产业层级结构</span>
+                <Radio.Group 
+                  value={viewMode} 
+                  onChange={e => setViewMode(e.target.value)}
+                  size="small"
+                  optionType="button"
+                  buttonStyle="solid"
+                >
+                  <Radio.Button value="list">
+                    <ApartmentOutlined /> 列表
+                  </Radio.Button>
+                  <Radio.Button value="graph">
+                    <ShareAltOutlined /> 图谱
+                  </Radio.Button>
+                </Radio.Group>
+              </div>
+            }
+          >
+            <Tabs activeKey={activeTab} onChange={setActiveTab}>
+              <TabPane tab="层级概览" key="overview">
+                {/* 产业链总体统计 */}
+                <Card size="small" className="mb-4 bg-gray-50">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div
+                        className="w-12 h-12 rounded-lg flex items-center justify-center text-white text-xl font-bold"
+                        style={{ backgroundColor: selectedChain?.color || '#1677ff' }}
+                      >
+                        {selectedChain?.name?.charAt(0) || '-'}
+                      </div>
+                      <div>
+                        <div className="font-semibold text-gray-800">{selectedChain?.name || '-'}</div>
+                        <div className="text-xs text-gray-500">{selectedChain?.description || ''}</div>
+                      </div>
+                    </div>
+                    <Space size="middle">
+                      <Tag color={selectedChain?.color} style={{ fontSize: '12px', padding: '2px 8px' }}>
+                        深圳: {formatNum(selectedChain?.stats?.shenzhenCount || 0)}
+                      </Tag>
+                      <Tag style={{ fontSize: '12px', padding: '2px 8px' }}>
+                        全国: {formatNum(selectedChain?.stats?.nationalCount || 0)}
+                      </Tag>
+                      <Tag color="blue" style={{ fontSize: '12px', padding: '2px 8px' }}>
+                        占比: {selectedChain?.stats?.percentage || 0}%
+                      </Tag>
+                    </Space>
+                  </div>
+                </Card>
+
+                {/* 视图切换 */}
+                {viewMode === 'list' ? (
+                  renderTree()
+                ) : (
+                  <div style={{ height: 500 }}>
+                    <GraphView 
+                      chain={selectedChain}
+                      selectedNodeId={selectedNodeId}
+                      onNodeClick={handleGraphNodeClick}
+                    />
+                  </div>
+                )}
+              </TabPane>
+
+              <TabPane
+                tab={selectedNodeInfo ? `${selectedNodeInfo.name} - 企业清单` : '企业清单'}
+                key="enterprises"
+                disabled={!selectedNodeId}
+              >
+                {selectedNodeInfo ? (
+                  <div>
+                    <Card size="small" className="mb-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          {selectedNodeInfo.id?.split('-').length <= 2 ? (
+                            <ApartmentOutlined style={{ color: selectedChain?.color, fontSize: 20 }} />
+                          ) : selectedNodeInfo.id?.split('-').length === 3 ? (
+                            <ShopOutlined style={{ color: '#52c41a', fontSize: 20 }} />
+                          ) : (
+                            <ShoppingOutlined style={{ color: '#fa8c16', fontSize: 20 }} />
+                          )}
+                          <span className="font-semibold text-lg">{selectedNodeInfo.name}</span>
+                        </div>
+                        <Space size="middle">
+                          <Tag color={selectedChain?.color} style={{ fontSize: '12px', padding: '2px 8px' }}>
+                            深圳: {Math.round(selectedNodeInfo.enterpriseCount * 0.635).toLocaleString()}
+                          </Tag>
+                          <Tag style={{ fontSize: '12px', padding: '2px 8px' }}>
+                            全国: {selectedNodeInfo.enterpriseCount.toLocaleString()}
+                          </Tag>
+                          <Tag color="blue" style={{ fontSize: '12px', padding: '2px 8px' }}>
+                            占比: 63.5%
+                          </Tag>
+                        </Space>
+                      </div>
+                    </Card>
+                    <EnterpriseTable data={nodeEnterprises} />
+                  </div>
+                ) : (
+                  <Empty description="请点击层级节点查看企业清单" />
+                )}
+              </TabPane>
+            </Tabs>
+          </Card>
+        </div>
+      )}
     </div>
   );
 }

@@ -3,8 +3,29 @@
  * 按深圳企业占比排序的产业链列表
  */
 
-// 产业链数据 - 按深圳占比降序排列
-export const industryChains = [
+// 为节点生成唯一ID
+let nodeIdCounter = 0;
+const generateNodeId = () => `node-${++nodeIdCounter}`;
+
+// 递归为所有节点添加ID
+const addNodeIds = (nodes, parentId = null) => {
+  return nodes.map((node, index) => {
+    const id = generateNodeId();
+    const newNode = {
+      ...node,
+      id,
+      parentId,
+      path: parentId ? `${parentId}.${index}` : `${index}`,
+    };
+    if (node.children) {
+      newNode.children = addNodeIds(node.children, id);
+    }
+    return newNode;
+  });
+};
+
+// 原始产业链数据
+const rawIndustryChains = [
   {
     id: 'chain-network',
     name: '网络与通信',
@@ -1184,10 +1205,62 @@ export const industryChains = [
   }
 ];
 
+// 为所有节点添加ID
+export const industryChains = rawIndustryChains.map(chain => ({
+  ...chain,
+  hierarchy: addNodeIds(chain.hierarchy)
+}));
+
 // 统计数据
 export const industryChainStats = {
   totalChains: industryChains.length,
   totalShenzhenEnterprises: industryChains.reduce((sum, chain) => sum + chain.stats.shenzhenCount, 0),
   totalNationalEnterprises: industryChains.reduce((sum, chain) => sum + chain.stats.nationalCount, 0),
   averagePercentage: (industryChains.reduce((sum, chain) => sum + chain.stats.percentage, 0) / industryChains.length).toFixed(1)
+};
+
+// 根据节点ID查找节点
+export const findNodeById = (chainId, nodeId) => {
+  const chain = industryChains.find(c => c.id === chainId);
+  if (!chain) return null;
+  
+  const searchInNodes = (nodes) => {
+    for (const node of nodes) {
+      if (node.id === nodeId) return node;
+      if (node.children) {
+        const found = searchInNodes(node.children);
+        if (found) return found;
+      }
+    }
+    return null;
+  };
+  
+  return searchInNodes(chain.hierarchy);
+};
+
+// 获取所有节点路径（用于搜索）
+export const getAllNodePaths = (chainId) => {
+  const chain = industryChains.find(c => c.id === chainId);
+  if (!chain) return [];
+  
+  const paths = [];
+  
+  const traverse = (nodes, parentNames = []) => {
+    nodes.forEach(node => {
+      const currentPath = [...parentNames, node.name];
+      paths.push({
+        id: node.id,
+        name: node.name,
+        path: currentPath,
+        enterpriseCount: node.enterpriseCount,
+        level: currentPath.length
+      });
+      if (node.children) {
+        traverse(node.children, currentPath);
+      }
+    });
+  };
+  
+  traverse(chain.hierarchy);
+  return paths;
 };
