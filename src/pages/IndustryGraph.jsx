@@ -391,13 +391,15 @@ export default function IndustryGraph() {
   }, []);
 
   // 统计卡片组件
-  const StatCard = ({ title, value, subValue, color, icon }) => (
+  const StatCard = ({ title, value, unit, color, icon }) => (
     <div className="bg-white rounded-lg p-4 border border-gray-100 shadow-sm">
       <div className="flex items-center justify-between">
         <div>
           <div className="text-gray-500 text-sm mb-1">{title}</div>
-          <div className="text-2xl font-bold" style={{ color }}>{value}</div>
-          {subValue && <div className="text-xs text-gray-400 mt-1">{subValue}</div>}
+          <div className="flex items-baseline gap-1">
+            <span className="text-2xl font-bold" style={{ color }}>{value}</span>
+            <span className="text-xs text-gray-400">{unit}</span>
+          </div>
         </div>
         <div 
           className="w-10 h-10 rounded-lg flex items-center justify-center text-lg"
@@ -430,48 +432,41 @@ export default function IndustryGraph() {
       </div>
 
       {/* 数据概览卡片 */}
-      <div className="grid grid-cols-6 gap-3 mb-4">
+      <div className="grid grid-cols-5 gap-3 mb-4">
         <StatCard
-          title="产业链数量"
+          title="产业链"
           value={stats.chainCount}
-          subValue="个重点产业链"
+          unit="条"
           color="#1677ff"
           icon={<ApartmentOutlined />}
         />
         <StatCard
-          title="覆盖产业"
+          title="细分产业"
           value={stats.industryCount}
-          subValue="个细分产业"
+          unit="个"
           color="#52c41a"
           icon={<ShopOutlined />}
         />
         <StatCard
           title="细分行业"
           value={stats.segmentCount}
-          subValue="个行业领域"
+          unit="个"
           color="#fa8c16"
           icon={<ShoppingOutlined />}
         />
         <StatCard
           title="产品服务"
           value={stats.productCount}
-          subValue="个产品类别"
+          unit="个"
           color="#722ed1"
           icon={<ShoppingOutlined />}
         />
         <StatCard
-          title="深圳企业"
-          value={formatNum(stats.shenzhenEnterprises)}
-          subValue={`占比 ${stats.avgPercentage}%`}
+          title="覆盖企业"
+          value={(stats.shenzhenEnterprises / 10000).toFixed(1)}
+          unit="万家"
           color="#1890ff"
           icon={<TeamOutlined />}
-        />
-        <StatCard
-          title="全国企业"
-          value={formatNum(stats.nationalEnterprises)}
-          subValue="覆盖全国"
-          color="#13c2c2"
-          icon={<GlobalOutlined />}
         />
       </div>
 
