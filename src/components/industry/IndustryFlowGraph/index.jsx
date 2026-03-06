@@ -64,23 +64,25 @@ const ChainNode = (props) => {
     <div className="flow-node-chain" style={{ position: 'relative' }}>
       <Handle type="source" position={Position.Right} className="flow-handle" />
       
-      <div className="flow-chain-badge">产业链</div>
+      {/* 标题行：名称 + 标签 */}
+      <div className="flow-chain-header-row">
+        <h3 className="flow-chain-title">{data.name}</h3>
+        <span className="flow-chain-badge">产业链</span>
+      </div>
       
-      <h3 className="flow-chain-title">{data.name}</h3>
-      
-      <div className="flow-chain-stats">
-        <div className="flow-chain-row">
-          <span className="flow-chain-label">深圳</span>
-          <span className="flow-chain-value">{(data.shenzhen / 10000).toFixed(1)}万</span>
+      {/* 统计信息 - 数字在上，文字在下 */}
+      <div className="flow-chain-stats-grid">
+        <div className="flow-chain-stat-item">
+          <div className="flow-chain-value">{(data.shenzhen / 10000).toFixed(1)}万</div>
+          <div className="flow-chain-label">深圳</div>
         </div>
-        <div className="flow-chain-row">
-          <span className="flow-chain-label">全国</span>
-          <span className="flow-chain-value-secondary">{(data.national / 10000).toFixed(1)}万</span>
+        <div className="flow-chain-stat-item">
+          <div className="flow-chain-value-secondary">{(data.national / 10000).toFixed(1)}万</div>
+          <div className="flow-chain-label">全国</div>
         </div>
-        <div className="flow-chain-divider" />
-        <div className="flow-chain-row">
-          <span className="flow-chain-label">占比</span>
-          <span className="flow-chain-highlight">{data.percentage}%</span>
+        <div className="flow-chain-stat-item">
+          <div className="flow-chain-highlight">{data.percentage}%</div>
+          <div className="flow-chain-label">占比</div>
         </div>
       </div>
       
@@ -98,45 +100,33 @@ const ChainNode = (props) => {
 
 // 细分产业节点 - 二级
 const SegmentNode = ({ data, id }) => {
-  const colorMap = {
-    teal: { border: 'border-teal-200', bar: 'bg-teal-500' },
-    blue: { border: 'border-blue-200', bar: 'bg-blue-500' },
-    purple: { border: 'border-purple-200', bar: 'bg-purple-500' },
-    orange: { border: 'border-orange-200', bar: 'bg-orange-500' },
-    green: { border: 'border-green-200', bar: 'bg-green-500' },
-    cyan: { border: 'border-cyan-200', bar: 'bg-cyan-500' },
-    pink: { border: 'border-pink-200', bar: 'bg-pink-500' },
-    indigo: { border: 'border-indigo-200', bar: 'bg-indigo-500' },
-  };
-  
-  const colors = colorMap[data.color] || colorMap.teal;
   const { expandedNodes, toggleExpand } = data._internal || {};
-  const isExpanded = !expandedNodes?.has(id); // 不在集合中 = 展开
+  const isExpanded = !expandedNodes?.has(id);
 
   return (
-    <div className={`flow-node-segment ${colors.border}`} style={{ position: 'relative' }}>
+    <div className="flow-node-segment" style={{ position: 'relative' }}>
       <Handle type="target" position={Position.Left} className="flow-handle-left" />
       <Handle type="source" position={Position.Right} className="flow-handle-right" />
       
-      <div className="flow-segment-header">
-        <div className={`flow-segment-bar ${colors.bar}`} />
-        <span className="flow-segment-label">细分产业</span>
+      {/* 名称 + 标签 */}
+      <div className="flow-segment-header-row">
+        <h4 className="flow-segment-title">{data.name}</h4>
+        <span className="flow-segment-badge">细分产业</span>
       </div>
       
-      <h4 className="flow-segment-title">{data.name}</h4>
-      
-      <div className="flow-segment-grid">
-        <div className="flow-grid-cell blue">
-          <div className="flow-grid-value">{(data.shenzhen / 10000).toFixed(1)}万</div>
-          <div className="flow-grid-label">深圳</div>
+      {/* 数据展示 - 无背景色 */}
+      <div className="flow-segment-stats-row">
+        <div className="flow-segment-stat">
+          <div className="flow-segment-value blue">{(data.shenzhen / 10000).toFixed(1)}万</div>
+          <div className="flow-segment-label">深圳</div>
         </div>
-        <div className="flow-grid-cell gray">
-          <div className="flow-grid-value-secondary">{(data.national / 10000).toFixed(1)}万</div>
-          <div className="flow-grid-label">全国</div>
+        <div className="flow-segment-stat">
+          <div className="flow-segment-value gray">{(data.national / 10000).toFixed(1)}万</div>
+          <div className="flow-segment-label">全国</div>
         </div>
-        <div className="flow-grid-cell orange">
-          <div className="flow-grid-highlight">{data.percentage}%</div>
-          <div className="flow-grid-label">占比</div>
+        <div className="flow-segment-stat">
+          <div className="flow-segment-value orange">{data.percentage}%</div>
+          <div className="flow-segment-label">占比</div>
         </div>
       </div>
       
@@ -152,18 +142,18 @@ const SegmentNode = ({ data, id }) => {
 // 细分行业节点 - 三级
 const SubSegmentNode = ({ data, id }) => {
   const { expandedNodes, toggleExpand } = data._internal || {};
-  const isExpanded = !expandedNodes?.has(id); // 不在集合中 = 展开
+  const isExpanded = expandedNodes?.has(id); // 在集合中 = 展开产品服务
 
   return (
     <div className="flow-node-subsegment" style={{ position: 'relative' }}>
       <Handle type="target" position={Position.Left} className="flow-handle-left" />
       <Handle type="source" position={Position.Right} className="flow-handle-right" />
       
-      <div className="flow-subsegment-header">
-        <span className="flow-subsegment-label">细分行业</span>
+      {/* 名称 + 标签 */}
+      <div className="flow-subsegment-header-row">
+        <h4 className="flow-subsegment-title">{data.name}</h4>
+        <span className="flow-subsegment-badge">细分行业</span>
       </div>
-      
-      <h4 className="flow-subsegment-title">{data.name}</h4>
       
       <div className="flow-subsegment-stats">
         <div className="flow-subsegment-stat">
@@ -231,25 +221,37 @@ const nodeTypes = {
 const IndustryFlowGraph = ({ data }) => {
   const [nodes, setNodes] = useState([]);
   const [edges, setEdges] = useState([]);
-  const [expandedNodes, setExpandedNodes] = useState(new Set()); // 默认全部展开
+  const [expandedNodes, setExpandedNodes] = useState(new Set());
 
   // 切换展开/收起状态
   const toggleExpand = useCallback((nodeId) => {
-    console.log('toggleExpand called:', nodeId);
     setExpandedNodes(prev => {
       const newSet = new Set(prev);
-      if (newSet.has(nodeId)) {
-        newSet.delete(nodeId);
-        console.log('Node expanded:', nodeId);
+      
+      if (nodeId.startsWith('subsegment-')) {
+        if (newSet.has(nodeId)) {
+          newSet.delete(nodeId);
+        } else {
+          Array.from(newSet).forEach(id => {
+            if (id.startsWith('subsegment-')) {
+              newSet.delete(id);
+            }
+          });
+          newSet.add(nodeId);
+        }
       } else {
-        newSet.add(nodeId);
-        console.log('Node collapsed:', nodeId);
+        if (newSet.has(nodeId)) {
+          newSet.delete(nodeId);
+        } else {
+          newSet.add(nodeId);
+        }
       }
+      
       return newSet;
     });
   }, []);
 
-  // 生成节点和边的布局
+  // ============ 树形布局算法 ============
   useEffect(() => {
     if (!data) {
       setNodes([]);
@@ -260,27 +262,17 @@ const IndustryFlowGraph = ({ data }) => {
     const newNodes = [];
     const newEdges = [];
     
-    // 起始Y位置
     const startY = 100;
-    
-    // 颜色列表
-    const colorList = ['teal', 'blue', 'purple', 'orange', 'green', 'cyan', 'pink', 'indigo'];
-    
-    // X轴位置配置 - 四列布局
-    const chainX = 20;         // 产业链 (一级)
-    const segmentX = 320;      // 细分产业 (二级)
-    const subSegmentX = 620;   // 细分行业 (三级)
-    const productX = 900;      // 产品服务 (四级)
-    
-    // 垂直间距
-    const level1Gap = 160;     // 细分产业间距
-    const level2Gap = 90;      // 细分行业间距
-    const level3Gap = 60;      // 产品服务间距
+    const nodeGap = 100;      // 基础节点间距
+    const chainX = 20;
+    const segmentX = 400;
+    const subSegmentX = 780;
+    const productX = 1160;
 
-    // 检查节点是否展开
-    const isExpanded = (id) => !expandedNodes.has(id); // 不在集合中 = 展开
+    const isExpanded = (id) => !expandedNodes.has(id);
+    const isSubSegmentExpanded = (id) => expandedNodes.has(id);
 
-    // 添加产业链节点（一级）
+    // 创建产业链节点
     const chainId = 'chain-root';
     const chainHasChildren = data.segments && data.segments.length > 0;
     
@@ -297,99 +289,191 @@ const IndustryFlowGraph = ({ data }) => {
     });
 
     if (!isExpanded(chainId)) {
-      // 如果产业链收起，只渲染产业链节点
       setNodes(newNodes);
       setEdges(newEdges);
       return;
     }
 
-    // 添加细分产业节点（二级）
-    data.segments.forEach((segment, sIndex) => {
-      const segmentId = `segment-${sIndex}`;
-      const segmentY = startY - ((data.segments.length - 1) * level1Gap) / 2 + sIndex * level1Gap;
-      const segmentColor = colorList[sIndex % colorList.length];
-      const segmentHasChildren = segment.subSegments && segment.subSegments.length > 0;
+    // ========== 第一步：构建树结构并计算每棵子树所需高度 ==========
+    
+    // 递归计算子树高度
+    function calcSubTreeHeight(segment, sIndex) {
+      if (!isExpanded(`segment-${sIndex}`)) {
+        return { height: nodeGap, type: 'collapsed' };
+      }
+
+      const subSegments = segment.subSegments || [];
+      if (subSegments.length === 0) {
+        return { height: nodeGap, type: 'leaf' };
+      }
+
+      let childrenHeight = 0;
+      const children = [];
+
+      subSegments.forEach((subSegment, ssIndex) => {
+        const subSegmentId = `subsegment-${sIndex}-${ssIndex}`;
+        const productCount = isSubSegmentExpanded(subSegmentId) 
+          ? (subSegment.products?.length || 0) 
+          : 0;
+        
+        // 子节点高度 = 自身 + 产品
+        const childHeight = nodeGap + productCount * nodeGap;
+        childrenHeight += childHeight;
+        children.push({ subSegmentId, ssIndex, subSegment, productCount, childHeight });
+      });
+
+      // 子节点之间的间距
+      const gaps = (subSegments.length - 1) * nodeGap;
+      const totalHeight = Math.max(nodeGap, childrenHeight + gaps);
+
+      return { height: totalHeight, children, segment };
+    }
+
+    // 计算所有细分产业的树信息
+    const trees = data.segments.map((segment, sIndex) => ({
+      id: `segment-${sIndex}`,
+      sIndex,
+      segment,
+      ...calcSubTreeHeight(segment, sIndex)
+    }));
+
+    // ========== 第二步：计算细分产业的Y位置 ==========
+    // 策略：根据子树高度动态分配Y坐标，确保子树不重叠
+    
+    let currentY = startY;
+    const segmentPositions = [];
+    
+    trees.forEach((tree, index) => {
+      const segmentY = currentY;
+      segmentPositions.push({ id: tree.id, y: segmentY, tree });
       
+      // 下一个细分产业的Y位置 = 当前位置 + 当前子树高度的一半 + 间距 + 下一个子树高度的一半
+      if (index < trees.length - 1) {
+        const nextTree = trees[index + 1];
+        const gap = (tree.height / 2) + nodeGap + (nextTree.height / 2);
+        currentY += gap;
+      }
+    });
+
+    // ========== 第三步：计算细分行业和产品的Y位置 ==========
+    const subSegmentYMap = new Map();
+    const productYMap = new Map();
+
+    trees.forEach(tree => {
+      if (!tree.children || tree.children.length === 0) return;
+
+      const segmentPos = segmentPositions.find(p => p.id === tree.id);
+      const segmentY = segmentPos.y;
+
+      // 计算子节点在子树中的起始Y位置
+      const childrenTotalHeight = tree.children.reduce((sum, c) => sum + c.childHeight, 0);
+      const childrenTotalGaps = (tree.children.length - 1) * nodeGap;
+      const childrenTreeHeight = childrenTotalHeight + childrenTotalGaps;
+      
+      // 让子树以细分产业节点为中心
+      let childY = segmentY - childrenTreeHeight / 2;
+
+      tree.children.forEach((child, idx) => {
+        // 细分行业的Y位置（子节点自身的中心）
+        const subSegmentY = childY + child.childHeight / 2;
+        subSegmentYMap.set(child.subSegmentId, subSegmentY);
+
+        // 产品服务的Y位置
+        if (child.productCount > 0) {
+          const products = child.subSegment.products || [];
+          products.forEach((product, pIdx) => {
+            const productId = `product-${tree.sIndex}-${child.ssIndex}-${pIdx}`;
+            const productY = subSegmentY + (pIdx + 1) * nodeGap;
+            productYMap.set(productId, productY);
+          });
+        }
+
+        // 下一个子节点的起始位置
+        childY += child.childHeight;
+        if (idx < tree.children.length - 1) {
+          childY += nodeGap;
+        }
+      });
+    });
+
+    // ========== 第四步：创建所有节点和边 ==========
+    
+    trees.forEach(tree => {
+      const segmentY = segmentPositions.find(p => p.id === tree.id).y;
+      
+      // 细分产业节点
       newNodes.push({
-        id: segmentId,
+        id: tree.id,
         type: 'segment',
         position: { x: segmentX, y: segmentY },
         data: { 
-          ...segment, 
-          color: segmentColor,
-          hasChildren: segmentHasChildren,
+          ...tree.segment, 
+          hasChildren: tree.segment.subSegments && tree.segment.subSegments.length > 0,
           _internal: { expandedNodes, toggleExpand }
         },
         draggable: true,
       });
 
-      // 连接产业链到细分产业
       newEdges.push({
-        id: `e-chain-${segmentId}`,
+        id: `e-chain-${tree.id}`,
         source: chainId,
-        target: segmentId,
+        target: tree.id,
         type: 'smoothstep',
-        style: { stroke: '#94a3b8', strokeWidth: 2.5 },
+        style: { stroke: '#cbd5e1', strokeWidth: 2 },
       });
 
-      if (!isExpanded(segmentId)) {
-        // 如果细分产业收起，跳过子节点但继续处理其他细分产业
-        return;
-      }
+      if (!tree.children) return;
 
-      // 添加细分行业节点（三级）
-      const subSegments = segment.subSegments || [];
-      subSegments.forEach((subSegment, ssIndex) => {
-        const subSegmentId = `subsegment-${sIndex}-${ssIndex}`;
-        const subSegmentY = segmentY - ((subSegments.length - 1) * level2Gap) / 2 + ssIndex * level2Gap;
-        const subSegmentHasChildren = subSegment.products && subSegment.products.length > 0;
+      // 细分行业和产品
+      tree.children.forEach(child => {
+        const subSegmentY = subSegmentYMap.get(child.subSegmentId);
         
         newNodes.push({
-          id: subSegmentId,
+          id: child.subSegmentId,
           type: 'subSegment',
           position: { x: subSegmentX, y: subSegmentY },
           data: { 
-            ...subSegment,
-            hasChildren: subSegmentHasChildren,
+            ...child.subSegment,
+            hasChildren: child.subSegment.products && child.subSegment.products.length > 0,
             _internal: { expandedNodes, toggleExpand }
           },
           draggable: true,
         });
 
-        // 连接细分产业到细分行业
         newEdges.push({
-          id: `e-${segmentId}-${subSegmentId}`,
-          source: segmentId,
-          target: subSegmentId,
+          id: `e-${tree.id}-${child.subSegmentId}`,
+          source: tree.id,
+          target: child.subSegmentId,
           type: 'smoothstep',
           style: { stroke: '#cbd5e1', strokeWidth: 2 },
         });
 
-        if (!isExpanded(subSegmentId)) return; // 如果细分行业收起，不渲染子节点
+        // 产品服务
+        if (child.productCount > 0) {
+          const products = child.subSegment.products || [];
+          products.forEach((product, pIdx) => {
+            const productId = `product-${tree.sIndex}-${child.ssIndex}-${pIdx}`;
+            const productY = productYMap.get(productId);
+            
+            if (productY !== undefined) {
+              newNodes.push({
+                id: productId,
+                type: 'product',
+                position: { x: productX, y: productY },
+                data: product,
+                draggable: true,
+              });
 
-        // 添加产品服务节点（四级）
-        const products = subSegment.products || [];
-        products.forEach((product, pIndex) => {
-          const productId = `product-${sIndex}-${ssIndex}-${pIndex}`;
-          const productY = subSegmentY - ((products.length - 1) * level3Gap) / 2 + pIndex * level3Gap;
-          
-          newNodes.push({
-            id: productId,
-            type: 'product',
-            position: { x: productX, y: productY },
-            data: product,
-            draggable: true,
+              newEdges.push({
+                id: `e-${child.subSegmentId}-${productId}`,
+                source: child.subSegmentId,
+                target: productId,
+                type: 'smoothstep',
+                style: { stroke: '#cbd5e1', strokeWidth: 2 },
+              });
+            }
           });
-
-          // 连接细分行业到产品服务
-          newEdges.push({
-            id: `e-${subSegmentId}-${productId}`,
-            source: subSegmentId,
-            target: productId,
-            type: 'smoothstep',
-            style: { stroke: '#e2e8f0', strokeWidth: 1.5 },
-          });
-        });
+        }
       });
     });
 
@@ -409,10 +493,6 @@ const IndustryFlowGraph = ({ data }) => {
 
   const onEdgesChange = useCallback(() => {}, []);
 
-  const onNodeClick = useCallback((event, node) => {
-    // 可以在这里添加节点点击交互
-  }, []);
-
   if (!data) {
     return (
       <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9ca3af' }}>
@@ -423,7 +503,6 @@ const IndustryFlowGraph = ({ data }) => {
 
   return (
     <div style={{ width: '100%', height: '550px', display: 'flex', flexDirection: 'column', border: '1px solid #e2e8f0', borderRadius: 8 }}>
-      {/* React Flow 图表区域 */}
       <div style={{ flex: 1, position: 'relative', minHeight: 0 }}>
         {nodes.length === 0 ? (
           <div style={{ 
@@ -441,11 +520,10 @@ const IndustryFlowGraph = ({ data }) => {
             edges={edges}
             onNodesChange={onNodesChange}
             onEdgesChange={onEdgesChange}
-            onNodeClick={onNodeClick}
             nodeTypes={nodeTypes}
             fitView
-            fitViewOptions={{ padding: 0.1 }}
-            minZoom={0.12}
+            fitViewOptions={{ padding: 0.2, includeHiddenNodes: false }}
+            minZoom={0.1}
             maxZoom={2}
             defaultEdgeOptions={{
               type: 'smoothstep',

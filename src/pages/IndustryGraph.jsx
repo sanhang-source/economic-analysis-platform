@@ -473,7 +473,7 @@ export default function IndustryGraph() {
                 label: '产业链层级图',
                 style: { height: 'calc(100% - 44px)', overflow: 'auto' },
                 children: (
-                  <div style={{ width: '100%', minWidth: '1100px', padding: '12px' }}>
+                  <div style={{ width: '100%', minWidth: '1400px', padding: '12px' }}>
                     <IndustryFlowGraph data={flowGraphData} />
                   </div>
                 ),
