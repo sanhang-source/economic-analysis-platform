@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import {
   Card,
   Input,
@@ -133,10 +133,14 @@ export default function IndustryGraph() {
     industryChains.find(c => c.id === selectedChainId) || industryChains[0] || {}
   , [selectedChainId]);
 
-  // 过滤产业列表
-  const filteredChains = useMemo(() =>
-    searchText ? industryChains.filter(c => c.name.includes(searchText)) : industryChains
-  , [searchText]);
+  // 过滤产业列表（按深圳企业数量降序排列）
+  const filteredChains = useMemo(() => {
+    const chains = searchText 
+      ? industryChains.filter(c => c.name.includes(searchText)) 
+      : [...industryChains];
+    // 按深圳企业数量降序排列
+    return chains.sort((a, b) => b.stats.shenzhenCount - a.stats.shenzhenCount);
+  }, [searchText]);
 
   // 搜索树节点
   const searchResults = useMemo(() => {
@@ -211,26 +215,34 @@ export default function IndustryGraph() {
 
   // 渲染产业列表
   const renderChainList = () => (
-    <div className="space-y-3">
-      {filteredChains.map((chain) => (
-        <div
-          key={chain.id}
-          onClick={() => {
-            setSelectedChainId(chain.id);
-            setSelectedNodeId(null);
-            setExpandedKeys([]);
-            setActiveTab('overview');
-          }}
-          className={`
-            p-4 rounded-lg border-2 cursor-pointer transition-all
-            ${selectedChainId === chain.id
-              ? 'border-blue-500 bg-blue-50'
-              : 'border-gray-200 hover:border-blue-300 hover:shadow-sm'
-            }
-          `}
-        >
+    <div>
+      {filteredChains.map((chain, index) => (
+        <div key={chain.id}>
+          {/* 分隔线：不是第一个，且当前未选中，且前一个未选中 */}
+          {index > 0 && selectedChainId !== chain.id && selectedChainId !== filteredChains[index - 1]?.id && (
+            <div className="h-px bg-gray-200 mx-3" />
+          )}
+          <div
+            onClick={() => {
+              setSelectedChainId(chain.id);
+              setSelectedNodeId(null);
+              setExpandedKeys([]);
+              setActiveTab('overview');
+            }}
+            className={`
+              py-4 px-3 cursor-pointer transition-all
+              ${selectedChainId === chain.id
+                ? 'bg-blue-50'
+                : 'bg-white hover:bg-gray-50'
+              }
+            `}
+          >
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-3">
+              {/* 序号 */}
+              <div className="flex-shrink-0 w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center text-xs font-semibold text-gray-600">
+                {index + 1}
+              </div>
               <div
                 className="w-12 h-12 rounded-lg flex items-center justify-center text-white text-xl font-bold"
                 style={{ backgroundColor: chain.color }}
@@ -239,7 +251,20 @@ export default function IndustryGraph() {
               </div>
               <div>
                 <div className="font-semibold text-gray-800">{chain.name}</div>
-                <div className="text-xs text-gray-500">{chain.description}</div>
+                {/* 显示缺失产业 */}
+                {(() => {
+                  const missingIndustries = chain.hierarchy
+                    ?.filter(item => item.enterpriseCount === 0)
+                    ?.map(item => item.name);
+                  if (missingIndustries?.length > 0) {
+                    return (
+                      <div className="text-xs text-orange-500 mt-1">
+                        缺失产业：{missingIndustries.join('、')}
+                      </div>
+                    );
+                  }
+                  return null;
+                })()}
               </div>
             </div>
             <RightOutlined className="text-gray-400" />
@@ -263,6 +288,7 @@ export default function IndustryGraph() {
               </div>
               <div className="text-xs text-gray-500">深圳占比</div>
             </div>
+          </div>
           </div>
         </div>
       ))}
@@ -341,8 +367,18 @@ export default function IndustryGraph() {
     return findNode(selectedChain.hierarchy);
   }, [selectedNodeId, selectedChain]);
 
+  // 右侧内容区域 ref，用于滚动控制
+  const rightContentRef = useRef(null);
+
   // 区域选择状态
   const [region, setRegion] = useState('全市');
+
+  // 当选择产业链时，自动滚动右侧内容区域到顶部
+  useEffect(() => {
+    if (rightContentRef.current) {
+      rightContentRef.current.scrollTop = 0;
+    }
+  }, [selectedChainId]);
 
   // 区域选项（与数字驾驶舱一致）
   const regionOptions = [
@@ -470,11 +506,11 @@ export default function IndustryGraph() {
         <Card
           className="w-80 flex-shrink-0"
           bodyStyle={{ padding: 0, height: '100%' }}
-          title="产业列表"
+          title="产业链列表"
         >
           <div className="p-3 border-b">
             <Search
-              placeholder="搜索产业链..."
+              placeholder="搜索产业链"
               allowClear
               size="small"
               value={searchText}
@@ -482,7 +518,7 @@ export default function IndustryGraph() {
               prefix={<SearchOutlined />}
             />
           </div>
-          <div className="overflow-auto h-[calc(100%-60px)] p-3">
+          <div className="overflow-auto p-3" style={{ maxHeight: '640px' }}>
             {renderChainList()}
           </div>
         </Card>
@@ -490,7 +526,7 @@ export default function IndustryGraph() {
         {/* Right Content */}
         <Card
           className="flex-1"
-          bodyStyle={{ padding: 16, height: 'calc(100% - 57px)', overflow: 'auto' }}
+          bodyStyle={{ padding: 0 }}
           title={
             <div className="flex items-center justify-between">
               <span className="font-semibold">{selectedChain?.name} - 区域产业结构</span>
@@ -502,6 +538,10 @@ export default function IndustryGraph() {
             </div>
           }
         >
+          <div 
+            ref={rightContentRef}
+            style={{ height: 'calc(100% - 57px)', overflow: 'auto', padding: 16 }}
+          >
           <Tabs activeKey={activeTab} onChange={setActiveTab}>
             <TabPane tab="层级概览" key="overview">
               {/* 产业链总体统计 */}
@@ -576,6 +616,7 @@ export default function IndustryGraph() {
               )}
             </TabPane>
           </Tabs>
+          </div>
         </Card>
       </div>
     </div>

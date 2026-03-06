@@ -37,7 +37,6 @@ const rawIndustryChains = [
       nationalCount: 45800,
       percentage: 62.1
     },
-    description: '深圳优势产业，华为、中兴全球领先，5G基站出货量全球第一',
     hierarchy: [
       {
         name: '通信设备',
@@ -150,7 +149,6 @@ const rawIndustryChains = [
       nationalCount: 98500,
       percentage: 43.1
     },
-    description: '腾讯、华为云、大疆等龙头企业聚集，互联网产业发达',
     hierarchy: [
       {
         name: '基础软件',
@@ -312,7 +310,6 @@ const rawIndustryChains = [
       nationalCount: 35200,
       percentage: 43.2
     },
-    description: '海思、汇顶、国民技术等设计企业聚集，设计能力强，制造环节需补强',
     hierarchy: [
       {
         name: '芯片设计',
@@ -350,7 +347,7 @@ const rawIndustryChains = [
       },
       {
         name: '晶圆制造',
-        enterpriseCount: 380,
+        enterpriseCount: 0,
         children: [
           {
             name: '逻辑代工',
@@ -461,7 +458,6 @@ const rawIndustryChains = [
       nationalCount: 21800,
       percentage: 55.7
     },
-    description: '大疆消费级无人机全球占比超70%，优必选等人形机器人领先',
     hierarchy: [
       {
         name: '工业机器人',
@@ -609,7 +605,6 @@ const rawIndustryChains = [
       nationalCount: 32800,
       percentage: 25.0
     },
-    description: '比亚迪全球新能源销量冠军，三电系统完善，但全国布局广泛',
     hierarchy: [
       {
         name: '动力电池',
@@ -761,7 +756,6 @@ const rawIndustryChains = [
       nationalCount: 15200,
       percentage: 27.6
     },
-    description: '迈瑞医疗、华大基因龙头带动，医疗器械和基因检测优势明显',
     hierarchy: [
       {
         name: '生物制药',
@@ -903,7 +897,6 @@ const rawIndustryChains = [
       nationalCount: 20500,
       percentage: 30.2
     },
-    description: '华星光电、创维、康佳等企业带动，面板产业集聚',
     hierarchy: [
       {
         name: '显示面板',
@@ -1061,7 +1054,6 @@ const rawIndustryChains = [
       nationalCount: 28500,
       percentage: 16.8
     },
-    description: '电子信息材料、新能源材料等细分领域发展较快，但整体占比不高',
     hierarchy: [
       {
         name: '电子信息材料',
@@ -1198,6 +1190,534 @@ const rawIndustryChains = [
               { name: '工程塑料', enterpriseCount: 205 },
               { name: '特种橡胶', enterpriseCount: 140 },
               { name: '高性能纤维', enterpriseCount: 115 }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'chain-logistics',
+    name: '现代物流',
+    icon: '📦',
+    color: '#722ed1',
+    stats: {
+      shenzhenCount: 18500,
+      nationalCount: 52000,
+      percentage: 35.6
+    },
+    hierarchy: [
+      {
+        name: '快递物流',
+        enterpriseCount: 6200,
+        children: [
+          {
+            name: '快递服务',
+            enterpriseCount: 2800,
+            children: [
+              { name: '国内快递', enterpriseCount: 1650 },
+              { name: '国际快递', enterpriseCount: 680 },
+              { name: '同城配送', enterpriseCount: 470 }
+            ]
+          },
+          {
+            name: '仓储服务',
+            enterpriseCount: 2200,
+            children: [
+              { name: '智能仓储', enterpriseCount: 850 },
+              { name: '冷链仓储', enterpriseCount: 620 },
+              { name: '普通仓储', enterpriseCount: 730 }
+            ]
+          },
+          {
+            name: '末端配送',
+            enterpriseCount: 1200,
+            children: [
+              { name: '驿站服务', enterpriseCount: 480 },
+              { name: '智能快递柜', enterpriseCount: 350 },
+              { name: '无人配送', enterpriseCount: 370 }
+            ]
+          }
+        ]
+      },
+      {
+        name: '供应链服务',
+        enterpriseCount: 5200,
+        children: [
+          {
+            name: '供应链整合',
+            enterpriseCount: 1850,
+            children: [
+              { name: '采购执行', enterpriseCount: 680 },
+              { name: '分销执行', enterpriseCount: 720 },
+              { name: '供应链金融', enterpriseCount: 450 }
+            ]
+          },
+          {
+            name: '跨境物流',
+            enterpriseCount: 1680,
+            children: [
+              { name: '国际货代', enterpriseCount: 620 },
+              { name: '保税物流', enterpriseCount: 520 },
+              { name: '海外仓', enterpriseCount: 540 }
+            ]
+          },
+          {
+            name: '物流科技',
+            enterpriseCount: 1670,
+            children: [
+              { name: '物流SaaS', enterpriseCount: 580 },
+              { name: '智能调度', enterpriseCount: 520 },
+              { name: '物流大数据', enterpriseCount: 570 }
+            ]
+          }
+        ]
+      },
+      {
+        name: '专业物流',
+        enterpriseCount: 7100,
+        children: [
+          {
+            name: '冷链物流',
+            enterpriseCount: 1850,
+            children: [
+              { name: '食品冷链', enterpriseCount: 850 },
+              { name: '医药冷链', enterpriseCount: 520 },
+              { name: '生鲜冷链', enterpriseCount: 480 }
+            ]
+          },
+          {
+            name: '危险品物流',
+            enterpriseCount: 680,
+            children: [
+              { name: '化工物流', enterpriseCount: 280 },
+              { name: '电池物流', enterpriseCount: 220 },
+              { name: '特种运输', enterpriseCount: 180 }
+            ]
+          },
+          {
+            name: '大件物流',
+            enterpriseCount: 2580,
+            children: [
+              { name: '家电物流', enterpriseCount: 980 },
+              { name: '家具物流', enterpriseCount: 850 },
+              { name: '建材物流', enterpriseCount: 750 }
+            ]
+          },
+          {
+            name: '即时物流',
+            enterpriseCount: 1990,
+            children: [
+              { name: '外卖配送', enterpriseCount: 850 },
+              { name: '即时零售', enterpriseCount: 680 },
+              { name: '跑腿服务', enterpriseCount: 460 }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'chain-fintech',
+    name: '金融科技',
+    icon: '💳',
+    color: '#13c2c2',
+    stats: {
+      shenzhenCount: 12800,
+      nationalCount: 38500,
+      percentage: 33.2
+    },
+    hierarchy: [
+      {
+        name: '支付结算',
+        enterpriseCount: 3200,
+        children: [
+          {
+            name: '第三方支付',
+            enterpriseCount: 850,
+            children: [
+              { name: '移动支付', enterpriseCount: 420 },
+              { name: '互联网支付', enterpriseCount: 280 },
+              { name: '跨境支付', enterpriseCount: 150 }
+            ]
+          },
+          {
+            name: '清算结算',
+            enterpriseCount: 680,
+            children: [
+              { name: '支付清算', enterpriseCount: 280 },
+              { name: '资金结算', enterpriseCount: 240 },
+              { name: '对账服务', enterpriseCount: 160 }
+            ]
+          },
+          {
+            name: '支付技术',
+            enterpriseCount: 1670,
+            children: [
+              { name: '支付网关', enterpriseCount: 520 },
+              { name: '风控系统', enterpriseCount: 620 },
+              { name: '反欺诈', enterpriseCount: 530 }
+            ]
+          }
+        ]
+      },
+      {
+        name: '数字金融',
+        enterpriseCount: 4200,
+        children: [
+          {
+            name: '数字银行',
+            enterpriseCount: 980,
+            children: [
+              { name: '直销银行', enterpriseCount: 350 },
+              { name: '开放银行', enterpriseCount: 320 },
+              { name: '虚拟银行', enterpriseCount: 310 }
+            ]
+          },
+          {
+            name: '智能投顾',
+            enterpriseCount: 1180,
+            children: [
+              { name: '智能理财', enterpriseCount: 480 },
+              { name: '智能保险', enterpriseCount: 380 },
+              { name: '量化投资', enterpriseCount: 320 }
+            ]
+          },
+          {
+            name: '区块链金融',
+            enterpriseCount: 2040,
+            children: [
+              { name: '供应链金融', enterpriseCount: 720 },
+              { name: '数字货币', enterpriseCount: 580 },
+              { name: '数字资产', enterpriseCount: 740 }
+            ]
+          }
+        ]
+      },
+      {
+        name: '金融基础设施',
+        enterpriseCount: 5400,
+        children: [
+          {
+            name: '征信服务',
+            enterpriseCount: 1280,
+            children: [
+              { name: '企业征信', enterpriseCount: 520 },
+              { name: '个人征信', enterpriseCount: 480 },
+              { name: '大数据风控', enterpriseCount: 280 }
+            ]
+          },
+          {
+            name: '金融安全',
+            enterpriseCount: 1680,
+            children: [
+              { name: '身份认证', enterpriseCount: 620 },
+              { name: '数据安全', enterpriseCount: 580 },
+              { name: '交易安全', enterpriseCount: 480 }
+            ]
+          },
+          {
+            name: '金融云服务',
+            enterpriseCount: 2440,
+            children: [
+              { name: '核心系统', enterpriseCount: 850 },
+              { name: '渠道系统', enterpriseCount: 720 },
+              { name: '数据中台', enterpriseCount: 870 }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'chain-culture',
+    name: '文化创意',
+    icon: '🎨',
+    color: '#eb2f96',
+    stats: {
+      shenzhenCount: 22800,
+      nationalCount: 68500,
+      percentage: 33.3
+    },
+    hierarchy: [
+      {
+        name: '数字内容',
+        enterpriseCount: 9200,
+        children: [
+          {
+            name: '游戏动漫',
+            enterpriseCount: 3850,
+            children: [
+              { name: '游戏研发', enterpriseCount: 1680 },
+              { name: '游戏运营', enterpriseCount: 980 },
+              { name: '动漫制作', enterpriseCount: 720 },
+              { name: '电竞产业', enterpriseCount: 470 }
+            ]
+          },
+          {
+            name: '数字影视',
+            enterpriseCount: 2880,
+            children: [
+              { name: '网络视频', enterpriseCount: 1180 },
+              { name: '短视频', enterpriseCount: 920 },
+              { name: '网络直播', enterpriseCount: 780 }
+            ]
+          },
+          {
+            name: '数字音乐',
+            enterpriseCount: 1680,
+            children: [
+              { name: '音乐平台', enterpriseCount: 520 },
+              { name: '音乐制作', enterpriseCount: 680 },
+              { name: '版权运营', enterpriseCount: 480 }
+            ]
+          },
+          {
+            name: '数字阅读',
+            enterpriseCount: 790,
+            children: [
+              { name: '网络文学', enterpriseCount: 320 },
+              { name: '数字出版', enterpriseCount: 280 },
+              { name: '有声阅读', enterpriseCount: 190 }
+            ]
+          }
+        ]
+      },
+      {
+        name: '创意设计',
+        enterpriseCount: 6200,
+        children: [
+          {
+            name: '工业设计',
+            enterpriseCount: 2280,
+            children: [
+              { name: '产品设计', enterpriseCount: 980 },
+              { name: '结构设计', enterpriseCount: 720 },
+              { name: '包装设计', enterpriseCount: 580 }
+            ]
+          },
+          {
+            name: '平面设计',
+            enterpriseCount: 1680,
+            children: [
+              { name: '品牌设计', enterpriseCount: 680 },
+              { name: '广告设计', enterpriseCount: 580 },
+              { name: 'UI设计', enterpriseCount: 420 }
+            ]
+          },
+          {
+            name: '建筑设计',
+            enterpriseCount: 1420,
+            children: [
+              { name: '建筑设计', enterpriseCount: 580 },
+              { name: '室内设计', enterpriseCount: 520 },
+              { name: '景观设计', enterpriseCount: 320 }
+            ]
+          },
+          {
+            name: '时尚设计',
+            enterpriseCount: 820,
+            children: [
+              { name: '服装设计', enterpriseCount: 320 },
+              { name: '珠宝设计', enterpriseCount: 280 },
+              { name: '配饰设计', enterpriseCount: 220 }
+            ]
+          }
+        ]
+      },
+      {
+        name: '文化服务',
+        enterpriseCount: 7400,
+        children: [
+          {
+            name: '会展服务',
+            enterpriseCount: 1850,
+            children: [
+              { name: '展会运营', enterpriseCount: 720 },
+              { name: '会议服务', enterpriseCount: 620 },
+              { name: '展馆运营', enterpriseCount: 510 }
+            ]
+          },
+          {
+            name: '文化旅游',
+            enterpriseCount: 2680,
+            children: [
+              { name: '主题公园', enterpriseCount: 520 },
+              { name: '文创园区', enterpriseCount: 920 },
+              { name: '文化场馆', enterpriseCount: 680 },
+              { name: '旅游服务', enterpriseCount: 560 }
+            ]
+          },
+          {
+            name: '广告传媒',
+            enterpriseCount: 1980,
+            children: [
+              { name: '广告代理', enterpriseCount: 780 },
+              { name: '媒介投放', enterpriseCount: 580 },
+              { name: '公关传播', enterpriseCount: 620 }
+            ]
+          },
+          {
+            name: '知识产权',
+            enterpriseCount: 890,
+            children: [
+              { name: '版权服务', enterpriseCount: 320 },
+              { name: '商标服务', enterpriseCount: 280 },
+              { name: '专利服务', enterpriseCount: 290 }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'chain-marine',
+    name: '海洋经济',
+    icon: '🌊',
+    color: '#1890ff',
+    stats: {
+      shenzhenCount: 3500,
+      nationalCount: 25800,
+      percentage: 13.6
+    },
+    hierarchy: [
+      {
+        name: '海洋装备',
+        enterpriseCount: 880,
+        children: [
+          {
+            name: '船舶制造',
+            enterpriseCount: 280,
+            children: [
+              { name: '游艇制造', enterpriseCount: 105 },
+              { name: '公务船艇', enterpriseCount: 85 },
+              { name: '特种船舶', enterpriseCount: 90 }
+            ]
+          },
+          {
+            name: '海洋工程',
+            enterpriseCount: 320,
+            children: [
+              { name: '海上平台', enterpriseCount: 95 },
+              { name: '海底设备', enterpriseCount: 125 },
+              { name: '港口机械', enterpriseCount: 100 }
+            ]
+          },
+          {
+            name: '海洋仪器',
+            enterpriseCount: 280,
+            children: [
+              { name: '海洋监测', enterpriseCount: 105 },
+              { name: '水下机器人', enterpriseCount: 95 },
+              { name: '深海装备', enterpriseCount: 80 }
+            ]
+          }
+        ]
+      },
+      {
+        name: '海洋电子信息',
+        enterpriseCount: 920,
+        children: [
+          {
+            name: '海洋通信',
+            enterpriseCount: 320,
+            children: [
+              { name: '卫星通信', enterpriseCount: 125 },
+              { name: '水声通信', enterpriseCount: 105 },
+              { name: '岸基通信', enterpriseCount: 90 }
+            ]
+          },
+          {
+            name: '海洋探测',
+            enterpriseCount: 380,
+            children: [
+              { name: '声纳系统', enterpriseCount: 145 },
+              { name: '海洋传感', enterpriseCount: 135 },
+              { name: '海洋测绘', enterpriseCount: 100 }
+            ]
+          },
+          {
+            name: '智慧海洋',
+            enterpriseCount: 220,
+            children: [
+              { name: '海洋大数据', enterpriseCount: 85 },
+              { name: '海洋AI', enterpriseCount: 75 },
+              { name: '海洋物联网', enterpriseCount: 60 }
+            ]
+          }
+        ]
+      },
+      {
+        name: '海洋服务',
+        enterpriseCount: 1080,
+        children: [
+          {
+            name: '海洋运输',
+            enterpriseCount: 380,
+            children: [
+              { name: '集装箱运输', enterpriseCount: 145 },
+              { name: '散货运输', enterpriseCount: 125 },
+              { name: '港口物流', enterpriseCount: 110 }
+            ]
+          },
+          {
+            name: '海洋旅游',
+            enterpriseCount: 320,
+            children: [
+              { name: '邮轮经济', enterpriseCount: 105 },
+              { name: '滨海旅游', enterpriseCount: 125 },
+              { name: '海洋运动', enterpriseCount: 90 }
+            ]
+          },
+          {
+            name: '海洋环保',
+            enterpriseCount: 220,
+            children: [
+              { name: '海洋监测', enterpriseCount: 85 },
+              { name: '污染治理', enterpriseCount: 75 },
+              { name: '生态修复', enterpriseCount: 60 }
+            ]
+          },
+          {
+            name: '海洋能源',
+            enterpriseCount: 160,
+            children: [
+              { name: '海上风电', enterpriseCount: 65 },
+              { name: '海洋能', enterpriseCount: 55 },
+              { name: '海上油气', enterpriseCount: 40 }
+            ]
+          }
+        ]
+      },
+      {
+        name: '海洋生物',
+        enterpriseCount: 620,
+        children: [
+          {
+            name: '海洋生物制药',
+            enterpriseCount: 180,
+            children: [
+              { name: '海洋药物', enterpriseCount: 75 },
+              { name: '海洋生物制品', enterpriseCount: 65 },
+              { name: '海洋保健品', enterpriseCount: 40 }
+            ]
+          },
+          {
+            name: '海洋生物材料',
+            enterpriseCount: 160,
+            children: [
+              { name: '海藻材料', enterpriseCount: 65 },
+              { name: '贝壳材料', enterpriseCount: 55 },
+              { name: '海洋蛋白', enterpriseCount: 40 }
+            ]
+          },
+          {
+            name: '海洋渔业',
+            enterpriseCount: 280,
+            children: [
+              { name: '海水养殖', enterpriseCount: 125 },
+              { name: '远洋捕捞', enterpriseCount: 85 },
+              { name: '水产品加工', enterpriseCount: 70 }
             ]
           }
         ]
