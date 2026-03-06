@@ -453,7 +453,7 @@ export default function IndustryGraph() {
           styles={{ body: { padding: 0, height: '100%', minHeight: '500px' } }}
           title={
             <div className="flex items-center justify-between">
-              <span className="font-semibold">{selectedChain?.name} - 区域产业结构</span>
+              <span className="font-semibold">产业结构</span>
               {selectedNodeInfo && (
                 <Button type="primary" size="small" onClick={() => setActiveTab('enterprises')}>
                   <TeamOutlined /> 查看企业清单
@@ -465,15 +465,15 @@ export default function IndustryGraph() {
           <Tabs 
             activeKey={activeTab} 
             onChange={setActiveTab}
-            style={{ height: '100%' }}
+            style={{ height: '100%', paddingLeft: 16 }}
             className="h-full"
             items={[
               {
                 key: 'flow',
-                label: '横向分布图',
+                label: '产业链层级图',
                 style: { height: 'calc(100% - 44px)', overflow: 'auto' },
                 children: (
-                  <div style={{ width: '100%', minWidth: '900px', padding: '12px' }}>
+                  <div style={{ width: '100%', minWidth: '1100px', padding: '12px' }}>
                     <IndustryFlowGraph data={flowGraphData} />
                   </div>
                 ),

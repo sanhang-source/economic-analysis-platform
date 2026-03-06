@@ -1,5 +1,83 @@
 /* ========== IndustryFlowGraph 样式 ========== */
 
+/* 产业链节点样式 - 一级 */
+.flow-node-chain {
+  width: 260px;
+  background: linear-gradient(135deg, #0d9488 0%, #14b8a6 100%);
+  border-radius: 12px;
+  padding: 20px;
+  color: white;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.flow-node-chain:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.flow-chain-badge {
+  background: rgba(255, 255, 255, 0.2);
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: bold;
+  display: inline-block;
+  margin-bottom: 12px;
+}
+
+.flow-chain-title {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 16px;
+}
+
+.flow-chain-stats {
+  font-size: 14px;
+}
+
+.flow-chain-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.flow-chain-label {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.flow-chain-value {
+  font-weight: bold;
+  font-size: 20px;
+}
+
+.flow-chain-value-secondary {
+  font-weight: 600;
+}
+
+.flow-chain-divider {
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  margin: 8px 0;
+}
+
+.flow-chain-highlight {
+  font-weight: bold;
+  font-size: 20px;
+  color: #fcd34d;
+}
+
+/* 展开按钮样式 */
+.expand-button {
+  transition: all 0.2s ease;
+}
+
+.expand-button:hover {
+  background: #f1f5f9 !important;
+  border-color: #94a3b8 !important;
+  transform: translateY(-50%) scale(1.1);
+}
+
 /* 产业链信息头部 */
 .chain-header {
   background: linear-gradient(135deg, #0d9488 0%, #14b8a6 100%);
