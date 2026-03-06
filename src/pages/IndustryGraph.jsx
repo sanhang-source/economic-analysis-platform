@@ -340,18 +340,101 @@ export default function IndustryGraph() {
     return findNode(selectedChain.hierarchy);
   }, [selectedNodeId, selectedChain]);
 
+  // 计算统计数据
+  const stats = useMemo(() => {
+    // 计算产业总数
+    let totalIndustries = 0;
+    let totalSegments = 0;
+    let totalProducts = 0;
+    
+    industryChains.forEach(chain => {
+      chain.hierarchy?.forEach(industry => {
+        totalIndustries++;
+        industry.children?.forEach(segment => {
+          totalSegments++;
+          segment.children?.forEach(() => {
+            totalProducts++;
+          });
+        });
+      });
+    });
+    
+    return {
+      chainCount: industryChains.length,
+      industryCount: totalIndustries,
+      segmentCount: totalSegments,
+      productCount: totalProducts,
+      shenzhenEnterprises: industryChainStats.totalShenzhenEnterprises,
+      nationalEnterprises: industryChainStats.totalNationalEnterprises,
+      avgPercentage: industryChainStats.averagePercentage,
+    };
+  }, []);
+
+  // 统计卡片组件
+  const StatCard = ({ title, value, subValue, color, icon }) => (
+    <div className="bg-white rounded-lg p-4 border border-gray-100 shadow-sm">
+      <div className="flex items-center justify-between">
+        <div>
+          <div className="text-gray-500 text-sm mb-1">{title}</div>
+          <div className="text-2xl font-bold" style={{ color }}>{value}</div>
+          {subValue && <div className="text-xs text-gray-400 mt-1">{subValue}</div>}
+        </div>
+        <div 
+          className="w-10 h-10 rounded-lg flex items-center justify-center text-lg"
+          style={{ backgroundColor: `${color}15`, color }}
+        >
+          {icon}
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <div className="h-full flex flex-col">
-      {/* Header */}
-      <div className="mb-4">
-        <h1 className="text-xl font-semibold flex items-center gap-2">
-          <GlobalOutlined className="text-blue-500" />
-          区域产业
-        </h1>
-        <p className="text-gray-500 text-sm mt-1">
-          共 <span className="text-blue-600 font-semibold">{industryChainStats.totalChains}</span> 个产业链，
-          覆盖 <span className="text-blue-600 font-semibold">{formatNum(industryChainStats.totalShenzhenEnterprises)}</span> 家深圳企业
-        </p>
+      {/* 数据概览卡片 */}
+      <div className="grid grid-cols-6 gap-3 mb-4">
+        <StatCard
+          title="产业链数量"
+          value={stats.chainCount}
+          subValue="个重点产业链"
+          color="#1677ff"
+          icon={<ApartmentOutlined />}
+        />
+        <StatCard
+          title="覆盖产业"
+          value={stats.industryCount}
+          subValue="个细分产业"
+          color="#52c41a"
+          icon={<ShopOutlined />}
+        />
+        <StatCard
+          title="细分行业"
+          value={stats.segmentCount}
+          subValue="个行业领域"
+          color="#fa8c16"
+          icon={<ShoppingOutlined />}
+        />
+        <StatCard
+          title="产品服务"
+          value={stats.productCount}
+          subValue="个产品类别"
+          color="#722ed1"
+          icon={<ShoppingOutlined />}
+        />
+        <StatCard
+          title="深圳企业"
+          value={formatNum(stats.shenzhenEnterprises)}
+          subValue={`占比 ${stats.avgPercentage}%`}
+          color="#1890ff"
+          icon={<TeamOutlined />}
+        />
+        <StatCard
+          title="全国企业"
+          value={formatNum(stats.nationalEnterprises)}
+          subValue="覆盖全国"
+          color="#13c2c2"
+          icon={<GlobalOutlined />}
+        />
       </div>
 
       <div className="flex-1 flex gap-4 min-h-0">
