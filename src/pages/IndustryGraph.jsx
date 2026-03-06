@@ -132,7 +132,7 @@ export default function IndustryGraph() {
     industryChains.find(c => c.id === selectedChainId) || industryChains[0] || {}
   , [selectedChainId]);
 
-  // 过滤产业链列表
+  // 过滤产业列表
   const filteredChains = useMemo(() =>
     searchText ? industryChains.filter(c => c.name.includes(searchText)) : industryChains
   , [searchText]);
@@ -208,7 +208,7 @@ export default function IndustryGraph() {
     setExpandedKeys([]);
   }, []);
 
-  // 渲染产业链列表
+  // 渲染产业列表
   const renderChainList = () => (
     <div className="space-y-3">
       {filteredChains.map((chain) => (
@@ -346,7 +346,7 @@ export default function IndustryGraph() {
       <div className="mb-4">
         <h1 className="text-xl font-semibold flex items-center gap-2">
           <GlobalOutlined className="text-blue-500" />
-          产业链图谱
+          区域产业
         </h1>
         <p className="text-gray-500 text-sm mt-1">
           共 <span className="text-blue-600 font-semibold">{industryChainStats.totalChains}</span> 个产业链，
@@ -359,7 +359,7 @@ export default function IndustryGraph() {
         <Card
           className="w-80 flex-shrink-0"
           bodyStyle={{ padding: 0, height: '100%' }}
-          title="产业链列表"
+          title="产业列表"
         >
           <div className="p-3 border-b">
             <Search
@@ -382,7 +382,7 @@ export default function IndustryGraph() {
           bodyStyle={{ padding: 16, height: 'calc(100% - 57px)', overflow: 'auto' }}
           title={
             <div className="flex items-center justify-between">
-              <span className="font-semibold">{selectedChain?.name} - 产业层级结构</span>
+              <span className="font-semibold">{selectedChain?.name} - 区域产业结构</span>
               {selectedNodeInfo && (
                 <Button type="primary" size="small" onClick={() => setActiveTab('enterprises')}>
                   <TeamOutlined /> 查看企业清单

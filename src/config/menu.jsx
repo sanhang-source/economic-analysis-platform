@@ -165,7 +165,7 @@ export const breadcrumbMap = {
   '/investment/leads': ['招商引资', '线索公海'],
   '/investment/projects': ['招商引资', '项目看板'],
   '/industry': ['产业大脑'],
-  '/industry/graph': ['产业大脑', '产业链图谱'],
+  '/industry/graph': ['产业大脑', '区域产业'],
   '/industry/supply-chain': ['产业大脑', '强链补链分析'],
   '/industry/capital': ['产业大脑', '企业系族'],
   '/industry/trade': ['产业大脑', '交易生态'],
