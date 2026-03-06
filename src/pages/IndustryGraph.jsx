@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import {
   Card,
   Input,
@@ -12,18 +12,20 @@ import {
 } from 'antd';
 import {
   SearchOutlined,
-  BankOutlined,
-  RightOutlined,
   TeamOutlined,
   ApartmentOutlined,
   ShopOutlined,
   ShoppingOutlined,
+  ArrowUpOutlined,
+  ArrowDownOutlined,
+  RightOutlined,
 } from '@ant-design/icons';
-import { industryChains, industryChainStats, getAllNodePaths } from '../mock/industryChainMock';
-import TreeNode from '../components/industry/TreeNode';
+import ReactECharts from 'echarts-for-react';
+import { industryChains, industryChainStats } from '../mock/industryChainMock';
+import IndustryFlowGraph from '../components/industry/IndustryFlowGraph/index.jsx';
 
 const { Search } = Input;
-const { TabPane } = Tabs;
+
 const { Option } = Select;
 
 // 生成企业列表数据
@@ -43,77 +45,12 @@ const generateEnterprises = (count, type) => {
     return {
       key: i,
       name: name,
-      location: Math.random() > 0.3 ? '深圳市' : ['广州市', '东莞市', '惠州市', '上海市'][Math.floor(Math.random() * 4)],
-      type: Math.random() > 0.5 ? '生产企业' : '服务企业',
+      creditCode: `91440300${Math.random().toString().slice(2, 10)}`,
+      industry: suffix,
       scale: ['大型', '中型', '小型'][Math.floor(Math.random() * 3)],
-      registeredCapital: Math.floor(Math.random() * 9000 + 1000) + '万',
-      establishedYear: 2000 + Math.floor(Math.random() * 24),
-      isShenzhen: Math.random() > 0.3
+      status: Math.random() > 0.1 ? '存续' : '注销',
     };
   });
-};
-
-// 企业列表表格
-const EnterpriseTable = ({ data }) => {
-  const columns = [
-    {
-      title: '企业名称',
-      dataIndex: 'name',
-      key: 'name',
-      render: (text, record) => (
-        <Space>
-          <BankOutlined className="text-gray-400" />
-          <span className="font-medium">{text}</span>
-          {record.isShenzhen && <Tag color="blue" size="small">深圳</Tag>}
-        </Space>
-      )
-    },
-    {
-      title: '所在地区',
-      dataIndex: 'location',
-      key: 'location',
-      width: 100
-    },
-    {
-      title: '企业类型',
-      dataIndex: 'type',
-      key: 'type',
-      width: 90,
-      render: (type) => <Tag size="small">{type}</Tag>
-    },
-    {
-      title: '规模',
-      dataIndex: 'scale',
-      key: 'scale',
-      width: 80,
-      render: (scale) => {
-        const colors = { '大型': 'red', '中型': 'orange', '小型': 'green' };
-        return <Tag color={colors[scale]} size="small">{scale}</Tag>;
-      }
-    },
-    {
-      title: '注册资本',
-      dataIndex: 'registeredCapital',
-      key: 'registeredCapital',
-      width: 100
-    },
-    {
-      title: '成立年份',
-      dataIndex: 'establishedYear',
-      key: 'establishedYear',
-      width: 90
-    }
-  ];
-
-  return (
-    <Table
-      columns={columns}
-      dataSource={data}
-      pagination={false}
-      size="small"
-      scroll={{ x: 'max-content' }}
-    />
-  );
 };
 
 // 格式化数字
@@ -123,42 +60,60 @@ export default function IndustryGraph() {
   // 状态管理
   const [selectedChainId, setSelectedChainId] = useState(industryChains[0]?.id);
   const [searchText, setSearchText] = useState('');
-  const [treeSearchText, setTreeSearchText] = useState('');
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = useState('flow');
   const [selectedNodeId, setSelectedNodeId] = useState(null);
-  const [expandedKeys, setExpandedKeys] = useState([]);
 
   // 计算选中产业链
   const selectedChain = useMemo(() =>
     industryChains.find(c => c.id === selectedChainId) || industryChains[0] || {}
   , [selectedChainId]);
 
+  // 转换为 React Flow 所需的数据格式（四级结构）
+  const flowGraphData = useMemo(() => {
+    if (!selectedChain?.hierarchy) return null;
+
+    const root = {
+      name: selectedChain.name,
+      shenzhen: selectedChain.stats?.shenzhenCount || 0,
+      national: selectedChain.stats?.nationalCount || 0,
+      percentage: selectedChain.stats?.percentage || 0,
+    };
+
+    // 三级结构：细分产业 → 细分行业 → 产品服务
+    // hierarchy 数组包含所有细分产业（通信设备、终端设备、光通信等）
+    // 每个细分产业的 children 是细分行业
+    // 每个细分行业的 children 是产品服务
+    const segments = selectedChain.hierarchy?.map(industry => ({
+      name: industry.name,
+      shenzhen: industry.enterpriseCount || 0,
+      national: Math.round((industry.enterpriseCount || 0) / 0.635),
+      percentage: 63.5,
+      // 细分行业列表
+      subSegments: industry.children?.map(subSegment => ({
+        name: subSegment.name,
+        shenzhen: Math.round(subSegment.enterpriseCount * 0.635),
+        national: subSegment.enterpriseCount || 0,
+        percentage: 63.5,
+        // 产品服务列表
+        products: subSegment.children?.map(product => ({
+          name: product.name,
+          shenzhen: Math.round(product.enterpriseCount * 0.635),
+          national: product.enterpriseCount || 0,
+          percentage: 63.5,
+        })) || [],
+      })) || [],
+    })) || [];
+
+    return { root, segments };
+  }, [selectedChain]);
+
   // 过滤产业列表（按深圳企业数量降序排列）
   const filteredChains = useMemo(() => {
     const chains = searchText 
       ? industryChains.filter(c => c.name.includes(searchText)) 
       : [...industryChains];
-    // 按深圳企业数量降序排列
     return chains.sort((a, b) => b.stats.shenzhenCount - a.stats.shenzhenCount);
   }, [searchText]);
-
-  // 搜索树节点
-  const searchResults = useMemo(() => {
-    if (!treeSearchText || !selectedChainId) return [];
-    const paths = getAllNodePaths(selectedChainId);
-    return paths.filter(p => 
-      p.name.toLowerCase().includes(treeSearchText.toLowerCase())
-    );
-  }, [treeSearchText, selectedChainId]);
-
-  // 处理展开/收起
-  const handleToggle = useCallback((nodeId) => {
-    setExpandedKeys(prev => 
-      prev.includes(nodeId) 
-        ? prev.filter(id => id !== nodeId)
-        : [...prev, nodeId]
-    );
-  }, []);
 
   // 处理节点选择
   const handleSelectNode = useCallback((node) => {
@@ -169,7 +124,6 @@ export default function IndustryGraph() {
   // 获取选中节点的企业列表
   const getNodeEnterprises = () => {
     if (!selectedNodeId) return [];
-    // 查找节点数据
     const findNode = (nodes) => {
       for (const node of nodes) {
         if (node.id === selectedNodeId) return node;
@@ -184,7 +138,6 @@ export default function IndustryGraph() {
     const node = findNode(selectedChain.hierarchy || []);
     if (!node) return [];
     
-    // 根据层级确定类型
     const getTypeByLevel = (id) => {
       const parts = id.split('-');
       return parts.length <= 2 ? 'industry' : parts.length === 3 ? 'segment' : 'product';
@@ -192,26 +145,6 @@ export default function IndustryGraph() {
     
     return generateEnterprises(node.enterpriseCount || 10, getTypeByLevel(selectedNodeId));
   };
-
-  // 展开全部
-  const expandAll = useCallback(() => {
-    const allIds = [];
-    const collectIds = (nodes) => {
-      nodes.forEach(node => {
-        if (node.children?.length > 0) {
-          allIds.push(node.id);
-          collectIds(node.children);
-        }
-      });
-    };
-    collectIds(selectedChain.hierarchy || []);
-    setExpandedKeys(allIds);
-  }, [selectedChain]);
-
-  // 收起全部
-  const collapseAll = useCallback(() => {
-    setExpandedKeys([]);
-  }, []);
 
   // 渲染产业列表
   const renderChainList = () => (
@@ -226,128 +159,73 @@ export default function IndustryGraph() {
             onClick={() => {
               setSelectedChainId(chain.id);
               setSelectedNodeId(null);
-              setExpandedKeys([]);
-              setActiveTab('overview');
+              setActiveTab('flow');
             }}
             className={`
-              py-4 px-3 cursor-pointer transition-all
+              py-3 px-3 cursor-pointer transition-all
               ${selectedChainId === chain.id
-                ? 'bg-blue-50'
-                : 'bg-white hover:bg-gray-50'
+                ? 'bg-blue-50 border-l-4 border-blue-500'
+                : 'hover:bg-gray-50 border-l-4 border-transparent'
               }
             `}
           >
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-3">
-              {/* 序号 */}
-              <div className="flex-shrink-0 w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center text-xs font-semibold text-gray-600">
-                {index + 1}
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-3">
+                {/* 序号 */}
+                <div 
+                  className="flex-shrink-0 w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center text-xs font-semibold text-gray-600">
+                  {index + 1}
+                </div>
+                <div
+                  className="w-12 h-12 rounded-lg flex items-center justify-center text-white text-xl font-bold"
+                  style={{ backgroundColor: chain.color }}
+                >
+                  {chain.name.charAt(0)}
+                </div>
+                <div>
+                  <div className="font-semibold text-gray-800">{chain.name}</div>
+                  {/* 显示缺失产业 */}
+                  {(() => {
+                    const missingIndustries = chain.hierarchy
+                      ?.filter(item => item.enterpriseCount === 0)
+                      ?.map(item => item.name);
+                    if (missingIndustries?.length > 0) {
+                      return (
+                        <div className="text-xs text-orange-500 mt-1">
+                          缺失产业：{missingIndustries.join('、')}</div>
+                      );
+                    }
+                    return null;
+                  })()}
+                </div>
               </div>
-              <div
-                className="w-12 h-12 rounded-lg flex items-center justify-center text-white text-xl font-bold"
-                style={{ backgroundColor: chain.color }}
-              >
-                {chain.name.charAt(0)}
+              <RightOutlined className="text-gray-400" />
+            </div>
+            <div className="grid grid-cols-3 gap-2 text-center">
+              <div className="bg-white rounded p-2">
+                <div className="text-sm font-bold" style={{ color: chain.color }}>
+                  {formatNum(chain.stats.shenzhenCount)}</div>
+                <div className="text-xs text-gray-500">
+                  深圳企业</div>
               </div>
-              <div>
-                <div className="font-semibold text-gray-800">{chain.name}</div>
-                {/* 显示缺失产业 */}
-                {(() => {
-                  const missingIndustries = chain.hierarchy
-                    ?.filter(item => item.enterpriseCount === 0)
-                    ?.map(item => item.name);
-                  if (missingIndustries?.length > 0) {
-                    return (
-                      <div className="text-xs text-orange-500 mt-1">
-                        缺失产业：{missingIndustries.join('、')}
-                      </div>
-                    );
-                  }
-                  return null;
-                })()}
+              <div className="bg-white rounded p-2">
+                <div className="text-sm font-bold text-gray-700">
+                  {formatNum(chain.stats.nationalCount)}
+                </div>
+                <div className="text-xs text-gray-500">全国企业</div>
+              </div>
+              <div className="bg-white rounded p-2">
+                <div className="text-sm font-bold text-blue-600">
+                  {chain.stats.percentage}%
+                </div>
+                <div className="text-xs text-gray-500">深圳占比</div>
               </div>
             </div>
-            <RightOutlined className="text-gray-400" />
-          </div>
-          <div className="grid grid-cols-3 gap-2 text-center">
-            <div className="bg-white rounded p-2">
-              <div className="text-sm font-bold" style={{ color: chain.color }}>
-                {formatNum(chain.stats.shenzhenCount)}
-              </div>
-              <div className="text-xs text-gray-500">深圳企业</div>
-            </div>
-            <div className="bg-white rounded p-2">
-              <div className="text-sm font-bold text-gray-700">
-                {formatNum(chain.stats.nationalCount)}
-              </div>
-              <div className="text-xs text-gray-500">全国企业</div>
-            </div>
-            <div className="bg-white rounded p-2">
-              <div className="text-sm font-bold text-blue-600">
-                {chain.stats.percentage}%
-              </div>
-              <div className="text-xs text-gray-500">深圳占比</div>
-            </div>
-          </div>
           </div>
         </div>
       ))}
     </div>
   );
-
-  // 渲染树形层级
-  const renderTree = () => {
-    if (!selectedChain?.hierarchy?.length) {
-      return <Empty description="暂无数据" />;
-    }
-
-    // 如果有搜索结果，高亮显示
-    const highlightIds = searchResults.map(r => r.id);
-
-    return (
-      <div className="tree-container">
-        {/* 树搜索和操作栏 */}
-        <div className="flex items-center gap-2 mb-4">
-          <Search
-            placeholder="搜索节点..."
-            allowClear
-            size="small"
-            value={treeSearchText}
-            onChange={e => setTreeSearchText(e.target.value)}
-            className="flex-1"
-          />
-          <Button size="small" onClick={expandAll}>展开全部</Button>
-          <Button size="small" onClick={collapseAll}>收起全部</Button>
-        </div>
-
-        {/* 搜索结果提示 */}
-        {treeSearchText && (
-          <div className="mb-3 px-3 py-2 bg-blue-50 rounded text-sm text-blue-700">
-            找到 {searchResults.length} 个匹配项
-          </div>
-        )}
-
-        {/* 树节点 */}
-        <div className="space-y-1">
-          {selectedChain.hierarchy.map((node) => (
-            <TreeNode
-              key={node.id}
-              node={node}
-              level={0}
-              chainColor={selectedChain.color}
-              expandedKeys={expandedKeys}
-              selectedKey={selectedNodeId}
-              onToggle={handleToggle}
-              onSelect={handleSelectNode}
-              searchHighlight={highlightIds}
-            />
-          ))}
-        </div>
-      </div>
-    );
-  };
-
-  const nodeEnterprises = getNodeEnterprises();
 
   // 获取当前选中的节点信息
   const selectedNodeInfo = useMemo(() => {
@@ -367,18 +245,10 @@ export default function IndustryGraph() {
     return findNode(selectedChain.hierarchy);
   }, [selectedNodeId, selectedChain]);
 
-  // 右侧内容区域 ref，用于滚动控制
-  const rightContentRef = useRef(null);
+  const nodeEnterprises = getNodeEnterprises();
 
   // 区域选择状态
   const [region, setRegion] = useState('全市');
-
-  // 当选择产业链时，自动滚动右侧内容区域到顶部
-  useEffect(() => {
-    if (rightContentRef.current) {
-      rightContentRef.current.scrollTop = 0;
-    }
-  }, [selectedChainId]);
 
   // 区域选项（与数字驾驶舱一致）
   const regionOptions = [
@@ -396,7 +266,6 @@ export default function IndustryGraph() {
 
   // 计算统计数据
   const stats = useMemo(() => {
-    // 计算产业总数
     let totalIndustries = 0;
     let totalSegments = 0;
     let totalProducts = 0;
@@ -443,6 +312,61 @@ export default function IndustryGraph() {
         </div>
       </div>
     </div>
+  );
+
+  // 企业表格列定义
+  const enterpriseColumns = [
+    {
+      title: '企业名称',
+      dataIndex: 'name',
+      key: 'name',
+      render: (text) => <span className="font-medium">{text}</span>,
+    },
+    {
+      title: '统一社会信用代码',
+      dataIndex: 'creditCode',
+      key: 'creditCode',
+    },
+    {
+      title: '所属细分',
+      dataIndex: 'industry',
+      key: 'industry',
+      render: (text) => <Tag size="small">{text}</Tag>,
+    },
+    {
+      title: '企业规模',
+      dataIndex: 'scale',
+      key: 'scale',
+      render: (text) => {
+        const colors = { '大型': 'blue', '中型': 'green', '小型': 'orange' };
+        return <Tag color={colors[text]}>{text}</Tag>;
+      },
+    },
+    {
+      title: '经营状态',
+      dataIndex: 'status',
+      key: 'status',
+      render: (text) => (
+        <Tag color={text === '存续' ? 'success' : 'default'}>{text}</Tag>
+      ),
+    },
+    {
+      title: '操作',
+      key: 'action',
+      render: () => (
+        <Button type="link" size="small">详情</Button>
+      ),
+    },
+  ];
+
+  // 企业表格组件
+  const EnterpriseTable = ({ data }) => (
+    <Table
+      columns={enterpriseColumns}
+      dataSource={data}
+      pagination={{ pageSize: 10 }}
+      size="small"
+    />
   );
 
   return (
@@ -505,7 +429,7 @@ export default function IndustryGraph() {
         {/* Left Sidebar */}
         <Card
           className="w-80 flex-shrink-0"
-          bodyStyle={{ padding: 0, height: '100%' }}
+          styles={{ body: { padding: 0, height: '100%' } }}
           title="产业链列表"
         >
           <div className="p-3 border-b">
@@ -525,8 +449,8 @@ export default function IndustryGraph() {
 
         {/* Right Content */}
         <Card
-          className="flex-1"
-          bodyStyle={{ padding: 0 }}
+          className="flex-1 min-h-0"
+          styles={{ body: { padding: 0, height: '100%', minHeight: '500px' } }}
           title={
             <div className="flex items-center justify-between">
               <span className="font-semibold">{selectedChain?.name} - 区域产业结构</span>
@@ -538,85 +462,62 @@ export default function IndustryGraph() {
             </div>
           }
         >
-          <div 
-            ref={rightContentRef}
-            style={{ height: 'calc(100% - 57px)', overflow: 'auto', padding: 16 }}
-          >
-          <Tabs activeKey={activeTab} onChange={setActiveTab}>
-            <TabPane tab="层级概览" key="overview">
-              {/* 产业链总体统计 */}
-              <Card size="small" className="mb-4 bg-gray-50">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div
-                      className="w-12 h-12 rounded-lg flex items-center justify-center text-white text-xl font-bold"
-                      style={{ backgroundColor: selectedChain?.color || '#1677ff' }}
-                    >
-                      {selectedChain?.name?.charAt(0) || '-'}
-                    </div>
-                    <div>
-                      <div className="font-semibold text-gray-800">{selectedChain?.name || '-'}</div>
-                      <div className="text-xs text-gray-500">{selectedChain?.description || ''}</div>
-                    </div>
+          <Tabs 
+            activeKey={activeTab} 
+            onChange={setActiveTab}
+            style={{ height: '100%' }}
+            className="h-full"
+            items={[
+              {
+                key: 'flow',
+                label: '横向分布图',
+                style: { height: 'calc(100% - 44px)', overflow: 'auto' },
+                children: (
+                  <div style={{ width: '100%', minWidth: '900px', padding: '12px' }}>
+                    <IndustryFlowGraph data={flowGraphData} />
                   </div>
-                  <Space size="middle">
-                    <Tag color={selectedChain?.color} style={{ fontSize: '12px', padding: '2px 8px' }}>
-                      深圳: {formatNum(selectedChain?.stats?.shenzhenCount || 0)}
-                    </Tag>
-                    <Tag style={{ fontSize: '12px', padding: '2px 8px' }}>
-                      全国: {formatNum(selectedChain?.stats?.nationalCount || 0)}
-                    </Tag>
-                    <Tag color="blue" style={{ fontSize: '12px', padding: '2px 8px' }}>
-                      占比: {selectedChain?.stats?.percentage || 0}%
-                    </Tag>
-                  </Space>
-                </div>
-              </Card>
-
-              {/* 树形层级结构 */}
-              {renderTree()}
-            </TabPane>
-
-            <TabPane
-              tab={selectedNodeInfo ? `${selectedNodeInfo.name} - 企业清单` : '企业清单'}
-              key="enterprises"
-              disabled={!selectedNodeId}
-            >
-              {selectedNodeInfo ? (
-                <div>
-                  <Card size="small" className="mb-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        {selectedNodeInfo.id?.split('-').length <= 2 ? (
-                          <ApartmentOutlined style={{ color: selectedChain?.color, fontSize: 20 }} />
-                        ) : selectedNodeInfo.id?.split('-').length === 3 ? (
-                          <ShopOutlined style={{ color: '#52c41a', fontSize: 20 }} />
-                        ) : (
-                          <ShoppingOutlined style={{ color: '#fa8c16', fontSize: 20 }} />
-                        )}
-                        <span className="font-semibold text-lg">{selectedNodeInfo.name}</span>
+                ),
+              },
+              {
+                key: 'enterprises',
+                label: selectedNodeInfo ? `${selectedNodeInfo.name} - 企业清单` : '企业清单',
+                disabled: !selectedNodeId,
+                style: { height: 'calc(100% - 44px)', padding: 16, overflow: 'auto' },
+                children: selectedNodeInfo ? (
+                  <div>
+                    <Card size="small" className="mb-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          {selectedNodeInfo.id?.split('-').length <= 2 ? (
+                            <ApartmentOutlined style={{ color: selectedChain?.color, fontSize: 20 }} />
+                          ) : selectedNodeInfo.id?.split('-').length === 3 ? (
+                            <ShopOutlined style={{ color: '#52c41a', fontSize: 20 }} />
+                          ) : (
+                            <ShoppingOutlined style={{ color: '#fa8c16', fontSize: 20 }} />
+                          )}
+                          <span className="font-semibold text-lg">{selectedNodeInfo.name}</span>
+                        </div>
+                        <Space size="middle">
+                          <Tag color={selectedChain?.color} style={{ fontSize: '12px', padding: '2px 8px' }}>
+                            深圳: {Math.round(selectedNodeInfo.enterpriseCount * 0.635).toLocaleString()}
+                          </Tag>
+                          <Tag style={{ fontSize: '12px', padding: '2px 8px' }}>
+                            全国: {selectedNodeInfo.enterpriseCount.toLocaleString()}
+                          </Tag>
+                          <Tag color="blue" style={{ fontSize: '12px', padding: '2px 8px' }}>
+                            占比: 63.5%
+                          </Tag>
+                        </Space>
                       </div>
-                      <Space size="middle">
-                        <Tag color={selectedChain?.color} style={{ fontSize: '12px', padding: '2px 8px' }}>
-                          深圳: {Math.round(selectedNodeInfo.enterpriseCount * 0.635).toLocaleString()}
-                        </Tag>
-                        <Tag style={{ fontSize: '12px', padding: '2px 8px' }}>
-                          全国: {selectedNodeInfo.enterpriseCount.toLocaleString()}
-                        </Tag>
-                        <Tag color="blue" style={{ fontSize: '12px', padding: '2px 8px' }}>
-                          占比: 63.5%
-                        </Tag>
-                      </Space>
-                    </div>
-                  </Card>
-                  <EnterpriseTable data={nodeEnterprises} />
-                </div>
-              ) : (
-                <Empty description="请点击层级节点查看企业清单" />
-              )}
-            </TabPane>
-          </Tabs>
-          </div>
+                    </Card>
+                    <EnterpriseTable data={nodeEnterprises} />
+                  </div>
+                ) : (
+                  <Empty description="请点击层级节点查看企业清单" />
+                ),
+              },
+            ]}
+          />
         </Card>
       </div>
     </div>

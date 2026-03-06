@@ -1,0 +1,398 @@
+/* ========== IndustryFlowGraph 样式 ========== */
+
+/* 产业链信息头部 */
+.chain-header {
+  background: linear-gradient(135deg, #0d9488 0%, #14b8a6 100%);
+  border-radius: 12px;
+  padding: 16px 24px;
+  margin-bottom: 16px;
+  color: white;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.chain-header-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.chain-header-title {
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.chain-header-stats {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.chain-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.chain-stat-label {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.chain-stat-value {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.chain-stat-value.blue {
+  color: #bfdbfe;
+}
+
+.chain-stat-value.orange {
+  color: #fcd34d;
+}
+
+.chain-stat-divider {
+  width: 1px;
+  height: 32px;
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* 根节点样式 - 一级产业 */
+.flow-node-root {
+  width: 256px;
+  background: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%);
+  border-radius: 12px;
+  padding: 20px;
+  color: white;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+}
+
+.flow-node-root:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.flow-node-badge {
+  background: rgba(255, 255, 255, 0.2);
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: bold;
+  display: inline-block;
+  margin-bottom: 12px;
+}
+
+.flow-node-title {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 16px;
+}
+
+.flow-node-stats {
+  font-size: 14px;
+}
+
+.flow-stat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.flow-stat-label {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.flow-stat-value {
+  font-weight: bold;
+  font-size: 20px;
+}
+
+.flow-stat-value-secondary {
+  font-weight: 600;
+}
+
+.flow-stat-divider {
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  margin: 8px 0;
+}
+
+.flow-stat-highlight {
+  font-weight: bold;
+  font-size: 20px;
+  color: #fcd34d;
+}
+
+/* 连接点样式 */
+.flow-handle {
+  background: white !important;
+  width: 12px !important;
+  height: 12px !important;
+  border: 2px solid #14b8a6 !important;
+  right: -6px !important;
+}
+
+/* 细分产业节点样式 - 二级 */
+.flow-node-segment {
+  width: 224px;
+  background: white;
+  border: 2px solid;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  transition: all 0.3s ease;
+}
+
+.flow-node-segment:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.flow-segment-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.flow-segment-bar {
+  width: 6px;
+  height: 24px;
+  border-radius: 4px;
+}
+
+.flow-segment-label {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.flow-segment-title {
+  font-weight: bold;
+  color: #1f2937;
+  margin-bottom: 12px;
+}
+
+.flow-segment-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  text-align: center;
+  font-size: 12px;
+}
+
+.flow-grid-cell {
+  padding: 4px;
+  border-radius: 6px;
+}
+
+.flow-grid-cell.blue {
+  background: #eff6ff;
+}
+
+.flow-grid-cell.gray {
+  background: #f9fafb;
+}
+
+.flow-grid-cell.orange {
+  background: #fff7ed;
+}
+
+.flow-grid-value {
+  color: #2563eb;
+  font-weight: bold;
+}
+
+.flow-grid-value-secondary {
+  color: #4b5563;
+  font-weight: 600;
+}
+
+.flow-grid-highlight {
+  color: #ea580c;
+  font-weight: bold;
+}
+
+.flow-grid-label {
+  color: #9ca3af;
+  font-size: 10px;
+  transform: scale(0.9);
+}
+
+.flow-handle-left,
+.flow-handle-right {
+  background: #9ca3af !important;
+  width: 8px !important;
+  height: 8px !important;
+  border: none !important;
+}
+
+.flow-handle-left {
+  left: -4px !important;
+}
+
+.flow-handle-right {
+  right: -4px !important;
+}
+
+/* 细分行业节点样式 - 三级 */
+.flow-node-subsegment {
+  width: 200px;
+  background: white;
+  border: 2px solid #e0e7ff;
+  border-radius: 10px;
+  padding: 12px;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.flow-node-subsegment:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.flow-subsegment-header {
+  margin-bottom: 6px;
+}
+
+.flow-subsegment-label {
+  font-size: 11px;
+  color: #6366f1;
+  background: #e0e7ff;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.flow-subsegment-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 10px;
+}
+
+.flow-subsegment-stats {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.flow-subsegment-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  flex: 1;
+}
+
+.flow-subsegment-value {
+  font-size: 13px;
+  font-weight: 600;
+  color: #4b5563;
+}
+
+.flow-subsegment-value.blue {
+  color: #2563eb;
+}
+
+.flow-subsegment-value.orange {
+  color: #ea580c;
+}
+
+.flow-subsegment-label-text {
+  font-size: 10px;
+  color: #9ca3af;
+  margin-top: 2px;
+}
+
+/* 产品服务节点样式 - 四级 */
+.flow-node-product {
+  width: 192px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 12px;
+  transition: all 0.3s ease;
+}
+
+.flow-node-product:hover {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.flow-product-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.flow-product-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+}
+
+.flow-product-tag {
+  font-size: 10px;
+  background: #e2e8f0;
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: #64748b;
+}
+
+.flow-product-stats {
+  display: flex;
+  justify-content: space-between;
+  text-align: center;
+  font-size: 12px;
+}
+
+.flow-product-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.flow-product-value {
+  color: #4b5563;
+  font-weight: 500;
+}
+
+.flow-product-value.blue {
+  color: #2563eb;
+  font-weight: bold;
+}
+
+.flow-product-value.orange {
+  color: #ea580c;
+  font-weight: bold;
+}
+
+.flow-product-label {
+  color: #9ca3af;
+  font-size: 10px;
+}
+
+/* 边框颜色类 */
+.border-teal-200 { border-color: #99f6e4; }
+.border-blue-200 { border-color: #bfdbfe; }
+.border-purple-200 { border-color: #e9d5ff; }
+.border-orange-200 { border-color: #fed7aa; }
+.border-green-200 { border-color: #bbf7d0; }
+.border-cyan-200 { border-color: #a5f3fc; }
+.border-pink-200 { border-color: #fbcfe8; }
+.border-indigo-200 { border-color: #c7d2fe; }
+
+/* React Flow 控件样式覆盖 */
+.react-flow__controls {
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06) !important;
+}
+
+.react-flow__controls-button {
+  border-color: #e5e7eb !important;
+  color: #374151 !important;
+}
+
+.react-flow__controls-button:hover {
+  background: #f9fafb !important;
+}
