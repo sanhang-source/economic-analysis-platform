@@ -12,14 +12,12 @@ import {
 } from 'antd';
 import {
   SearchOutlined,
-  GlobalOutlined,
   BankOutlined,
   RightOutlined,
   TeamOutlined,
   ApartmentOutlined,
   ShopOutlined,
   ShoppingOutlined,
-  EnvironmentOutlined,
 } from '@ant-design/icons';
 import { industryChains, industryChainStats, getAllNodePaths } from '../mock/industryChainMock';
 import TreeNode from '../components/industry/TreeNode';
@@ -416,10 +414,7 @@ export default function IndustryGraph() {
       {/* 页面标题和区域选择 */}
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
-            <EnvironmentOutlined className="text-blue-500" />
-            区域产业
-          </h1>
+          <h1 className="text-2xl font-bold text-gray-800">区域产业</h1>
           <p className="text-gray-500 text-sm mt-1">
             分析区域产业结构，洞察产业发展态势
           </p>
