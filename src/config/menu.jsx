@@ -51,7 +51,7 @@ export const menuConfig = [
       {
         key: '/industry/graph',
         icon: <ShareAltOutlined />,
-        label: '产业链图谱',
+        label: '区域产业',
       },
       {
         key: '/industry/supply-chain',
