@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Table, Button, Tag, Space, message, Dropdown } from 'antd';
 import { ExportOutlined, PlusOutlined, DownOutlined } from '@ant-design/icons';
 
@@ -21,16 +21,23 @@ const EnterpriseTable = ({
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [areaFilter, setAreaFilter] = useState('all'); // all | shenzhen | other
 
-  // 区域筛选
-  const filteredData = (() => {
+  // 区域筛选 - 使用 useMemo 优化
+  const filteredData = useMemo(() => {
     if (areaFilter === 'all') return data;
     if (areaFilter === 'shenzhen') return data.filter(item => item.isShenzhen);
     if (areaFilter === 'other') return data.filter(item => !item.isShenzhen);
     return data;
-  })();
+  }, [data, areaFilter]);
 
-  // 表格列定义
-  const columns = [
+  // 预计算各区域企业数量
+  const counts = useMemo(() => ({
+    all: data.length,
+    shenzhen: data.filter(e => e.isShenzhen).length,
+    other: data.filter(e => !e.isShenzhen).length
+  }), [data]);
+
+  // 表格列定义 - 使用 useMemo 缓存
+  const columns = useMemo(() => [
     {
       title: '企业名称',
       dataIndex: 'name',
@@ -50,7 +57,7 @@ const EnterpriseTable = ({
       key: 'chain',
       width: 140,
       render: (belongsTo) => {
-        const chains = [...new Set(belongsTo.map(b => b.chain))];
+        const chains = [...new Set((belongsTo || []).map(b => b.chain))];
         return (
           <div className="flex flex-wrap gap-1">
             {chains.map((chain, idx) => (
@@ -66,7 +73,7 @@ const EnterpriseTable = ({
       key: 'segment',
       width: 120,
       render: (belongsTo) => {
-        const segments = [...new Set(belongsTo.map(b => b.segment))];
+        const segments = [...new Set((belongsTo || []).map(b => b.segment))];
         return (
           <div className="flex flex-wrap gap-1">
             {segments.map((segment, idx) => (
@@ -82,7 +89,7 @@ const EnterpriseTable = ({
       key: 'subSegment',
       width: 120,
       render: (belongsTo) => {
-        const subSegments = [...new Set(belongsTo.map(b => b.subSegment))];
+        const subSegments = [...new Set((belongsTo || []).map(b => b.subSegment))];
         return (
           <div className="flex flex-wrap gap-1">
             {subSegments.map((sub, idx) => (
@@ -98,7 +105,7 @@ const EnterpriseTable = ({
       key: 'product',
       width: 120,
       render: (belongsTo) => {
-        const products = belongsTo.map(b => b.product).filter(Boolean);
+        const products = (belongsTo || []).map(b => b.product).filter(Boolean);
         if (products.length === 0) return '-';
         return (
           <div className="flex flex-wrap gap-1">
@@ -152,7 +159,7 @@ const EnterpriseTable = ({
         </Button>
       )
     }
-  ];
+  ], []);
 
   // 处理批量加入
   const handleBatchJoin = (type) => {
@@ -190,21 +197,21 @@ const EnterpriseTable = ({
             style={{ cursor: 'pointer', padding: '4px 12px', fontSize: '14px' }}
             onClick={() => setAreaFilter('all')}
           >
-            全部 ({data.length})
+            全部 ({counts.all})
           </Tag>
           <Tag 
             color={areaFilter === 'shenzhen' ? 'green' : 'default'}
             style={{ cursor: 'pointer', padding: '4px 12px', fontSize: '14px' }}
             onClick={() => setAreaFilter('shenzhen')}
           >
-            本地 ({data.filter(e => e.isShenzhen).length})
+            本地 ({counts.shenzhen})
           </Tag>
           <Tag 
             color={areaFilter === 'other' ? 'orange' : 'default'}
             style={{ cursor: 'pointer', padding: '4px 12px', fontSize: '14px' }}
             onClick={() => setAreaFilter('other')}
           >
-            外地 ({data.filter(e => !e.isShenzhen).length})
+            外地 ({counts.other})
           </Tag>
         </Space>
         

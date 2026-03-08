@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback, useEffect } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import {
   Card,
   Input,
@@ -13,15 +13,13 @@ import {
 
 import {
   SearchOutlined,
-  TeamOutlined,
   ApartmentOutlined,
   ShopOutlined,
   ShoppingOutlined,
   RightOutlined,
 } from '@ant-design/icons';
-import ReactECharts from 'echarts-for-react';
 import { industryChains, industryChainStats } from '../mock/industryChainMock';
-import { enterprises, filterEnterprisesByArea } from '../mock/enterpriseMock';
+import { enterprises } from '../mock/enterpriseMock';
 import IndustryFlowGraph from '../components/industry/IndustryFlowGraph/index.jsx';
 import EnterpriseTable from '../components/enterprise/EnterpriseTable.jsx';
 
@@ -29,6 +27,27 @@ const { Option } = Select;
 
 // 格式化数字
 const formatNum = (n) => n >= 10000 ? (n / 10000).toFixed(1) + '万' : n.toLocaleString();
+
+// 统计卡片组件 - 移出主组件避免重复创建
+const StatCard = React.memo(({ title, value, unit, color, icon }) => (
+  <div className="bg-white rounded-lg p-4 border border-gray-100 shadow-sm">
+    <div className="flex items-center justify-between">
+      <div>
+        <div className="text-gray-500 text-sm mb-1">{title}</div>
+        <div className="flex items-baseline gap-1">
+          <span className="text-2xl font-bold" style={{ color }}>{value}</span>
+          <span className="text-xs text-gray-400">{unit}</span>
+        </div>
+      </div>
+      <div 
+        className="w-10 h-10 rounded-lg flex items-center justify-center text-lg"
+        style={{ backgroundColor: `${color}15`, color }}
+      >
+        {icon}
+      </div>
+    </div>
+  </div>
+));
 
 export default function IndustryGraph() {
   // 状态管理
@@ -171,8 +190,8 @@ export default function IndustryGraph() {
     setActiveTab('enterprises');
   }, []);
 
-  // 获取选中节点的企业列表
-  const getNodeEnterprises = () => {
+  // 获取选中节点的企业列表 - 使用 useMemo 优化
+  const nodeEnterprises = useMemo(() => {
     if (!selectedNodeId || !selectedNodeData) return [];
     
     const nodeName = selectedNodeData.name;
@@ -186,7 +205,7 @@ export default function IndustryGraph() {
     
     // 如果没找到匹配的企业，返回所有企业（用于展示）
     return filtered.length > 0 ? filtered : enterprises;
-  };
+  }, [selectedNodeId, selectedNodeData]);
 
   // 渲染产业列表
   const renderChainList = () => (
@@ -352,8 +371,6 @@ export default function IndustryGraph() {
     };
   }, [selectedNodeId, selectedNodeData, selectedChain]);
 
-  const nodeEnterprises = getNodeEnterprises();
-
   // 区域选择状态
   const [region, setRegion] = useState('全市');
 
@@ -398,28 +415,7 @@ export default function IndustryGraph() {
       nationalEnterprises: industryChainStats.totalNationalEnterprises,
       avgPercentage: industryChainStats.averagePercentage,
     };
-  }, []);
-
-  // 统计卡片组件
-  const StatCard = ({ title, value, unit, color, icon }) => (
-    <div className="bg-white rounded-lg p-4 border border-gray-100 shadow-sm">
-      <div className="flex items-center justify-between">
-        <div>
-          <div className="text-gray-500 text-sm mb-1">{title}</div>
-          <div className="flex items-baseline gap-1">
-            <span className="text-2xl font-bold" style={{ color }}>{value}</span>
-            <span className="text-xs text-gray-400">{unit}</span>
-          </div>
-        </div>
-        <div 
-          className="w-10 h-10 rounded-lg flex items-center justify-center text-lg"
-          style={{ backgroundColor: `${color}15`, color }}
-        >
-          {icon}
-        </div>
-      </div>
-    </div>
-  );
+  }, [industryChains, industryChainStats]);
 
   return (
     <div>

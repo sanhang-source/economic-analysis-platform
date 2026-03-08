@@ -63,7 +63,7 @@ const ExpandButton = ({ isExpanded, onClick, hasChildren }) => {
 // ============ 自定义节点组件 ============
 
 // 产业链节点 - 最左侧
-const ChainNode = (props) => {
+const ChainNode = React.memo((props) => {
   const { data, id } = props;
   const { expandedNodes, toggleExpand, onNodeClick } = data._internal || {};
   const isExpanded = !expandedNodes?.has(id);
@@ -106,18 +106,15 @@ const ChainNode = (props) => {
       
       <ExpandButton 
         isExpanded={isExpanded} 
-        onClick={() => {
-          console.log('ChainNode toggle:', id);
-          toggleExpand?.(id);
-        }}
+        onClick={() => toggleExpand?.(id)}
         hasChildren={data.hasChildren}
       />
     </div>
   );
-};
+});
 
 // 细分产业节点 - 二级
-const SegmentNode = ({ data, id }) => {
+const SegmentNode = React.memo(({ data, id }) => {
   const { expandedNodes, toggleExpand, onNodeClick } = data._internal || {};
   const isExpanded = !expandedNodes?.has(id);
   const isZeroShenzhen = data.shenzhen === 0;
@@ -169,10 +166,10 @@ const SegmentNode = ({ data, id }) => {
       />
     </div>
   );
-};
+});
 
 // 细分行业节点 - 三级
-const SubSegmentNode = ({ data, id }) => {
+const SubSegmentNode = React.memo(({ data, id }) => {
   const { expandedNodes, toggleExpand, onNodeClick } = data._internal || {};
   const isExpanded = expandedNodes?.has(id); // 在集合中 = 展开产品服务
   const isZeroShenzhen = data.shenzhen === 0;
@@ -222,10 +219,10 @@ const SubSegmentNode = ({ data, id }) => {
       />
     </div>
   );
-};
+});
 
 // 产品服务节点 - 四级
-const ProductNode = ({ data, id }) => {
+const ProductNode = React.memo(({ data, id }) => {
   const { onNodeClick } = data._internal || {};
   const isZeroShenzhen = data.shenzhen === 0;
   
@@ -262,7 +259,7 @@ const ProductNode = ({ data, id }) => {
       </div>
     </div>
   );
-};
+});
 
 // 注册节点类型
 const nodeTypes = {
