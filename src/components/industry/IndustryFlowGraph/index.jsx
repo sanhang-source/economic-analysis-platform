@@ -572,7 +572,7 @@ const IndustryFlowGraph = ({ data }) => {
   }
 
   return (
-    <div style={{ width: '100%', height: '550px', display: 'flex', flexDirection: 'column', border: '1px solid #e2e8f0', borderRadius: 8 }}>
+    <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', border: '1px solid #e2e8f0', borderRadius: 8 }}>
       <div style={{ flex: 1, position: 'relative', minHeight: 0 }}>
         {nodes.length === 0 ? (
           <div style={{ 

@@ -165,8 +165,8 @@ const MainLayout = () => {
         </Header>
 
         {/* 内容区域 - 浅灰色背景 */}
-        <Content className="bg-gray-50 min-h-[calc(100vh-64px)] overflow-auto">
-          <div className="p-6">
+        <Content className="bg-gray-50 flex-1">
+          <div className="p-4">
             <Outlet />
           </div>
         </Content>

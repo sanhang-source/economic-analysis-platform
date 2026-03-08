@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback, useEffect } from 'react';
+﻿import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import {
   Card,
   Input,
@@ -9,7 +9,11 @@ import {
   Tabs,
   Empty,
   Select,
+  Radio,
+  Checkbox,
 } from 'antd';
+
+
 import {
   SearchOutlined,
   TeamOutlined,
@@ -23,8 +27,6 @@ import {
 import ReactECharts from 'echarts-for-react';
 import { industryChains, industryChainStats } from '../mock/industryChainMock';
 import IndustryFlowGraph from '../components/industry/IndustryFlowGraph/index.jsx';
-
-const { Search } = Input;
 
 const { Option } = Select;
 
@@ -60,6 +62,11 @@ export default function IndustryGraph() {
   // 状态管理
   const [selectedChainId, setSelectedChainId] = useState(industryChains[0]?.id);
   const [searchText, setSearchText] = useState('');
+
+  // 产业列表排序和筛选状态
+  const [sortBy, setSortBy] = useState('shenzhenCount'); // shenzhenCount | percentage
+  const [showMissingOnly, setShowMissingOnly] = useState(false); // 是否只显示有缺失产业的产业
+
   const [activeTab, setActiveTab] = useState('flow');
   const [selectedNodeId, setSelectedNodeId] = useState(null);
 
@@ -107,13 +114,32 @@ export default function IndustryGraph() {
     return { root, segments };
   }, [selectedChain]);
 
-  // 过滤产业列表（按深圳企业数量降序排列）
+  // 过滤、排序产业列表
   const filteredChains = useMemo(() => {
-    const chains = searchText 
+    let chains = searchText 
       ? industryChains.filter(c => c.name.includes(searchText)) 
       : [...industryChains];
-    return chains.sort((a, b) => b.stats.shenzhenCount - a.stats.shenzhenCount);
-  }, [searchText]);
+
+    // 筛选：只显示有缺失产业的产业
+    if (showMissingOnly) {
+      chains = chains.filter(chain => {
+        const hasMissing = chain.hierarchy?.some(item => item.enterpriseCount === 0);
+        return hasMissing;
+      });
+    }
+
+    // 排序
+    chains.sort((a, b) => {
+      if (sortBy === 'shenzhenCount') {
+        return b.stats.shenzhenCount - a.stats.shenzhenCount;
+      } else if (sortBy === 'percentage') {
+        return b.stats.percentage - a.stats.percentage;
+      }
+      return 0;
+    });
+
+    return chains;
+  }, [searchText, sortBy, showMissingOnly]);
 
   // 处理节点选择
   const handleSelectNode = useCallback((node) => {
@@ -370,7 +396,7 @@ export default function IndustryGraph() {
   );
 
   return (
-    <div className="h-full flex flex-col">
+    <div>
       {/* 页面标题和区域选择 */}
       <div className="flex items-center justify-between mb-4">
         <div>
@@ -389,9 +415,9 @@ export default function IndustryGraph() {
       {/* 数据概览卡片 */}
       <div className="grid grid-cols-5 gap-3 mb-4">
         <StatCard
-          title="产业链"
+          title="产业"
           value={stats.chainCount}
-          unit="条"
+          unit="个"
           color="#1677ff"
           icon={<ApartmentOutlined />}
         />
@@ -425,32 +451,56 @@ export default function IndustryGraph() {
         />
       </div>
 
-      <div className="flex-1 flex gap-4 min-h-0">
+      <div className="flex gap-4 items-stretch">
         {/* Left Sidebar */}
         <Card
           className="w-80 flex-shrink-0"
-          styles={{ body: { padding: 0, height: '100%' } }}
-          title="产业链列表"
+          style={{ maxHeight: 800 }}
+          styles={{ body: { padding: 0, display: 'flex', flexDirection: 'column', maxHeight: 743, overflow: 'hidden' } }}
+          title="产业列表"
         >
-          <div className="p-3 border-b">
-            <Search
-              placeholder="搜索产业链"
+          <div className="p-4 border-b space-y-2 flex-shrink-0">
+            <Input
+              placeholder="搜索产业"
               allowClear
               size="small"
               value={searchText}
               onChange={e => setSearchText(e.target.value)}
               prefix={<SearchOutlined />}
             />
+            {/* 排序和筛选 */}
+            <div className="flex items-center justify-between">
+              <Radio.Group 
+                size="small" 
+                value={sortBy} 
+                onChange={e => setSortBy(e.target.value)}
+                optionType="button"
+                buttonStyle="solid"
+              >
+                <Radio.Button value="shenzhenCount">按深圳企业</Radio.Button>
+                <Radio.Button value="percentage">按占比</Radio.Button>
+              </Radio.Group>
+            </div>
+            <Checkbox 
+              size="small"
+              checked={showMissingOnly}
+              onChange={e => setShowMissingOnly(e.target.checked)}
+            >
+              <span className="text-xs text-gray-600">仅看有缺失产业</span>
+            </Checkbox>
           </div>
-          <div className="overflow-auto p-3" style={{ maxHeight: '640px' }}>
-            {renderChainList()}
+          <div className="overflow-auto p-4 flex-1">
+            {filteredChains.length > 0 ? renderChainList() : (
+              <Empty description="暂无数据" image={Empty.PRESENTED_IMAGE_SIMPLE} />
+            )}
           </div>
         </Card>
 
         {/* Right Content */}
         <Card
-          className="flex-1 min-h-0"
-          styles={{ body: { padding: 0, height: '100%', minHeight: '500px' } }}
+          className="flex-1"
+          style={{ maxHeight: 800 }}
+          styles={{ body: { padding: 0, display: 'flex', flexDirection: 'column', maxHeight: 743, overflow: 'hidden' } }}
           title={
             <div className="flex items-center justify-between">
               <span className="font-semibold">产业结构</span>
@@ -465,15 +515,13 @@ export default function IndustryGraph() {
           <Tabs 
             activeKey={activeTab} 
             onChange={setActiveTab}
-            style={{ height: '100%', paddingLeft: 16 }}
             className="h-full"
             items={[
               {
                 key: 'flow',
-                label: '产业链层级图',
-                style: { height: 'calc(100% - 44px)', overflow: 'auto' },
+                label: '产业层级',
                 children: (
-                  <div style={{ width: '100%', minWidth: '1400px', padding: '12px' }}>
+                  <div style={{ width: '100%', height: 650, padding: 16 }}>
                     <IndustryFlowGraph data={flowGraphData} />
                   </div>
                 ),
@@ -482,7 +530,7 @@ export default function IndustryGraph() {
                 key: 'enterprises',
                 label: selectedNodeInfo ? `${selectedNodeInfo.name} - 企业清单` : '企业清单',
                 disabled: !selectedNodeId,
-                style: { height: 'calc(100% - 44px)', padding: 16, overflow: 'auto' },
+                style: { padding: '0 16px 16px', overflow: 'auto', maxHeight: 650 },
                 children: selectedNodeInfo ? (
                   <div>
                     <Card size="small" className="mb-4">
