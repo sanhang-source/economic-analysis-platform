@@ -241,15 +241,31 @@ export default function IndustryGraph() {
                 </div>
                 <div>
                   <div className="font-semibold text-gray-800">{chain.name}</div>
-                  {/* 显示缺失产业 */}
+                  {/* 显示缺失产业 - 递归遍历所有层级节点 */}
                   {(() => {
-                    const missingIndustries = chain.hierarchy
-                      ?.filter(item => item.enterpriseCount === 0)
-                      ?.map(item => item.name);
-                    if (missingIndustries?.length > 0) {
+                    const missingNames = [];
+                    // 递归遍历所有节点
+                    const traverse = (nodes) => {
+                      if (!nodes) return;
+                      for (const node of nodes) {
+                        // 检查当前节点的 shenzhenCount 或 enterpriseCount
+                        const shenzhenCount = node.shenzhenCount !== undefined ? node.shenzhenCount : node.enterpriseCount;
+                        if (shenzhenCount === 0) {
+                          missingNames.push(node.name);
+                        }
+                        // 递归检查子节点
+                        if (node.children && node.children.length > 0) {
+                          traverse(node.children);
+                        }
+                      }
+                    };
+                    traverse(chain.hierarchy);
+                    
+                    if (missingNames.length > 0) {
                       return (
                         <div className="text-xs text-orange-500 mt-1">
-                          缺失产业：{missingIndustries.join('、')}</div>
+                          缺失产业：{missingNames.join('、')}
+                        </div>
                       );
                     }
                     return null;
