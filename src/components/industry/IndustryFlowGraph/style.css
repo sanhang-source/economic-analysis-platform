@@ -72,11 +72,11 @@
   margin-top: 2px;
 }
 
-/* 细分产业节点样式 - 二级（白色背景，带边框） */
+/* 细分产业节点样式 - 二级（青色边框区分） */
 .flow-node-segment {
   width: 240px;
   background: white;
-  border: 2px solid #e2e8f0;
+  border: 2px solid #06b6d4;
   border-radius: 10px;
   padding: 14px 18px;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
@@ -105,8 +105,8 @@
 }
 
 .flow-segment-badge {
-  background: #f1f5f9;
-  color: #64748b;
+  background: #cffafe;
+  color: #0891b2;
   padding: 2px 8px;
   border-radius: 4px;
   font-size: 11px;
@@ -148,11 +148,11 @@
   margin-top: 2px;
 }
 
-/* 细分行业节点样式 - 三级（更紧凑） */
+/* 细分行业节点样式 - 三级（更紧凑，紫色边框区分） */
 .flow-node-subsegment {
   width: 200px;
   background: white;
-  border: 1px solid #e2e8f0;
+  border: 2px solid #a855f7;
   border-radius: 8px;
   padding: 10px 14px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
@@ -179,29 +179,31 @@
 }
 
 .flow-subsegment-badge {
-  background: #f8fafc;
-  color: #64748b;
+  background: #f3e8ff;
+  color: #9333ea;
   padding: 1px 6px;
   border-radius: 3px;
   font-size: 10px;
   font-weight: bold;
 }
 
-/* 内联数据展示 */
+/* 内联数据展示 - 改为grid布局，数字在上文字在下 */
 .flow-subsegment-stats {
-  display: flex;
-  gap: 12px;
-  align-items: center;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  text-align: center;
 }
 
 .flow-subsegment-stat {
   display: flex;
-  align-items: baseline;
-  gap: 4px;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
 }
 
 .flow-subsegment-value {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: bold;
   color: #334155;
 }
@@ -216,14 +218,14 @@
 
 .flow-subsegment-label-text {
   font-size: 10px;
-  color: #94a3b8;
+  color: #64748b;
 }
 
-/* 产品服务节点样式 - 四级（最紧凑） */
+/* 产品服务节点样式 - 四级（最紧凑，橙色边框区分） */
 .flow-node-product {
   width: 180px;
   background: white;
-  border: 1px solid #e2e8f0;
+  border: 2px solid #f97316;
   border-radius: 6px;
   padding: 8px 12px;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
@@ -249,8 +251,8 @@
 }
 
 .flow-product-tag {
-  background: #f1f5f9;
-  color: #64748b;
+  background: #ffedd5;
+  color: #ea580c;
   padding: 1px 4px;
   border-radius: 3px;
   font-size: 9px;
