@@ -43,8 +43,16 @@ export default function IndustryGraph() {
   const [showMissingOnly, setShowMissingOnly] = useState(false); // 是否只显示有缺失产业的产业
 
   const [activeTab, setActiveTab] = useState('flow');
-  const [selectedNodeId, setSelectedNodeId] = useState(null);
-  const [selectedNodeData, setSelectedNodeData] = useState(null);
+  // 默认选中产业链根节点
+  const defaultChain = industryChains[0];
+  const [selectedNodeId, setSelectedNodeId] = useState('chain-root');
+  const [selectedNodeData, setSelectedNodeData] = useState({
+    id: 'chain-root',
+    name: defaultChain?.name || '',
+    shenzhen: defaultChain?.stats?.shenzhenCount || 0,
+    national: defaultChain?.stats?.nationalCount || 0,
+    percentage: defaultChain?.stats?.percentage || 0
+  });
 
   // 计算选中产业链
   const selectedChain = useMemo(() =>
@@ -192,8 +200,15 @@ export default function IndustryGraph() {
           <div
             onClick={() => {
               setSelectedChainId(chain.id);
-              setSelectedNodeId(null);
-              setSelectedNodeData(null);
+              // 默认选中产业链根节点
+              setSelectedNodeId('chain-root');
+              setSelectedNodeData({
+                id: 'chain-root',
+                name: chain.name,
+                shenzhen: chain.stats?.shenzhenCount || 0,
+                national: chain.stats?.nationalCount || 0,
+                percentage: chain.stats?.percentage || 0
+              });
               setActiveTab('flow');
             }}
             className={`
@@ -280,16 +295,62 @@ export default function IndustryGraph() {
 
   // 获取当前选中的节点信息
   const selectedNodeInfo = useMemo(() => {
-    if (!selectedNodeId || !selectedNodeData) return null;
+    if (!selectedNodeId || !selectedNodeData || !selectedChain) return null;
+    
+    // 构建完整路径名称
+    const buildPathName = () => {
+      const parts = [selectedChain.name]; // 母节点（产业链）
+      
+      if (selectedNodeId === 'chain-root') {
+        return parts.join(' - ');
+      }
+      
+      // 解析ID：segment-x, subsegment-x-y, product-x-y-z
+      const idParts = selectedNodeId.split('-');
+      
+      if (idParts[0] === 'segment' && selectedChain.hierarchy) {
+        const sIndex = parseInt(idParts[1]);
+        const segment = selectedChain.hierarchy[sIndex];
+        if (segment) parts.push(segment.name);
+      } else if (idParts[0] === 'subsegment' && selectedChain.hierarchy) {
+        const sIndex = parseInt(idParts[1]);
+        const ssIndex = parseInt(idParts[2]);
+        const segment = selectedChain.hierarchy[sIndex];
+        if (segment) {
+          parts.push(segment.name);
+          if (segment.children && segment.children[ssIndex]) {
+            parts.push(segment.children[ssIndex].name);
+          }
+        }
+      } else if (idParts[0] === 'product' && selectedChain.hierarchy) {
+        const sIndex = parseInt(idParts[1]);
+        const ssIndex = parseInt(idParts[2]);
+        const pIndex = parseInt(idParts[3]);
+        const segment = selectedChain.hierarchy[sIndex];
+        if (segment) {
+          parts.push(segment.name);
+          if (segment.children && segment.children[ssIndex]) {
+            parts.push(segment.children[ssIndex].name);
+            const subSegment = segment.children[ssIndex];
+            if (subSegment.children && subSegment.children[pIndex]) {
+              parts.push(subSegment.children[pIndex].name);
+            }
+          }
+        }
+      }
+      
+      return parts.join(' - ');
+    };
     
     // 从 selectedNodeData 构建节点信息
     return {
       id: selectedNodeId,
       name: selectedNodeData.name,
+      pathName: buildPathName(),
       enterpriseCount: selectedNodeData.shenzhen !== undefined ? selectedNodeData.shenzhen : selectedNodeData.enterpriseCount,
       ...selectedNodeData
     };
-  }, [selectedNodeId, selectedNodeData]);
+  }, [selectedNodeId, selectedNodeData, selectedChain]);
 
   const nodeEnterprises = getNodeEnterprises();
 
@@ -505,6 +566,7 @@ export default function IndustryGraph() {
             onChange={setActiveTab}
             className="h-full industry-tabs"
             style={{ width: '100%' }}
+            destroyInactiveTabPane={true}
             items={[
               {
                 key: 'flow',
@@ -518,7 +580,8 @@ export default function IndustryGraph() {
               {
                 key: 'enterprises',
                 label: '企业清单',
-                disabled: !selectedNodeId,
+                // 企业清单tab默认可点击，默认选中产业链根节点
+                // disabled: false,
                 style: { padding: '0 16px 16px', overflow: 'hidden', height: 'calc(100vh - 300px)', display: 'flex', flexDirection: 'column' },
                 children: selectedNodeInfo ? (
                   <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
@@ -532,7 +595,7 @@ export default function IndustryGraph() {
                           ) : (
                             <ShoppingOutlined style={{ color: '#fa8c16', fontSize: 20 }} />
                           )}
-                          <span className="font-semibold text-lg">{selectedNodeInfo.name}</span>
+                          <span className="font-semibold text-lg">{selectedNodeInfo.pathName}</span>
                         </div>
                         <Space size="middle">
                           <Tag color={selectedChain?.color} style={{ fontSize: '12px', padding: '2px 8px' }}>

@@ -85,7 +85,7 @@ const ChainNode = (props) => {
       {/* 标题行：名称 + 标签 */}
       <div className="flow-chain-header-row">
         <h3 className="flow-chain-title">{data.name}</h3>
-        <span className="flow-chain-badge">产业链</span>
+        <span className="flow-chain-badge">产业</span>
       </div>
       
       {/* 统计信息 - 数字在上，文字在下 */}

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Table, Button, Tag, Space, message, Tabs, Dropdown } from 'antd';
+import { Table, Button, Tag, Space, message, Dropdown } from 'antd';
 import { ExportOutlined, PlusOutlined, DownOutlined } from '@ant-design/icons';
 
 /**
@@ -11,8 +11,6 @@ import { ExportOutlined, PlusOutlined, DownOutlined } from '@ant-design/icons';
  * 3. 支持导出Excel
  * 4. 支持加入招商库
  */
-
-const { TabPane } = Tabs;
 
 const EnterpriseTable = ({ 
   data, 
@@ -38,7 +36,7 @@ const EnterpriseTable = ({
       dataIndex: 'name',
       key: 'name',
       fixed: 'left',
-      width: 200,
+      width: 220,
       render: (text, record) => (
         <div>
           <div className="font-medium">{text}</div>
@@ -50,7 +48,7 @@ const EnterpriseTable = ({
       title: '产业',
       dataIndex: 'belongsTo',
       key: 'chain',
-      width: 120,
+      width: 140,
       render: (belongsTo) => {
         const chains = [...new Set(belongsTo.map(b => b.chain))];
         return (
@@ -71,10 +69,9 @@ const EnterpriseTable = ({
         const segments = [...new Set(belongsTo.map(b => b.segment))];
         return (
           <div className="flex flex-wrap gap-1">
-            {segments.slice(0, 2).map((segment, idx) => (
+            {segments.map((segment, idx) => (
               <Tag key={idx} size="small" color="cyan">{segment}</Tag>
             ))}
-            {segments.length > 2 && <Tag size="small">+{segments.length - 2}</Tag>}
           </div>
         );
       }
@@ -88,10 +85,9 @@ const EnterpriseTable = ({
         const subSegments = [...new Set(belongsTo.map(b => b.subSegment))];
         return (
           <div className="flex flex-wrap gap-1">
-            {subSegments.slice(0, 2).map((sub, idx) => (
+            {subSegments.map((sub, idx) => (
               <Tag key={idx} size="small" color="purple">{sub}</Tag>
             ))}
-            {subSegments.length > 2 && <Tag size="small">+{subSegments.length - 2}</Tag>}
           </div>
         );
       }
@@ -106,10 +102,9 @@ const EnterpriseTable = ({
         if (products.length === 0) return '-';
         return (
           <div className="flex flex-wrap gap-1">
-            {products.slice(0, 2).map((prod, idx) => (
+            {products.map((prod, idx) => (
               <Tag key={idx} size="small" color="orange">{prod}</Tag>
             ))}
-            {products.length > 2 && <Tag size="small">+{products.length - 2}</Tag>}
           </div>
         );
       }
@@ -118,11 +113,11 @@ const EnterpriseTable = ({
       title: '地区',
       dataIndex: 'isShenzhen',
       key: 'area',
-      width: 80,
+      width: 100,
       align: 'center',
       render: (isShenzhen) => (
         <Tag color={isShenzhen ? 'green' : 'default'}>
-          {isShenzhen ? '深圳' : '外地'}
+          {isShenzhen ? '本地' : '外地'}
         </Tag>
       )
     },
@@ -130,75 +125,46 @@ const EnterpriseTable = ({
       title: '成立日期',
       dataIndex: 'establishDate',
       key: 'establishDate',
-      width: 110,
+      width: 120,
     },
     {
       title: '注册资本',
       dataIndex: 'registeredCapital',
       key: 'registeredCapital',
-      width: 150,
+      width: 160,
     },
     {
       title: '地址',
       dataIndex: 'address',
       key: 'address',
-      width: 200,
+      width: 220,
       ellipsis: true,
     },
     {
       title: '操作',
       key: 'action',
       fixed: 'right',
-      width: 120,
+      width: 80,
+      align: 'center',
       render: (_, record) => (
-        <Dropdown
-          menu={{
-            items: [
-              {
-                key: 'investment',
-                label: '加入招商库',
-                onClick: () => handleJoin(record, 'investment')
-              },
-              {
-                key: 'focus',
-                label: '加入关注库',
-                onClick: () => handleJoin(record, 'focus'),
-                disabled: true
-              },
-              {
-                key: 'compare',
-                label: '加入对比库',
-                onClick: () => handleJoin(record, 'compare'),
-                disabled: true
-              }
-            ]
-          }}
-        >
-          <Button type="primary" size="small">
-            <PlusOutlined /> 加入 <DownOutlined />
-          </Button>
-        </Dropdown>
+        <Button type="link" size="small" onClick={() => console.log('查看企业:', record)}>
+          查看
+        </Button>
       )
     }
   ];
 
-  // 处理加入操作
-  const handleJoin = (enterprise, type) => {
-    if (type === 'investment') {
-      onJoinInvestment?.(enterprise);
-      message.success(`已将「${enterprise.name}」加入招商库`);
-    }
-  };
-
   // 处理批量加入
-  const handleBatchJoin = () => {
+  const handleBatchJoin = (type) => {
     if (selectedRowKeys.length === 0) {
       message.warning('请先选择企业');
       return;
     }
     const selectedEnterprises = data.filter(e => selectedRowKeys.includes(e.id));
-    onJoinInvestment?.(selectedEnterprises);
-    message.success(`已将 ${selectedEnterprises.length} 家企业加入招商库`);
+    if (type === 'investment') {
+      onJoinInvestment?.(selectedEnterprises);
+      message.success(`已将 ${selectedEnterprises.length} 家企业加入招商库`);
+    }
     setSelectedRowKeys([]);
   };
 
@@ -218,45 +184,74 @@ const EnterpriseTable = ({
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       {/* 筛选和操作栏 */}
       <div style={{ flexShrink: 0 }} className="flex items-center justify-between mb-4 p-3 bg-gray-50 rounded-lg">
-        <Tabs 
-          activeKey={areaFilter} 
-          onChange={setAreaFilter}
-          size="small"
-          className="enterprise-area-tabs"
-        >
-          <TabPane tab={`全部 (${data.length})`} key="all" />
-          <TabPane tab={`深圳 (${data.filter(e => e.isShenzhen).length})`} key="shenzhen" />
-          <TabPane tab={`深圳外 (${data.filter(e => !e.isShenzhen).length})`} key="other" />
-        </Tabs>
+        <Space size={8}>
+          <Tag 
+            color={areaFilter === 'all' ? 'blue' : 'default'}
+            style={{ cursor: 'pointer', padding: '4px 12px', fontSize: '14px' }}
+            onClick={() => setAreaFilter('all')}
+          >
+            全部 ({data.length})
+          </Tag>
+          <Tag 
+            color={areaFilter === 'shenzhen' ? 'green' : 'default'}
+            style={{ cursor: 'pointer', padding: '4px 12px', fontSize: '14px' }}
+            onClick={() => setAreaFilter('shenzhen')}
+          >
+            本地 ({data.filter(e => e.isShenzhen).length})
+          </Tag>
+          <Tag 
+            color={areaFilter === 'other' ? 'orange' : 'default'}
+            style={{ cursor: 'pointer', padding: '4px 12px', fontSize: '14px' }}
+            onClick={() => setAreaFilter('other')}
+          >
+            外地 ({data.filter(e => !e.isShenzhen).length})
+          </Tag>
+        </Space>
         
         <Space>
-          {selectedRowKeys.length > 0 && (
+          <Dropdown
+            disabled={selectedRowKeys.length === 0}
+            menu={{
+              items: [
+                {
+                  key: 'investment',
+                  label: '加入招商库',
+                  onClick: () => handleBatchJoin('investment')
+                },
+                {
+                  key: 'focus',
+                  label: '加入关注库',
+                  disabled: true
+                }
+              ]
+            }}
+          >
             <Button 
               type="primary" 
-              size="small"
-              onClick={handleBatchJoin}
+              style={{ height: 30, padding: '4px 12px', fontSize: '14px', display: 'flex', alignItems: 'center' }}
+              disabled={selectedRowKeys.length === 0}
             >
-              <PlusOutlined /> 批量加入招商库 ({selectedRowKeys.length})
+              <PlusOutlined /> 加入 <DownOutlined />
             </Button>
-          )}
+          </Dropdown>
           <Button 
             icon={<ExportOutlined />} 
-            size="small"
+            style={{ height: 30, padding: '4px 12px', fontSize: '14px', display: 'flex', alignItems: 'center' }}
             onClick={handleExport}
           >
-            导出Excel
+            导出
           </Button>
         </Space>
       </div>
 
       {/* 表格 - 由Antd Table自己处理滚动 */}
-      <div style={{ flex: 1, overflow: 'hidden' }}>
+      <div style={{ flex: 1, overflow: 'auto' }}>
         <Table
           rowKey="id"
           rowSelection={rowSelection}
           columns={columns}
           dataSource={filteredData}
-          scroll={{ x: 1300, y: 'calc(100vh - 420px)' }}
+          scroll={{ x: 1300 }}
           pagination={{
             pageSize: 10,
             showSizeChanger: true,
