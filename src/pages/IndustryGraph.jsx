@@ -573,11 +573,7 @@ export default function IndustryGraph() {
           title={
             <div className="flex items-center justify-between">
               <span className="font-semibold">产业结构</span>
-              {selectedNodeInfo && (
-                <Button type="primary" size="small" onClick={() => setActiveTab('enterprises')}>
-                  <TeamOutlined /> 查看企业清单
-                </Button>
-              )}
+
             </div>
           }
         >
@@ -597,7 +593,7 @@ export default function IndustryGraph() {
               },
               {
                 key: 'enterprises',
-                label: selectedNodeInfo ? `${selectedNodeInfo.name} - 企业清单` : '企业清单',
+                label: '企业清单',
                 disabled: !selectedNodeId,
                 style: { padding: '0 16px 16px', overflow: 'auto', maxHeight: 650 },
                 children: selectedNodeInfo ? (
@@ -616,13 +612,13 @@ export default function IndustryGraph() {
                         </div>
                         <Space size="middle">
                           <Tag color={selectedChain?.color} style={{ fontSize: '12px', padding: '2px 8px' }}>
-                            深圳: {Math.round(selectedNodeInfo.enterpriseCount * 0.635).toLocaleString()}
+                            深圳: {formatNum(selectedNodeInfo.shenzhen || selectedNodeInfo.enterpriseCount)}
                           </Tag>
                           <Tag style={{ fontSize: '12px', padding: '2px 8px' }}>
-                            全国: {selectedNodeInfo.enterpriseCount.toLocaleString()}
+                            全国: {formatNum(selectedNodeInfo.national || selectedNodeInfo.enterpriseCount)}
                           </Tag>
                           <Tag color="blue" style={{ fontSize: '12px', padding: '2px 8px' }}>
-                            占比: 63.5%
+                            占比: {selectedNodeInfo.percentage || Math.round(((selectedNodeInfo.shenzhen || selectedNodeInfo.enterpriseCount) / (selectedNodeInfo.national || selectedNodeInfo.enterpriseCount || 1)) * 100 * 10) / 10}%
                           </Tag>
                         </Space>
                       </div>
