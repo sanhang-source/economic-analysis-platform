@@ -568,11 +568,11 @@ export default function IndustryGraph() {
           <Tabs 
             activeKey={activeTab} 
             onChange={setActiveTab}
-            className="h-full"
+            className="h-full industry-tabs"
             items={[
               {
                 key: 'flow',
-                label: <span style={{ paddingLeft: 16 }}>产业层级</span>,
+                label: '产业层级',
                 children: (
                   <div style={{ width: '100%', height: 650, padding: 16 }}>
                     <IndustryFlowGraph data={flowGraphData} onNodeClick={handleSelectNode} />

@@ -50,191 +50,46 @@
 }
 
 .flow-chain-value {
-  font-weight: bold;
   font-size: 18px;
-  margin-bottom: 2px;
+  font-weight: bold;
+  color: white;
 }
 
 .flow-chain-value-secondary {
-  font-weight: 600;
-  font-size: 18px;
-  margin-bottom: 2px;
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.8);
 }
 
 .flow-chain-highlight {
+  font-size: 16px;
   font-weight: bold;
-  font-size: 18px;
   color: #fcd34d;
-  margin-bottom: 2px;
 }
 
 .flow-chain-label {
-  color: rgba(255, 255, 255, 0.8);
   font-size: 11px;
+  color: rgba(255, 255, 255, 0.7);
+  margin-top: 2px;
 }
 
-/* 展开按钮样式 */
-.expand-button {
-  transition: all 0.2s ease;
-}
-
-.expand-button:hover {
-  background: #f1f5f9 !important;
-  border-color: #94a3b8 !important;
-  transform: translateY(-50%) scale(1.1);
-}
-
-/* 产业链信息头部 */
-.chain-header {
-  background: linear-gradient(135deg, #0d9488 0%, #14b8a6 100%);
-  border-radius: 12px;
-  padding: 16px 24px;
-  margin-bottom: 16px;
-  color: white;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-}
-
-.chain-header-content {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.chain-header-title {
-  font-size: 20px;
-  font-weight: bold;
-}
-
-.chain-header-stats {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-.chain-stat {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-}
-
-.chain-stat-label {
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.8);
-}
-
-.chain-stat-value {
-  font-size: 18px;
-  font-weight: bold;
-}
-
-.chain-stat-value.blue {
-  color: #bfdbfe;
-}
-
-.chain-stat-value.orange {
-  color: #fcd34d;
-}
-
-.chain-stat-divider {
-  width: 1px;
-  height: 32px;
-  background: rgba(255, 255, 255, 0.3);
-}
-
-/* 根节点样式 - 一级产业 */
-.flow-node-root {
-  width: 256px;
-  background: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%);
-  border-radius: 12px;
-  padding: 20px;
-  color: white;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  transition: all 0.3s ease;
-}
-
-.flow-node-root:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-}
-
-.flow-node-badge {
-  background: rgba(255, 255, 255, 0.2);
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 12px;
-  font-weight: bold;
-  display: inline-block;
-  margin-bottom: 12px;
-}
-
-.flow-node-title {
-  font-size: 18px;
-  font-weight: bold;
-  margin-bottom: 16px;
-}
-
-.flow-node-stats {
-  font-size: 14px;
-}
-
-.flow-stat-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 8px;
-}
-
-.flow-stat-label {
-  color: rgba(255, 255, 255, 0.8);
-}
-
-.flow-stat-value {
-  font-weight: bold;
-  font-size: 20px;
-}
-
-.flow-stat-value-secondary {
-  font-weight: 600;
-}
-
-.flow-stat-divider {
-  border-top: 1px solid rgba(255, 255, 255, 0.2);
-  margin: 8px 0;
-}
-
-.flow-stat-highlight {
-  font-weight: bold;
-  font-size: 20px;
-  color: #fcd34d;
-}
-
-/* 连接点样式 */
-.flow-handle {
-  background: white !important;
-  width: 12px !important;
-  height: 12px !important;
-  border: 2px solid #14b8a6 !important;
-  right: -6px !important;
-}
-
-/* 细分产业节点样式 - 二级（统一蓝色边框） */
+/* 细分产业节点样式 - 二级（白色背景，带边框） */
 .flow-node-segment {
   width: 240px;
   background: white;
-  border: 2px solid #bfdbfe;
-  border-radius: 12px;
-  padding: 14px 16px;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  border: 2px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 14px 18px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
 }
 
 .flow-node-segment:hover {
   transform: translateY(-2px);
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  border-color: #94a3b8;
 }
 
-/* 名称 + 标签行（靠两边分散） */
+/* 细分产业内部布局 - 两行 */
 .flow-segment-header-row {
   display: flex;
   align-items: center;
@@ -243,95 +98,72 @@
 }
 
 .flow-segment-title {
-  font-weight: bold;
-  color: #1f2937;
   font-size: 15px;
+  font-weight: bold;
+  color: #1e293b;
   margin: 0;
 }
 
 .flow-segment-badge {
-  font-size: 11px;
-  font-weight: 500;
+  background: #f1f5f9;
+  color: #64748b;
   padding: 2px 8px;
-  background: #eff6ff;
-  color: #3b82f6;
   border-radius: 4px;
+  font-size: 11px;
+  font-weight: bold;
 }
 
-/* 数据行 - 无背景色 */
+/* 数据展示行 - 无背景色 */
 .flow-segment-stats-row {
   display: flex;
   justify-content: space-between;
-  gap: 12px;
+  align-items: center;
 }
 
 .flow-segment-stat {
   text-align: center;
-  flex: 1;
 }
 
 .flow-segment-value {
+  font-size: 15px;
   font-weight: bold;
-  font-size: 14px;
-  margin-bottom: 2px;
+  color: #334155;
 }
 
 .flow-segment-value.blue {
-  color: #2563eb;
+  color: #1677ff;
 }
 
 .flow-segment-value.gray {
-  color: #6b7280;
+  color: #64748b;
 }
 
 .flow-segment-value.orange {
-  color: #ea580c;
+  color: #f97316;
 }
 
 .flow-segment-label {
-  font-size: 11px;
-  color: #9ca3af;
-}
-
-.flow-grid-label {
-  color: #9ca3af;
   font-size: 10px;
-  transform: scale(0.9);
+  color: #94a3b8;
+  margin-top: 2px;
 }
 
-.flow-handle-left,
-.flow-handle-right {
-  background: #9ca3af !important;
-  width: 8px !important;
-  height: 8px !important;
-  border: none !important;
-}
-
-.flow-handle-left {
-  left: -4px !important;
-}
-
-.flow-handle-right {
-  right: -4px !important;
-}
-
-/* 细分行业节点样式 - 三级 */
+/* 细分行业节点样式 - 三级（更紧凑） */
 .flow-node-subsegment {
   width: 200px;
   background: white;
-  border: 2px solid #e0e7ff;
-  border-radius: 10px;
-  padding: 10px 12px;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 10px 14px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
   transition: all 0.3s ease;
 }
 
 .flow-node-subsegment:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  border-color: #94a3b8;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-/* 细分行业 - 名称 + 标签行（靠两边分散） */
 .flow-subsegment-header-row {
   display: flex;
   align-items: center;
@@ -340,123 +172,112 @@
 }
 
 .flow-subsegment-title {
-  font-size: 14px;
-  font-weight: 600;
-  color: #374151;
+  font-size: 13px;
+  font-weight: bold;
+  color: #334155;
   margin: 0;
 }
 
 .flow-subsegment-badge {
-  font-size: 10px;
-  color: #6366f1;
-  background: #e0e7ff;
+  background: #f8fafc;
+  color: #64748b;
   padding: 1px 6px;
-  border-radius: 4px;
+  border-radius: 3px;
+  font-size: 10px;
+  font-weight: bold;
 }
 
+/* 内联数据展示 */
 .flow-subsegment-stats {
   display: flex;
-  justify-content: space-between;
-  gap: 8px;
+  gap: 12px;
+  align-items: center;
 }
 
 .flow-subsegment-stat {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  flex: 1;
+  align-items: baseline;
+  gap: 4px;
 }
 
 .flow-subsegment-value {
   font-size: 13px;
-  font-weight: 600;
-  color: #4b5563;
+  font-weight: bold;
+  color: #334155;
 }
 
 .flow-subsegment-value.blue {
-  color: #2563eb;
+  color: #1677ff;
 }
 
 .flow-subsegment-value.orange {
-  color: #ea580c;
+  color: #f97316;
 }
 
 .flow-subsegment-label-text {
   font-size: 10px;
-  color: #9ca3af;
-  margin-top: 2px;
+  color: #94a3b8;
 }
 
-/* 产品服务节点样式 - 四级（无背景色） */
+/* 产品服务节点样式 - 四级（最紧凑） */
 .flow-node-product {
-  width: 192px;
+  width: 180px;
   background: white;
   border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  padding: 12px;
+  border-radius: 6px;
+  padding: 8px 12px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
   transition: all 0.3s ease;
 }
 
 .flow-node-product:hover {
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  border-color: #94a3b8;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-/* 产品服务节点 - 名称 + 标签行（靠两边分散） */
 .flow-product-header {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .flow-product-name {
-  font-size: 14px;
-  font-weight: 600;
-  color: #374151;
-  flex: 1;
-  min-width: 0;
-  word-wrap: break-word;
-  word-break: break-all;
-  line-height: 1.4;
+  font-size: 12px;
+  font-weight: bold;
+  color: #475569;
 }
 
 .flow-product-tag {
-  flex-shrink: 0;
-  font-size: 10px;
-  background: #f3f4f6;
-  padding: 1px 6px;
-  border-radius: 4px;
-  color: #6b7280;
-  white-space: nowrap;
+  background: #f1f5f9;
+  color: #64748b;
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-size: 9px;
 }
 
 .flow-product-stats {
   display: flex;
   justify-content: space-between;
-  text-align: center;
-  font-size: 12px;
-}
-
-.flow-product-stat {
-  display: flex;
-  flex-direction: column;
   align-items: center;
 }
 
+.flow-product-stat {
+  text-align: center;
+}
+
 .flow-product-value {
-  color: #4b5563;
-  font-weight: 500;
+  font-size: 12px;
+  font-weight: bold;
+  color: #334155;
 }
 
 .flow-product-value.blue {
-  color: #2563eb;
-  font-weight: bold;
+  color: #1677ff;
 }
 
 .flow-product-value.orange {
-  color: #ea580c;
-  font-weight: bold;
+  color: #f97316;
 }
 
 .flow-product-label {
@@ -486,4 +307,9 @@
 
 .react-flow__controls-button:hover {
   background: #f9fafb !important;
+}
+
+/* 产业层级Tab样式 - Tab列表右移16px */
+.industry-tabs .ant-tabs-nav-list {
+  padding-left: 16px;
 }

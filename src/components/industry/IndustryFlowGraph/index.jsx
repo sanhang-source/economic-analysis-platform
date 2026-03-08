@@ -6,7 +6,7 @@ import {
   Position,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import { DownOutlined, RightOutlined } from '@ant-design/icons';
+
 import './style.css';
 
 /**
@@ -49,13 +49,13 @@ const ExpandButton = ({ isExpanded, onClick, hasChildren }) => {
         cursor: 'pointer',
         zIndex: 10,
         boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+        fontSize: 16,
+        fontWeight: 'bold',
+        color: '#64748b',
+        lineHeight: 1,
       }}
     >
-      {isExpanded ? (
-        <DownOutlined style={{ fontSize: 12, color: '#64748b' }} />
-      ) : (
-        <RightOutlined style={{ fontSize: 12, color: '#64748b' }} />
-      )}
+      {isExpanded ? '−' : '+'}
     </button>
   );
 };
