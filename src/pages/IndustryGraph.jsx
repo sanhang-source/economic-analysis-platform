@@ -514,39 +514,39 @@ export default function IndustryGraph() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
                 {/* 数量排序 */}
-                <button
+                <span
                   onClick={() => {
                     setSortConfig(prev => ({
                       field: 'shenzhenCount',
                       order: prev.field === 'shenzhenCount' && prev.order === 'desc' ? 'asc' : 'desc'
                     }));
                   }}
-                  className={`text-xs flex items-center gap-1 transition-colors ${
-                    sortConfig.field === 'shenzhenCount' ? 'text-blue-600 font-medium' : 'text-gray-500 hover:text-gray-700'
+                  className={`text-xs cursor-pointer transition-colors ${
+                    sortConfig.field === 'shenzhenCount' ? 'text-blue-600 font-medium' : 'text-gray-600 hover:text-gray-800'
                   }`}
                 >
                   数量
                   {sortConfig.field === 'shenzhenCount' && (
-                    <span>{sortConfig.order === 'desc' ? '↓' : '↑'}</span>
+                    <span className="ml-1">{sortConfig.order === 'desc' ? '↓' : '↑'}</span>
                   )}
-                </button>
+                </span>
                 {/* 占比排序 */}
-                <button
+                <span
                   onClick={() => {
                     setSortConfig(prev => ({
                       field: 'percentage',
                       order: prev.field === 'percentage' && prev.order === 'desc' ? 'asc' : 'desc'
                     }));
                   }}
-                  className={`text-xs flex items-center gap-1 transition-colors ${
-                    sortConfig.field === 'percentage' ? 'text-blue-600 font-medium' : 'text-gray-500 hover:text-gray-700'
+                  className={`text-xs cursor-pointer transition-colors ${
+                    sortConfig.field === 'percentage' ? 'text-blue-600 font-medium' : 'text-gray-600 hover:text-gray-800'
                   }`}
                 >
                   占比
                   {sortConfig.field === 'percentage' && (
-                    <span>{sortConfig.order === 'desc' ? '↓' : '↑'}</span>
+                    <span className="ml-1">{sortConfig.order === 'desc' ? '↓' : '↑'}</span>
                   )}
-                </button>
+                </span>
               </div>
               {/* 有缺失产业 - 右对齐 */}
               <Checkbox 
