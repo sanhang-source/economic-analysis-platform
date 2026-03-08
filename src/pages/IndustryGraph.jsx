@@ -1,18 +1,15 @@
-﻿import React, { useState, useMemo, useCallback, useEffect } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import {
   Card,
   Input,
-  Table,
   Tag,
   Space,
   Button,
   Tabs,
   Empty,
   Select,
-  Radio,
   Checkbox,
 } from 'antd';
-
 
 import {
   SearchOutlined,
@@ -20,44 +17,15 @@ import {
   ApartmentOutlined,
   ShopOutlined,
   ShoppingOutlined,
-  ArrowUpOutlined,
-  ArrowDownOutlined,
   RightOutlined,
 } from '@ant-design/icons';
 import ReactECharts from 'echarts-for-react';
 import { industryChains, industryChainStats } from '../mock/industryChainMock';
+import { enterprises, filterEnterprisesByArea } from '../mock/enterpriseMock';
 import IndustryFlowGraph from '../components/industry/IndustryFlowGraph/index.jsx';
+import EnterpriseTable from '../components/enterprise/EnterpriseTable.jsx';
 
 const { Option } = Select;
-
-// 生成企业列表数据
-const generateEnterprises = (count, type) => {
-  const prefixes = ['深圳', '广东', '华南', '南方', '鹏城', '宝安', '南山', '龙岗'];
-  const suffixes = {
-    chain: ['科技有限公司', '股份有限公司', '集团有限公司', '实业有限公司'],
-    industry: ['通信设备', '电子科技', '网络技术', '信息工程', '智能制造'],
-    segment: ['基站设备', '终端制造', '芯片设计', '软件开发', '系统集成'],
-    subSegment: ['设备制造', '技术服务', '解决方案', '研发中心', '生产基地'],
-    product: ['产品制造', '技术服务', '解决方案', '研发中心', '生产基地']
-  };
-  
-  // 映射类型，确保有对应的后缀数组
-  const mappedType = suffixes[type] ? type : 'product';
-
-  return Array.from({ length: Math.min(count || 10, 10) }, (_, i) => {
-    const prefix = prefixes[Math.floor(Math.random() * prefixes.length)];
-    const suffix = suffixes[mappedType][Math.floor(Math.random() * suffixes[mappedType].length)];
-    const name = `${prefix}${suffix}${i + 1}号`;
-    return {
-      key: i,
-      name: name,
-      creditCode: `91440300${Math.random().toString().slice(2, 10)}`,
-      industry: suffix,
-      scale: ['大型', '中型', '小型'][Math.floor(Math.random() * 3)],
-      status: Math.random() > 0.1 ? '存续' : '注销',
-    };
-  });
-};
 
 // 格式化数字
 const formatNum = (n) => n >= 10000 ? (n / 10000).toFixed(1) + '万' : n.toLocaleString();
@@ -148,11 +116,28 @@ export default function IndustryGraph() {
       ? industryChains.filter(c => c.name.includes(searchText)) 
       : [...industryChains];
 
-    // 筛选：只显示有缺失产业的产业
+    // 筛选：只显示有缺失产业的产业（递归检查所有层级节点）
     if (showMissingOnly) {
       chains = chains.filter(chain => {
-        const hasMissing = chain.hierarchy?.some(item => item.enterpriseCount === 0);
-        return hasMissing;
+        // 递归检查所有节点
+        const checkHasMissing = (nodes) => {
+          if (!nodes) return false;
+          for (const node of nodes) {
+            // 检查当前节点的 shenzhenCount 或 enterpriseCount
+            const shenzhenCount = node.shenzhenCount !== undefined ? node.shenzhenCount : node.enterpriseCount;
+            if (shenzhenCount === 0) {
+              return true;
+            }
+            // 递归检查子节点
+            if (node.children && node.children.length > 0) {
+              if (checkHasMissing(node.children)) {
+                return true;
+              }
+            }
+          }
+          return false;
+        };
+        return checkHasMissing(chain.hierarchy);
       });
     }
 
@@ -182,24 +167,17 @@ export default function IndustryGraph() {
   const getNodeEnterprises = () => {
     if (!selectedNodeId || !selectedNodeData) return [];
     
-    // 根据节点类型确定企业数量
-    let count = 10;
-    if (selectedNodeData.shenzhen !== undefined) {
-      count = selectedNodeData.shenzhen;
-    } else if (selectedNodeData.enterpriseCount !== undefined) {
-      count = selectedNodeData.enterpriseCount;
-    }
+    const nodeName = selectedNodeData.name;
     
-    // 根据节点ID判断类型
-    const getTypeById = (id) => {
-      if (id === 'chain-root') return 'industry';
-      if (id.startsWith('segment-')) return 'segment';
-      if (id.startsWith('subsegment-')) return 'subSegment';
-      if (id.startsWith('product-')) return 'product';
-      return 'segment';
-    };
+    // 根据节点名称筛选企业（企业数据中包含该节点名称即匹配）
+    const filtered = enterprises.filter(ent => {
+      return ent.belongsTo.some(belong => {
+        return Object.values(belong).includes(nodeName);
+      });
+    });
     
-    return generateEnterprises(count, getTypeById(selectedNodeId));
+    // 如果没找到匹配的企业，返回所有企业（用于展示）
+    return filtered.length > 0 ? filtered : enterprises;
   };
 
   // 渲染产业列表
@@ -382,61 +360,6 @@ export default function IndustryGraph() {
     </div>
   );
 
-  // 企业表格列定义
-  const enterpriseColumns = [
-    {
-      title: '企业名称',
-      dataIndex: 'name',
-      key: 'name',
-      render: (text) => <span className="font-medium">{text}</span>,
-    },
-    {
-      title: '统一社会信用代码',
-      dataIndex: 'creditCode',
-      key: 'creditCode',
-    },
-    {
-      title: '所属细分',
-      dataIndex: 'industry',
-      key: 'industry',
-      render: (text) => <Tag size="small">{text}</Tag>,
-    },
-    {
-      title: '企业规模',
-      dataIndex: 'scale',
-      key: 'scale',
-      render: (text) => {
-        const colors = { '大型': 'blue', '中型': 'green', '小型': 'orange' };
-        return <Tag color={colors[text]}>{text}</Tag>;
-      },
-    },
-    {
-      title: '经营状态',
-      dataIndex: 'status',
-      key: 'status',
-      render: (text) => (
-        <Tag color={text === '存续' ? 'success' : 'default'}>{text}</Tag>
-      ),
-    },
-    {
-      title: '操作',
-      key: 'action',
-      render: () => (
-        <Button type="link" size="small">详情</Button>
-      ),
-    },
-  ];
-
-  // 企业表格组件
-  const EnterpriseTable = ({ data }) => (
-    <Table
-      columns={enterpriseColumns}
-      dataSource={data}
-      pagination={{ pageSize: 10 }}
-      size="small"
-    />
-  );
-
   return (
     <div>
       {/* 页面标题和区域选择 */}
@@ -493,7 +416,7 @@ export default function IndustryGraph() {
         />
       </div>
 
-      <div className="flex gap-4 items-stretch">
+      <div className="flex gap-4 items-stretch" style={{ width: '100%', minWidth: 0 }}>
         {/* Left Sidebar */}
         <Card
           className="w-80 flex-shrink-0"
@@ -568,7 +491,7 @@ export default function IndustryGraph() {
         {/* Right Content */}
         <Card
           className="flex-1"
-          style={{ maxHeight: 800 }}
+          style={{ maxHeight: 800, minWidth: 0, overflow: 'hidden' }}
           styles={{ body: { padding: 0, display: 'flex', flexDirection: 'column', maxHeight: 743, overflow: 'hidden' } }}
           title={
             <div className="flex items-center justify-between">
@@ -581,6 +504,7 @@ export default function IndustryGraph() {
             activeKey={activeTab} 
             onChange={setActiveTab}
             className="h-full industry-tabs"
+            style={{ width: '100%' }}
             items={[
               {
                 key: 'flow',
@@ -595,10 +519,10 @@ export default function IndustryGraph() {
                 key: 'enterprises',
                 label: '企业清单',
                 disabled: !selectedNodeId,
-                style: { padding: '0 16px 16px', overflow: 'auto', maxHeight: 650 },
+                style: { padding: '0 16px 16px', overflow: 'hidden', height: 'calc(100vh - 300px)', display: 'flex', flexDirection: 'column' },
                 children: selectedNodeInfo ? (
-                  <div>
-                    <Card size="small" className="mb-4">
+                  <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
+                    <Card size="small" className="mb-4" style={{ width: '100%', flexShrink: 0 }}>
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                           {selectedNodeInfo.id?.split('-').length <= 2 ? (
@@ -623,7 +547,14 @@ export default function IndustryGraph() {
                         </Space>
                       </div>
                     </Card>
-                    <EnterpriseTable data={nodeEnterprises} />
+                    <div style={{ flex: 1, overflow: 'hidden', minHeight: 0 }}>
+                      <EnterpriseTable 
+                        data={nodeEnterprises} 
+                        currentNodeName={selectedNodeInfo?.name}
+                        onExport={(data) => console.log('导出企业:', data)}
+                        onJoinInvestment={(enterprise) => console.log('加入招商库:', enterprise)}
+                      />
+                    </div>
                   </div>
                 ) : (
                   <Empty description="请点击层级节点查看企业清单" />
