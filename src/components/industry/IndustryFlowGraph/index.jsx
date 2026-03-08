@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import {
   ReactFlow,
-  Controls,
   Background,
   Handle,
   Position,
@@ -15,6 +14,15 @@ import './style.css';
  * 
  * 四级结构：产业链 → 细分产业 → 细分行业 → 产品服务
  */
+
+// 格式化数字：小于10000用千位分隔符，大于等于10000用万单位（保留1位小数）
+const formatNumber = (num) => {
+  if (num === undefined || num === null) return '0';
+  if (num >= 10000) {
+    return (num / 10000).toFixed(1) + '万';
+  }
+  return num.toLocaleString('zh-CN');
+};
 
 // ============ 展开/收起按钮组件 ============
 
@@ -57,11 +65,21 @@ const ExpandButton = ({ isExpanded, onClick, hasChildren }) => {
 // 产业链节点 - 最左侧
 const ChainNode = (props) => {
   const { data, id } = props;
-  const { expandedNodes, toggleExpand } = data._internal || {};
+  const { expandedNodes, toggleExpand, onNodeClick } = data._internal || {};
   const isExpanded = !expandedNodes?.has(id);
+  const isZeroShenzhen = data.shenzhen === 0;
   
   return (
-    <div className="flow-node-chain" style={{ position: 'relative' }}>
+    <div 
+      className="flow-node-chain" 
+      style={{ 
+        position: 'relative',
+        backgroundColor: isZeroShenzhen ? '#fff7ed' : undefined,
+        border: isZeroShenzhen ? '2px solid #f97316' : undefined,
+        cursor: 'pointer'
+      }}
+      onClick={() => onNodeClick?.({ id, name: data.name, type: 'chain', data })}
+    >
       <Handle type="source" position={Position.Right} className="flow-handle" />
       
       {/* 标题行：名称 + 标签 */}
@@ -73,11 +91,11 @@ const ChainNode = (props) => {
       {/* 统计信息 - 数字在上，文字在下 */}
       <div className="flow-chain-stats-grid">
         <div className="flow-chain-stat-item">
-          <div className="flow-chain-value">{(data.shenzhen / 10000).toFixed(1)}万</div>
+          <div className="flow-chain-value">{formatNumber(data.shenzhen)}</div>
           <div className="flow-chain-label">深圳</div>
         </div>
         <div className="flow-chain-stat-item">
-          <div className="flow-chain-value-secondary">{(data.national / 10000).toFixed(1)}万</div>
+          <div className="flow-chain-value-secondary">{formatNumber(data.national)}</div>
           <div className="flow-chain-label">全国</div>
         </div>
         <div className="flow-chain-stat-item">
@@ -100,11 +118,25 @@ const ChainNode = (props) => {
 
 // 细分产业节点 - 二级
 const SegmentNode = ({ data, id }) => {
-  const { expandedNodes, toggleExpand } = data._internal || {};
+  const { expandedNodes, toggleExpand, onNodeClick } = data._internal || {};
   const isExpanded = !expandedNodes?.has(id);
+  const isZeroShenzhen = data.shenzhen === 0;
 
   return (
-    <div className="flow-node-segment" style={{ position: 'relative' }}>
+    <div 
+      className="flow-node-segment" 
+      style={{ 
+        position: 'relative',
+        backgroundColor: isZeroShenzhen ? '#fff7ed' : undefined,
+        border: isZeroShenzhen ? '2px solid #f97316' : undefined,
+        cursor: 'pointer'
+      }}
+      onClick={(e) => {
+        // 阻止事件冒泡，避免点击展开按钮时触发节点点击
+        if (e.target.closest('.expand-button')) return;
+        onNodeClick?.({ id, name: data.name, type: 'segment', data });
+      }}
+    >
       <Handle type="target" position={Position.Left} className="flow-handle-left" />
       <Handle type="source" position={Position.Right} className="flow-handle-right" />
       
@@ -117,11 +149,11 @@ const SegmentNode = ({ data, id }) => {
       {/* 数据展示 - 无背景色 */}
       <div className="flow-segment-stats-row">
         <div className="flow-segment-stat">
-          <div className="flow-segment-value blue">{(data.shenzhen / 10000).toFixed(1)}万</div>
+          <div className="flow-segment-value blue">{formatNumber(data.shenzhen)}</div>
           <div className="flow-segment-label">深圳</div>
         </div>
         <div className="flow-segment-stat">
-          <div className="flow-segment-value gray">{(data.national / 10000).toFixed(1)}万</div>
+          <div className="flow-segment-value gray">{formatNumber(data.national)}</div>
           <div className="flow-segment-label">全国</div>
         </div>
         <div className="flow-segment-stat">
@@ -141,11 +173,24 @@ const SegmentNode = ({ data, id }) => {
 
 // 细分行业节点 - 三级
 const SubSegmentNode = ({ data, id }) => {
-  const { expandedNodes, toggleExpand } = data._internal || {};
+  const { expandedNodes, toggleExpand, onNodeClick } = data._internal || {};
   const isExpanded = expandedNodes?.has(id); // 在集合中 = 展开产品服务
+  const isZeroShenzhen = data.shenzhen === 0;
 
   return (
-    <div className="flow-node-subsegment" style={{ position: 'relative' }}>
+    <div 
+      className="flow-node-subsegment" 
+      style={{ 
+        position: 'relative',
+        backgroundColor: isZeroShenzhen ? '#fff7ed' : undefined,
+        border: isZeroShenzhen ? '2px solid #f97316' : undefined,
+        cursor: 'pointer'
+      }}
+      onClick={(e) => {
+        if (e.target.closest('.expand-button')) return;
+        onNodeClick?.({ id, name: data.name, type: 'subSegment', data });
+      }}
+    >
       <Handle type="target" position={Position.Left} className="flow-handle-left" />
       <Handle type="source" position={Position.Right} className="flow-handle-right" />
       
@@ -157,11 +202,11 @@ const SubSegmentNode = ({ data, id }) => {
       
       <div className="flow-subsegment-stats">
         <div className="flow-subsegment-stat">
-          <span className="flow-subsegment-value blue">{data.shenzhen.toLocaleString()}</span>
+          <span className="flow-subsegment-value blue">{formatNumber(data.shenzhen)}</span>
           <span className="flow-subsegment-label-text">深圳</span>
         </div>
         <div className="flow-subsegment-stat">
-          <span className="flow-subsegment-value">{data.national.toLocaleString()}</span>
+          <span className="flow-subsegment-value">{formatNumber(data.national)}</span>
           <span className="flow-subsegment-label-text">全国</span>
         </div>
         <div className="flow-subsegment-stat">
@@ -180,9 +225,20 @@ const SubSegmentNode = ({ data, id }) => {
 };
 
 // 产品服务节点 - 四级
-const ProductNode = ({ data }) => {
+const ProductNode = ({ data, id }) => {
+  const { onNodeClick } = data._internal || {};
+  const isZeroShenzhen = data.shenzhen === 0;
+  
   return (
-    <div className="flow-node-product">
+    <div 
+      className="flow-node-product"
+      style={{
+        backgroundColor: isZeroShenzhen ? '#fff7ed' : undefined,
+        border: isZeroShenzhen ? '2px solid #f97316' : undefined,
+        cursor: 'pointer'
+      }}
+      onClick={() => onNodeClick?.({ id, name: data.name, type: 'product', data })}
+    >
       <Handle type="target" position={Position.Left} className="flow-handle-left" />
       
       <div className="flow-product-header">
@@ -192,11 +248,11 @@ const ProductNode = ({ data }) => {
       
       <div className="flow-product-stats">
         <div className="flow-product-stat">
-          <div className="flow-product-value blue">{data.shenzhen.toLocaleString()}</div>
+          <div className="flow-product-value blue">{formatNumber(data.shenzhen)}</div>
           <div className="flow-product-label">深圳</div>
         </div>
         <div className="flow-product-stat">
-          <div className="flow-product-value">{data.national.toLocaleString()}</div>
+          <div className="flow-product-value">{formatNumber(data.national)}</div>
           <div className="flow-product-label">全国</div>
         </div>
         <div className="flow-product-stat">
@@ -218,7 +274,7 @@ const nodeTypes = {
 
 // ============ 主组件 ============
 
-const IndustryFlowGraph = ({ data }) => {
+const IndustryFlowGraph = ({ data, onNodeClick }) => {
   const [nodes, setNodes] = useState([]);
   const [edges, setEdges] = useState([]);
   const [expandedNodes, setExpandedNodes] = useState(new Set());
@@ -283,7 +339,7 @@ const IndustryFlowGraph = ({ data }) => {
       data: { 
         ...data.root, 
         hasChildren: chainHasChildren,
-        _internal: { expandedNodes, toggleExpand }
+        _internal: { expandedNodes, toggleExpand, onNodeClick }
       },
       draggable: true,
     });
@@ -479,7 +535,7 @@ const IndustryFlowGraph = ({ data }) => {
         data: { 
           ...tree.segment, 
           hasChildren: tree.segment.subSegments && tree.segment.subSegments.length > 0,
-          _internal: { expandedNodes, toggleExpand }
+          _internal: { expandedNodes, toggleExpand, onNodeClick }
         },
         draggable: true,
       });
@@ -505,7 +561,7 @@ const IndustryFlowGraph = ({ data }) => {
           data: { 
             ...child.subSegment,
             hasChildren: child.subSegment.products && child.subSegment.products.length > 0,
-            _internal: { expandedNodes, toggleExpand }
+            _internal: { expandedNodes, toggleExpand, onNodeClick }
           },
           draggable: true,
         });
@@ -530,7 +586,10 @@ const IndustryFlowGraph = ({ data }) => {
                 id: productId,
                 type: 'product',
                 position: { x: productX, y: productY },
-                data: product,
+                data: {
+                  ...product,
+                  _internal: { onNodeClick }
+                },
                 draggable: true,
               });
 
@@ -571,8 +630,45 @@ const IndustryFlowGraph = ({ data }) => {
     );
   }
 
+  // 计算各层级节点数量
+  const stats = (() => {
+    let segmentCount = 0;
+    let subSegmentCount = 0;
+    let productCount = 0;
+    
+    if (data.segments) {
+      segmentCount = data.segments.length;
+      data.segments.forEach(segment => {
+        if (segment.subSegments) {
+          subSegmentCount += segment.subSegments.length;
+          segment.subSegments.forEach(subSegment => {
+            if (subSegment.products) {
+              productCount += subSegment.products.length;
+            }
+          });
+        }
+      });
+    }
+    
+    return { segmentCount, subSegmentCount, productCount };
+  })();
+
   return (
     <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', border: '1px solid #e2e8f0', borderRadius: 8 }}>
+      {/* 统计信息栏 */}
+      <div style={{ 
+        padding: '8px 16px', 
+        backgroundColor: '#f8fafc', 
+        borderBottom: '1px solid #e2e8f0',
+        fontSize: 14,
+        color: '#475569',
+        display: 'flex',
+        gap: 24
+      }}>
+        <span>细分产业：<strong style={{ color: '#1e40af' }}>{stats.segmentCount}</strong></span>
+        <span>细分行业：<strong style={{ color: '#1e40af' }}>{stats.subSegmentCount}</strong></span>
+        <span>产品服务：<strong style={{ color: '#1e40af' }}>{stats.productCount}</strong></span>
+      </div>
       <div style={{ flex: 1, position: 'relative', minHeight: 0 }}>
         {nodes.length === 0 ? (
           <div style={{ 
@@ -602,7 +698,6 @@ const IndustryFlowGraph = ({ data }) => {
             proOptions={{ hideAttribution: true }}
             style={{ width: '100%', height: '100%' }}
           >
-            <Controls />
             <Background color="#e2e8f0" gap={20} size={1} />
           </ReactFlow>
         )}

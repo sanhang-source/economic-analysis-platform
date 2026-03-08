@@ -37,12 +37,16 @@ const generateEnterprises = (count, type) => {
     chain: ['科技有限公司', '股份有限公司', '集团有限公司', '实业有限公司'],
     industry: ['通信设备', '电子科技', '网络技术', '信息工程', '智能制造'],
     segment: ['基站设备', '终端制造', '芯片设计', '软件开发', '系统集成'],
+    subSegment: ['设备制造', '技术服务', '解决方案', '研发中心', '生产基地'],
     product: ['产品制造', '技术服务', '解决方案', '研发中心', '生产基地']
   };
+  
+  // 映射类型，确保有对应的后缀数组
+  const mappedType = suffixes[type] ? type : 'product';
 
-  return Array.from({ length: Math.min(count, 10) }, (_, i) => {
+  return Array.from({ length: Math.min(count || 10, 10) }, (_, i) => {
     const prefix = prefixes[Math.floor(Math.random() * prefixes.length)];
-    const suffix = suffixes[type][Math.floor(Math.random() * suffixes[type].length)];
+    const suffix = suffixes[mappedType][Math.floor(Math.random() * suffixes[mappedType].length)];
     const name = `${prefix}${suffix}${i + 1}号`;
     return {
       key: i,
@@ -64,11 +68,15 @@ export default function IndustryGraph() {
   const [searchText, setSearchText] = useState('');
 
   // 产业列表排序和筛选状态
-  const [sortBy, setSortBy] = useState('shenzhenCount'); // shenzhenCount | percentage
+  const [sortConfig, setSortConfig] = useState({
+    field: 'shenzhenCount', // 'shenzhenCount' | 'percentage'
+    order: 'desc' // 'asc' | 'desc'
+  });
   const [showMissingOnly, setShowMissingOnly] = useState(false); // 是否只显示有缺失产业的产业
 
   const [activeTab, setActiveTab] = useState('flow');
   const [selectedNodeId, setSelectedNodeId] = useState(null);
+  const [selectedNodeData, setSelectedNodeData] = useState(null);
 
   // 计算选中产业链
   const selectedChain = useMemo(() =>
@@ -90,26 +98,46 @@ export default function IndustryGraph() {
     // hierarchy 数组包含所有细分产业（通信设备、终端设备、光通信等）
     // 每个细分产业的 children 是细分行业
     // 每个细分行业的 children 是产品服务
-    const segments = selectedChain.hierarchy?.map(industry => ({
-      name: industry.name,
-      shenzhen: industry.enterpriseCount || 0,
-      national: Math.round((industry.enterpriseCount || 0) / 0.635),
-      percentage: 63.5,
-      // 细分行业列表
-      subSegments: industry.children?.map(subSegment => ({
-        name: subSegment.name,
-        shenzhen: Math.round(subSegment.enterpriseCount * 0.635),
-        national: subSegment.enterpriseCount || 0,
-        percentage: 63.5,
-        // 产品服务列表
-        products: subSegment.children?.map(product => ({
-          name: product.name,
-          shenzhen: Math.round(product.enterpriseCount * 0.635),
-          national: product.enterpriseCount || 0,
-          percentage: 63.5,
-        })) || [],
-      })) || [],
-    })) || [];
+    
+    // 辅助函数：计算占比（深圳企业/全国企业），保留1位小数
+    const calcPercentage = (shenzhen, national) => {
+      if (!national || national === 0) return 0;
+      return parseFloat(((shenzhen / national) * 100).toFixed(1));
+    };
+    
+    const segments = selectedChain.hierarchy?.map(industry => {
+      // 优先使用 shenzhenCount/nationalCount 字段
+      const shenzhen = industry.shenzhenCount !== undefined ? industry.shenzhenCount : (industry.enterpriseCount || 0);
+      const national = industry.nationalCount !== undefined ? industry.nationalCount : (industry.enterpriseCount || shenzhen);
+      return {
+        name: industry.name,
+        shenzhen,
+        national,
+        percentage: calcPercentage(shenzhen, national),
+        // 细分行业列表
+        subSegments: industry.children?.map(subSegment => {
+          const subShenzhen = subSegment.shenzhenCount !== undefined ? subSegment.shenzhenCount : (subSegment.enterpriseCount || 0);
+          const subNational = subSegment.nationalCount !== undefined ? subSegment.nationalCount : (subSegment.enterpriseCount || subShenzhen);
+          return {
+            name: subSegment.name,
+            shenzhen: subShenzhen,
+            national: subNational,
+            percentage: calcPercentage(subShenzhen, subNational),
+            // 产品服务列表
+            products: subSegment.children?.map(product => {
+              const prodShenzhen = product.shenzhenCount !== undefined ? product.shenzhenCount : (product.enterpriseCount || 0);
+              const prodNational = product.nationalCount !== undefined ? product.nationalCount : (product.enterpriseCount || prodShenzhen);
+              return {
+                name: product.name,
+                shenzhen: prodShenzhen,
+                national: prodNational,
+                percentage: calcPercentage(prodShenzhen, prodNational),
+              };
+            }) || [],
+          };
+        }) || [],
+      };
+    }) || [];
 
     return { root, segments };
   }, [selectedChain]);
@@ -130,46 +158,48 @@ export default function IndustryGraph() {
 
     // 排序
     chains.sort((a, b) => {
-      if (sortBy === 'shenzhenCount') {
-        return b.stats.shenzhenCount - a.stats.shenzhenCount;
-      } else if (sortBy === 'percentage') {
-        return b.stats.percentage - a.stats.percentage;
+      let comparison = 0;
+      if (sortConfig.field === 'shenzhenCount') {
+        comparison = a.stats.shenzhenCount - b.stats.shenzhenCount;
+      } else if (sortConfig.field === 'percentage') {
+        comparison = a.stats.percentage - b.stats.percentage;
       }
-      return 0;
+      return sortConfig.order === 'asc' ? comparison : -comparison;
     });
 
     return chains;
-  }, [searchText, sortBy, showMissingOnly]);
+  }, [searchText, sortConfig, showMissingOnly]);
 
   // 处理节点选择
   const handleSelectNode = useCallback((node) => {
+    // node 包含 { id, name, type, data }
     setSelectedNodeId(node.id);
+    setSelectedNodeData(node.data);
     setActiveTab('enterprises');
   }, []);
 
   // 获取选中节点的企业列表
   const getNodeEnterprises = () => {
-    if (!selectedNodeId) return [];
-    const findNode = (nodes) => {
-      for (const node of nodes) {
-        if (node.id === selectedNodeId) return node;
-        if (node.children) {
-          const found = findNode(node.children);
-          if (found) return found;
-        }
-      }
-      return null;
+    if (!selectedNodeId || !selectedNodeData) return [];
+    
+    // 根据节点类型确定企业数量
+    let count = 10;
+    if (selectedNodeData.shenzhen !== undefined) {
+      count = selectedNodeData.shenzhen;
+    } else if (selectedNodeData.enterpriseCount !== undefined) {
+      count = selectedNodeData.enterpriseCount;
+    }
+    
+    // 根据节点ID判断类型
+    const getTypeById = (id) => {
+      if (id === 'chain-root') return 'industry';
+      if (id.startsWith('segment-')) return 'segment';
+      if (id.startsWith('subsegment-')) return 'subSegment';
+      if (id.startsWith('product-')) return 'product';
+      return 'segment';
     };
     
-    const node = findNode(selectedChain.hierarchy || []);
-    if (!node) return [];
-    
-    const getTypeByLevel = (id) => {
-      const parts = id.split('-');
-      return parts.length <= 2 ? 'industry' : parts.length === 3 ? 'segment' : 'product';
-    };
-    
-    return generateEnterprises(node.enterpriseCount || 10, getTypeByLevel(selectedNodeId));
+    return generateEnterprises(count, getTypeById(selectedNodeId));
   };
 
   // 渲染产业列表
@@ -185,6 +215,7 @@ export default function IndustryGraph() {
             onClick={() => {
               setSelectedChainId(chain.id);
               setSelectedNodeId(null);
+              setSelectedNodeData(null);
               setActiveTab('flow');
             }}
             className={`
@@ -255,21 +286,16 @@ export default function IndustryGraph() {
 
   // 获取当前选中的节点信息
   const selectedNodeInfo = useMemo(() => {
-    if (!selectedNodeId || !selectedChain?.hierarchy) return null;
+    if (!selectedNodeId || !selectedNodeData) return null;
     
-    const findNode = (nodes) => {
-      for (const node of nodes) {
-        if (node.id === selectedNodeId) return node;
-        if (node.children) {
-          const found = findNode(node.children);
-          if (found) return found;
-        }
-      }
-      return null;
+    // 从 selectedNodeData 构建节点信息
+    return {
+      id: selectedNodeId,
+      name: selectedNodeData.name,
+      enterpriseCount: selectedNodeData.shenzhen !== undefined ? selectedNodeData.shenzhen : selectedNodeData.enterpriseCount,
+      ...selectedNodeData
     };
-    
-    return findNode(selectedChain.hierarchy);
-  }, [selectedNodeId, selectedChain]);
+  }, [selectedNodeId, selectedNodeData]);
 
   const nodeEnterprises = getNodeEnterprises();
 
@@ -470,24 +496,51 @@ export default function IndustryGraph() {
             />
             {/* 排序和筛选 */}
             <div className="flex items-center justify-between">
-              <Radio.Group 
-                size="small" 
-                value={sortBy} 
-                onChange={e => setSortBy(e.target.value)}
-                optionType="button"
-                buttonStyle="solid"
+              <div className="flex items-center gap-4">
+                {/* 数量排序 */}
+                <button
+                  onClick={() => {
+                    setSortConfig(prev => ({
+                      field: 'shenzhenCount',
+                      order: prev.field === 'shenzhenCount' && prev.order === 'desc' ? 'asc' : 'desc'
+                    }));
+                  }}
+                  className={`text-xs flex items-center gap-1 transition-colors ${
+                    sortConfig.field === 'shenzhenCount' ? 'text-blue-600 font-medium' : 'text-gray-500 hover:text-gray-700'
+                  }`}
+                >
+                  数量
+                  {sortConfig.field === 'shenzhenCount' && (
+                    <span>{sortConfig.order === 'desc' ? '↓' : '↑'}</span>
+                  )}
+                </button>
+                {/* 占比排序 */}
+                <button
+                  onClick={() => {
+                    setSortConfig(prev => ({
+                      field: 'percentage',
+                      order: prev.field === 'percentage' && prev.order === 'desc' ? 'asc' : 'desc'
+                    }));
+                  }}
+                  className={`text-xs flex items-center gap-1 transition-colors ${
+                    sortConfig.field === 'percentage' ? 'text-blue-600 font-medium' : 'text-gray-500 hover:text-gray-700'
+                  }`}
+                >
+                  占比
+                  {sortConfig.field === 'percentage' && (
+                    <span>{sortConfig.order === 'desc' ? '↓' : '↑'}</span>
+                  )}
+                </button>
+              </div>
+              {/* 有缺失产业 - 右对齐 */}
+              <Checkbox 
+                size="small"
+                checked={showMissingOnly}
+                onChange={e => setShowMissingOnly(e.target.checked)}
               >
-                <Radio.Button value="shenzhenCount">按深圳企业</Radio.Button>
-                <Radio.Button value="percentage">按占比</Radio.Button>
-              </Radio.Group>
+                <span className="text-xs text-gray-600">有缺失产业</span>
+              </Checkbox>
             </div>
-            <Checkbox 
-              size="small"
-              checked={showMissingOnly}
-              onChange={e => setShowMissingOnly(e.target.checked)}
-            >
-              <span className="text-xs text-gray-600">仅看有缺失产业</span>
-            </Checkbox>
           </div>
           <div className="overflow-auto p-4 flex-1">
             {filteredChains.length > 0 ? renderChainList() : (
@@ -519,10 +572,10 @@ export default function IndustryGraph() {
             items={[
               {
                 key: 'flow',
-                label: '产业层级',
+                label: <span style={{ paddingLeft: 16 }}>产业层级</span>,
                 children: (
                   <div style={{ width: '100%', height: 650, padding: 16 }}>
-                    <IndustryFlowGraph data={flowGraphData} />
+                    <IndustryFlowGraph data={flowGraphData} onNodeClick={handleSelectNode} />
                   </div>
                 ),
               },

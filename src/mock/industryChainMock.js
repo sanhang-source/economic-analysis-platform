@@ -8,18 +8,93 @@
 let nodeIdCounter = 0;
 const generateNodeId = () => `node-${++nodeIdCounter}`;
 
-// 递归为所有节点添加ID
-const addNodeIds = (nodes, parentId = null) => {
+// 根据产业链ID和节点名称生成深圳企业占比数据
+const generateShenzhenCounts = (chainId, nodeName, enterpriseCount) => {
+  // 晶圆制造节点特殊处理
+  if (nodeName === '晶圆制造') {
+    return { shenzhenCount: 0, nationalCount: enterpriseCount };
+  }
+  
+  let minRatio, maxRatio;
+  
+  // 根据产业链类型设置占比范围
+  switch (chainId) {
+    case 'chain-network': // 网络与通信：55%-75%
+      minRatio = 0.55;
+      maxRatio = 0.75;
+      break;
+    case 'chain-software': // 软件与信息服务：50%-70%
+      minRatio = 0.50;
+      maxRatio = 0.70;
+      break;
+    case 'chain-semiconductor': // 半导体与集成电路：45%-65%
+      minRatio = 0.45;
+      maxRatio = 0.65;
+      break;
+    case 'chain-robot': // 智能机器人：50%-70%
+      minRatio = 0.50;
+      maxRatio = 0.70;
+      break;
+    case 'chain-new-energy': // 新能源汽车：40%-60%
+      minRatio = 0.40;
+      maxRatio = 0.60;
+      break;
+    case 'chain-biomedical': // 生物医药：35%-55%
+      minRatio = 0.35;
+      maxRatio = 0.55;
+      break;
+    case 'chain-display': // 超高清视频显示：40%-60%
+      minRatio = 0.40;
+      maxRatio = 0.60;
+      break;
+    case 'chain-material': // 新材料：30%-50%
+      minRatio = 0.30;
+      maxRatio = 0.50;
+      break;
+    case 'chain-logistics': // 现代物流：45%-65%
+      minRatio = 0.45;
+      maxRatio = 0.65;
+      break;
+    case 'chain-fintech': // 金融科技：45%-65%
+      minRatio = 0.45;
+      maxRatio = 0.65;
+      break;
+    case 'chain-culture': // 文化创意：45%-65%
+      minRatio = 0.45;
+      maxRatio = 0.65;
+      break;
+    case 'chain-marine': // 海洋经济：25%-45%
+      minRatio = 0.25;
+      maxRatio = 0.45;
+      break;
+    default:
+      minRatio = 0.45;
+      maxRatio = 0.75;
+  }
+  
+  // 生成随机占比
+  const ratio = minRatio + Math.random() * (maxRatio - minRatio);
+  const shenzhenCount = Math.round(enterpriseCount * ratio);
+  
+  return { shenzhenCount, nationalCount: enterpriseCount };
+};
+
+
+// 递归为所有节点添加ID和深圳企业数据
+const addNodeIds = (nodes, parentId = null, chainId = null) => {
   return nodes.map((node, index) => {
     const id = generateNodeId();
+    const { shenzhenCount, nationalCount } = generateShenzhenCounts(chainId, node.name, node.enterpriseCount || 0);
     const newNode = {
       ...node,
       id,
       parentId,
       path: parentId ? `${parentId}.${index}` : `${index}`,
+      shenzhenCount,
+      nationalCount,
     };
     if (node.children) {
-      newNode.children = addNodeIds(node.children, id);
+      newNode.children = addNodeIds(node.children, id, chainId);
     }
     return newNode;
   });
@@ -347,7 +422,8 @@ const rawIndustryChains = [
       },
       {
         name: '晶圆制造',
-        enterpriseCount: 0,
+        enterpriseCount: 380,
+        shenzhenCount: 0,
         children: [
           {
             name: '逻辑代工',
@@ -1729,7 +1805,7 @@ const rawIndustryChains = [
 // 为所有节点添加ID
 export const industryChains = rawIndustryChains.map(chain => ({
   ...chain,
-  hierarchy: addNodeIds(chain.hierarchy)
+  hierarchy: addNodeIds(chain.hierarchy, null, chain.id)
 }));
 
 // 统计数据 - 基于深圳真实情况计算
