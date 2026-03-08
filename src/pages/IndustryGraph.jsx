@@ -469,7 +469,7 @@ export default function IndustryGraph() {
           value={(stats.shenzhenEnterprises / 10000).toFixed(1)}
           unit="万家"
           color="#1890ff"
-          icon={<TeamOutlined />}
+          icon={<ApartmentOutlined />}
         />
       </div>
 
