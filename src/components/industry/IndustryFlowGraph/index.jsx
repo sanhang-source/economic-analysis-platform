@@ -294,20 +294,19 @@ const IndustryFlowGraph = ({ data }) => {
       return;
     }
 
-    // ========== 第一步：构建树结构并计算每棵子树所需高度 ==========
+    // ========== 第一步：自底向上计算每棵子树所需高度 ==========
     
-    // 递归计算子树高度
+    // 计算每个细分产业的子树高度（包含所有子孙节点）
     function calcSubTreeHeight(segment, sIndex) {
       if (!isExpanded(`segment-${sIndex}`)) {
-        return { height: nodeGap, type: 'collapsed' };
+        return { height: nodeGap, type: 'collapsed', children: [] };
       }
 
       const subSegments = segment.subSegments || [];
       if (subSegments.length === 0) {
-        return { height: nodeGap, type: 'leaf' };
+        return { height: nodeGap, type: 'leaf', children: [] };
       }
 
-      let childrenHeight = 0;
       const children = [];
 
       subSegments.forEach((subSegment, ssIndex) => {
@@ -316,13 +315,23 @@ const IndustryFlowGraph = ({ data }) => {
           ? (subSegment.products?.length || 0) 
           : 0;
         
-        // 子节点高度 = 自身 + 产品
-        const childHeight = nodeGap + productCount * nodeGap;
-        childrenHeight += childHeight;
-        children.push({ subSegmentId, ssIndex, subSegment, productCount, childHeight });
+        // 该细分行业的需求高度 = max(自身高度, 产品服务总高度)
+        // 产品服务以细分行业为中心分布，所以占用空间是产品数量 * nodeGap
+        const productHeight = productCount > 0 ? productCount * nodeGap : 0;
+        const selfHeight = Math.max(nodeGap, productHeight);
+        
+        children.push({ 
+          subSegmentId, 
+          ssIndex, 
+          subSegment, 
+          productCount, 
+          selfHeight,
+          productHeight
+        });
       });
 
-      // 子节点之间的间距
+      // 子树总高度 = 所有子节点高度之和 + 子节点间间距
+      const childrenHeight = children.reduce((sum, c) => sum + c.selfHeight, 0);
       const gaps = (subSegments.length - 1) * nodeGap;
       const totalHeight = Math.max(nodeGap, childrenHeight + gaps);
 
@@ -337,27 +346,38 @@ const IndustryFlowGraph = ({ data }) => {
       ...calcSubTreeHeight(segment, sIndex)
     }));
 
-    // ========== 第二步：计算细分产业的Y位置 ==========
-    // 策略：根据子树高度动态分配Y坐标，确保子树不重叠
+    // ========== 第二步：计算细分产业的Y位置（以第一列为中心）==========
     
-    let currentY = startY;
+    // 计算所有细分产业的总高度
+    let totalTreeHeight = 0;
+    trees.forEach((tree, index) => {
+      totalTreeHeight += tree.height / 2;
+      if (index < trees.length - 1) {
+        const nextTree = trees[index + 1];
+        totalTreeHeight += nodeGap + nextTree.height / 2;
+      }
+    });
+    
+    // 以产业链节点(startY)为中心，计算起始位置
+    let currentY = startY - totalTreeHeight / 2;
     const segmentPositions = [];
     
     trees.forEach((tree, index) => {
-      const segmentY = currentY;
+      // 细分产业的Y位置 = 当前累积Y + 当前子树高度的一半（让节点位于子树中心）
+      const segmentY = currentY + tree.height / 2;
       segmentPositions.push({ id: tree.id, y: segmentY, tree });
       
-      // 下一个细分产业的Y位置 = 当前位置 + 当前子树高度的一半 + 间距 + 下一个子树高度的一半
+      // 下一个细分产业的起始Y
       if (index < trees.length - 1) {
         const nextTree = trees[index + 1];
-        const gap = (tree.height / 2) + nodeGap + (nextTree.height / 2);
-        currentY += gap;
+        currentY += (tree.height / 2) + nodeGap + (nextTree.height / 2);
       }
     });
 
-    // ========== 第三步：计算细分行业和产品的Y位置 ==========
+    // ========== 第三步：计算细分行业的Y位置（以母节点为中心）==========
     const subSegmentYMap = new Map();
     const productYMap = new Map();
+    const allSubSegments = []; // 用于全局检查重叠
 
     trees.forEach(tree => {
       if (!tree.children || tree.children.length === 0) return;
@@ -365,36 +385,86 @@ const IndustryFlowGraph = ({ data }) => {
       const segmentPos = segmentPositions.find(p => p.id === tree.id);
       const segmentY = segmentPos.y;
 
-      // 计算子节点在子树中的起始Y位置
-      const childrenTotalHeight = tree.children.reduce((sum, c) => sum + c.childHeight, 0);
-      const childrenTotalGaps = (tree.children.length - 1) * nodeGap;
-      const childrenTreeHeight = childrenTotalHeight + childrenTotalGaps;
+      // 计算子节点在该子树内的分布
+      const childrenHeight = tree.children.reduce((sum, c) => sum + c.selfHeight, 0);
+      const gaps = (tree.children.length - 1) * nodeGap;
+      const childrenTreeHeight = childrenHeight + gaps;
       
-      // 让子树以细分产业节点为中心
+      // 以细分产业节点为中心，计算第一个子节点的起始Y
       let childY = segmentY - childrenTreeHeight / 2;
 
       tree.children.forEach((child, idx) => {
-        // 细分行业的Y位置（子节点自身的中心）
-        const subSegmentY = childY + child.childHeight / 2;
+        // 细分行业的Y位置（子节点的中心）
+        const subSegmentY = childY + child.selfHeight / 2;
         subSegmentYMap.set(child.subSegmentId, subSegmentY);
+        
+        allSubSegments.push({
+          id: child.subSegmentId,
+          y: subSegmentY,
+          selfHeight: child.selfHeight,
+          treeId: tree.id
+        });
 
-        // 产品服务的Y位置
+        // 产品服务的Y位置（以细分行业为中心）
         if (child.productCount > 0) {
           const products = child.subSegment.products || [];
+          const productTotalHeight = child.productCount * nodeGap;
+          // 以细分行业为中心，第一个产品的起始Y
+          let productY = subSegmentY - productTotalHeight / 2 + nodeGap / 2;
+          
           products.forEach((product, pIdx) => {
             const productId = `product-${tree.sIndex}-${child.ssIndex}-${pIdx}`;
-            const productY = subSegmentY + (pIdx + 1) * nodeGap;
             productYMap.set(productId, productY);
+            productY += nodeGap;
           });
         }
 
         // 下一个子节点的起始位置
-        childY += child.childHeight;
+        childY += child.selfHeight;
         if (idx < tree.children.length - 1) {
           childY += nodeGap;
         }
       });
     });
+
+    // ========== 第四步：全局检查并调整第三列位置，确保不重叠 ==========
+    // 按Y坐标排序
+    allSubSegments.sort((a, b) => a.y - b.y);
+    
+    // 检查并调整重叠
+    for (let i = 1; i < allSubSegments.length; i++) {
+      const prev = allSubSegments[i - 1];
+      const curr = allSubSegments[i];
+      
+      // 计算两个子树之间的最小间距需求
+      const prevHalf = prev.selfHeight / 2;
+      const currHalf = curr.selfHeight / 2;
+      const minGap = prevHalf + currHalf + nodeGap * 0.5; // 最小间距
+      
+      const actualGap = curr.y - prev.y;
+      
+      if (actualGap < minGap) {
+        // 需要推开当前节点
+        const adjustment = minGap - actualGap;
+        curr.y += adjustment;
+        subSegmentYMap.set(curr.id, curr.y);
+        
+        // 同时调整该节点下的所有产品服务
+        const tree = trees.find(t => t.id === curr.treeId);
+        const child = tree.children.find(c => c.subSegmentId === curr.id);
+        if (child && child.productCount > 0) {
+          const products = child.subSegment.products || [];
+          const productTotalHeight = child.productCount * nodeGap;
+          let productY = curr.y - productTotalHeight / 2 + nodeGap / 2;
+          
+          products.forEach((product, pIdx) => {
+            const productId = `product-${tree.sIndex}-${child.ssIndex}-${pIdx}`;
+            productYMap.set(productId, productY);
+            productY += nodeGap;
+          });
+        }
+      }
+    }
 
     // ========== 第四步：创建所有节点和边 ==========
     
