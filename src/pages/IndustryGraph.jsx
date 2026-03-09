@@ -578,7 +578,7 @@ export default function IndustryGraph() {
                 label: '企业清单',
                 // 企业清单tab默认可点击，默认选中产业链根节点
                 // disabled: false,
-                style: { padding: '0 16px 16px', overflow: 'hidden', height: 'calc(100vh - 250px)', display: 'flex', flexDirection: 'column' },
+                style: { padding: '0 16px 16px', overflow: 'hidden', height: 'calc(100vh - 200px)', display: 'flex', flexDirection: 'column' },
                 children: selectedNodeInfo ? (
                   <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
                     <Card size="small" className="mb-4" style={{ width: '100%', flexShrink: 0 }}>

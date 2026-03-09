@@ -53,15 +53,11 @@ export const menuConfig = [
         icon: <ShareAltOutlined />,
         label: '区域产业',
       },
-      {
-        key: '/industry/supply-chain',
-        icon: <LinkOutlined />,
-        label: '强链补链分析',
-      },
+
       {
         key: '/industry/capital',
         icon: <NodeIndexOutlined />,
-        label: '企业系族',
+        label: '企业族群',
       },
       {
         key: '/industry/trade',
@@ -166,8 +162,8 @@ export const breadcrumbMap = {
   '/investment/projects': ['招商引资', '项目看板'],
   '/industry': ['产业大脑'],
   '/industry/graph': ['产业大脑', '区域产业'],
-  '/industry/supply-chain': ['产业大脑', '强链补链分析'],
-  '/industry/capital': ['产业大脑', '企业系族'],
+
+  '/industry/capital': ['产业大脑', '企业族群'],
   '/industry/trade': ['产业大脑', '交易生态'],
   '/enterprise': ['企业档案'],
   '/enterprise/list': ['企业档案', '企业名录'],

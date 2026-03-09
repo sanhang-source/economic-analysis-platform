@@ -12,7 +12,7 @@ import EnterpriseProfile from './pages/EnterpriseProfile';
 import EconomyCockpit from './pages/EconomyCockpit';
 import LoginPage from './pages/LoginPage';
 import LeadsPool from './pages/LeadsPool';
-import ChainAnalysis from './pages/ChainAnalysis';
+
 import CapitalGenealogy from './pages/CapitalGenealogy';
 import TradeEcosystem from './pages/TradeEcosystem';
 import EconomicMonitor from './pages/EconomicMonitor';
@@ -70,7 +70,7 @@ const App = () => {
             
             {/* 产业大脑子页面 */}
             <Route path="industry/graph" element={<IndustryGraph />} />
-            <Route path="industry/supply-chain" element={<ChainAnalysis />} />
+
             <Route path="industry/capital" element={<CapitalGenealogy />} />
             <Route path="industry/trade" element={<TradeEcosystem />} />
             
