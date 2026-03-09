@@ -1,5 +1,5 @@
-import React from 'react';
-import { Card, Table, Button, Space, Tag } from 'antd';
+import React, { useState, useMemo } from 'react';
+import { Card, Table, Button, Space, Tag, Tooltip, Segmented } from 'antd';
 import { PlusOutlined, StarOutlined, DownloadOutlined } from '@ant-design/icons';
 
 /**
@@ -16,39 +16,41 @@ const MemberTable = ({
   handleAddToWatchlist,
   handleExport,
 }) => {
+  // 地区筛选状态
+  const [regionFilter, setRegionFilter] = useState('all');
+
+  // 根据地区筛选过滤数据
+  const filteredMembers = useMemo(() => {
+    if (regionFilter === 'all') return currentMembers;
+    return currentMembers.filter(item => item.region === regionFilter);
+  }, [currentMembers, regionFilter]);
+
   // 表格列定义
   const columns = [
     {
       title: '企业名称',
       dataIndex: 'name',
       key: 'name',
+      width: 200,
       render: (text, record) => (
-        <div className="flex items-center gap-2">
-          <div
-            className="w-6 h-6 rounded-full flex items-center justify-center text-white text-xs"
-            style={{
-              backgroundColor: record.level === 'core' ? '#1677ff' : 
-                              record.level === 'first' ? '#52c41a' : 
-                              record.level === 'second' ? '#faad14' : '#999',
-            }}
-          >
-            {text.charAt(0)}
-          </div>
-          <span className={record.level === 'core' ? 'font-semibold' : ''}>{text}</span>
+        <div className="flex flex-col">
+          <span className={record.level === 'core' ? 'font-semibold text-blue-600' : ''}>{text}</span>
+          <span className="text-xs text-gray-400 mt-1">{record.creditCode || '-'}</span>
         </div>
       ),
     },
     {
-      title: '级次',
+      title: '成员级别',
       dataIndex: 'level',
       key: 'level',
-      width: 110,
+      width: 90,
+      align: 'center',
       render: (level) => {
         const levelMap = {
-          'core': { text: '核心企业', color: 'blue' },
-          'first': { text: '一级子公司', color: 'green' },
-          'second': { text: '二级子公司', color: 'orange' },
-          'associate': { text: '参股企业', color: 'default' },
+          'core': { text: '0级', color: 'blue' },
+          'first': { text: '1级', color: 'green' },
+          'second': { text: '2级', color: 'orange' },
+          'associate': { text: '参股', color: 'default' },
         };
         const config = levelMap[level] || levelMap['associate'];
         return (
@@ -66,40 +68,55 @@ const MemberTable = ({
       ),
     },
     {
-      title: '持股比例',
-      dataIndex: 'ratio',
-      key: 'ratio',
-      width: 130,
-      render: (ratio) => (
-        <div className="flex items-center gap-2">
-          <div className="w-14 h-2 bg-gray-200 rounded-full overflow-hidden">
-            <div 
-              className="h-full rounded-full"
-              style={{
-                width: `${ratio}%`,
-                backgroundColor: ratio >= 50 ? '#1677ff' : '#faad14',
-              }}
-            />
-          </div>
-          <span className="text-xs">{ratio}%</span>
-        </div>
-      ),
-    },
-    {
       title: '注册资本',
       dataIndex: 'capital',
       key: 'capital',
-      width: 130,
+      width: 120,
     },
     {
-      title: '所属区域',
-      dataIndex: 'regionName',
-      key: 'regionName',
-      width: 110,
-      render: (text, record) => (
-        <Tag color={record.region === 'local' ? 'success' : 'default'} size="small">
-          {record.region === 'local' ? '深圳' : '外地'}
+      title: '成立日期',
+      dataIndex: 'foundedDate',
+      key: 'foundedDate',
+      width: 100,
+      render: (date) => date || '-',
+    },
+    {
+      title: '地区',
+      dataIndex: 'region',
+      key: 'region',
+      width: 80,
+      align: 'center',
+      render: (region) => (
+        <Tag color={region === 'local' ? 'success' : 'default'} size="small">
+          {region === 'local' ? '本地' : '外地'}
         </Tag>
+      ),
+    },
+    {
+      title: '地址',
+      dataIndex: 'address',
+      key: 'address',
+      width: 200,
+      ellipsis: true,
+      render: (address) => (
+        <Tooltip title={address} placement="topLeft">
+          <span>{address || '-'}</span>
+        </Tooltip>
+      ),
+    },
+    {
+      title: '操作',
+      key: 'action',
+      width: 80,
+      align: 'center',
+      render: (_, record) => (
+        <Button 
+          type="link" 
+          size="small"
+          onClick={() => console.log('查看企业:', record.name)}
+        >
+          查看
+        </Button>
       ),
     },
   ];
@@ -113,6 +130,13 @@ const MemberTable = ({
     },
   };
 
+  // 地区筛选选项
+  const regionOptions = [
+    { value: 'all', label: `全部(${currentMembers.length})` },
+    { value: 'local', label: `本地(${currentMembers.filter(m => m.region === 'local').length})` },
+    { value: 'outside', label: `外地(${currentMembers.filter(m => m.region === 'outside').length})` },
+  ];
+
   return (
     <Card 
       className="border-0 shadow-none"
@@ -125,14 +149,24 @@ const MemberTable = ({
         </div>
       }
       extra={
-        <span className="text-gray-400 text-sm">共 {currentMembers.length} 家企业</span>
+        <span className="text-gray-400 text-sm">共 {filteredMembers.length} 家企业</span>
       }
     >
-      {/* 操作按钮栏 */}
+      {/* 筛选项和按钮栏 */}
       <div className="flex justify-between items-center mb-4">
+        {/* 左侧：地区筛选项 */}
+        <Segmented
+          value={regionFilter}
+          onChange={setRegionFilter}
+          options={regionOptions}
+          size="small"
+        />
+        
+        {/* 右侧：操作按钮 */}
         <Space>
           <Button
             type="primary"
+            ghost
             icon={<PlusOutlined />}
             onClick={handleAddToInvestment}
             disabled={selectedRows.length === 0}
@@ -146,19 +180,21 @@ const MemberTable = ({
           >
             加入关注库
           </Button>
+          <Button
+            type="primary"
+            ghost
+            icon={<DownloadOutlined />}
+            onClick={handleExport}
+          >
+            导出
+          </Button>
         </Space>
-        <Button
-          icon={<DownloadOutlined />}
-          onClick={handleExport}
-        >
-          {selectedRows.length > 0 ? `导出选中(${selectedRows.length})` : '导出全部'}
-        </Button>
       </div>
 
       <Table
         rowSelection={rowSelection}
         columns={columns}
-        dataSource={currentMembers}
+        dataSource={filteredMembers}
         rowKey="id"
         loading={loading}
         pagination={{
@@ -167,7 +203,7 @@ const MemberTable = ({
           showTotal: (total) => `共 ${total} 条`,
         }}
         size="small"
-        scroll={{ x: 800 }}
+        scroll={{ x: 1000 }}
       />
     </Card>
   );

@@ -32,6 +32,7 @@ const CapitalGenealogy = () => {
     setSelectedRowKeys,
     currentMembers,
     currentClan,
+    clanList,
     filteredClanList,
     regionStats,
     regionOptions,
@@ -68,6 +69,7 @@ const CapitalGenealogy = () => {
           filteredClanList={filteredClanList}
           selectedClan={selectedClan}
           setSelectedClan={setSelectedClan}
+          clanList={clanList}
         />
 
         {/* 右侧详情区 */}

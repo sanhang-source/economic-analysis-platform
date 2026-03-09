@@ -47,23 +47,37 @@ export const useCapitalGenealogy = () => {
 
   // 统计深圳/外地企业数量及行业分布
   const regionStats = useMemo(() => {
-    const localCount = currentMembers.filter(m => m.region === 'local').length;
-    const outsideCount = currentMembers.filter(m => m.region === 'outside').length;
+    const localMembers = currentMembers.filter(m => m.region === 'local');
+    const outsideMembers = currentMembers.filter(m => m.region === 'outside');
+    const localCount = localMembers.length;
+    const outsideCount = outsideMembers.length;
     
-    // 行业分布统计
-    const industryMap = {};
-    currentMembers.forEach(m => {
+    // 深圳企业行业分布统计
+    const localIndustryMap = {};
+    localMembers.forEach(m => {
       if (m.industry) {
-        industryMap[m.industry] = (industryMap[m.industry] || 0) + 1;
+        localIndustryMap[m.industry] = (localIndustryMap[m.industry] || 0) + 1;
+      }
+    });
+    
+    // 外地企业行业分布统计
+    const outsideIndustryMap = {};
+    outsideMembers.forEach(m => {
+      if (m.industry) {
+        outsideIndustryMap[m.industry] = (outsideIndustryMap[m.industry] || 0) + 1;
       }
     });
     
     // 按数量排序
-    const industries = Object.entries(industryMap)
+    const localIndustries = Object.entries(localIndustryMap)
       .sort((a, b) => b[1] - a[1])
       .map(([name, count]) => ({ name, count }));
     
-    return { localCount, outsideCount, industries };
+    const outsideIndustries = Object.entries(outsideIndustryMap)
+      .sort((a, b) => b[1] - a[1])
+      .map(([name, count]) => ({ name, count }));
+    
+    return { localCount, outsideCount, localIndustries, outsideIndustries };
   }, [currentMembers]);
 
   // 模拟数据加载
