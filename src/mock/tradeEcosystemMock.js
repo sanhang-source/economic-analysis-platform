@@ -12,7 +12,7 @@ export const companyInfo = {
   establishDate: '2015-08-18',
   registeredCapital: '12,000万人民币',
   employees: 1856,
-  creditCode: '91440300MA5D...',
+  creditCode: '91440300MA5D7K8N2M',
   taxLevel: 'A级',
   address: '深圳市南山区科技园南区高新南一道',
 };

@@ -29,7 +29,7 @@ const RiskMetricsPanel = ({ metrics }) => {
       icon: <TeamOutlined />,
       color: metrics.customerCR5 > 0.5 ? '#f5222d' : metrics.customerCR5 > 0.4 ? '#faad14' : '#52c41a',
       progress: true,
-      threshold: '警戒线: 50%',
+
       tooltip: '前5大客户销售额占总销售额的比例',
     },
     {
@@ -39,7 +39,7 @@ const RiskMetricsPanel = ({ metrics }) => {
       icon: <ShoppingCartOutlined />,
       color: metrics.supplierCR5 > 0.5 ? '#f5222d' : metrics.supplierCR5 > 0.4 ? '#faad14' : '#52c41a',
       progress: true,
-      threshold: '警戒线: 50%',
+
       tooltip: '前5大供应商采购额占总采购额的比例',
     },
     {
@@ -49,7 +49,7 @@ const RiskMetricsPanel = ({ metrics }) => {
       icon: <PercentageOutlined />,
       color: metrics.grossMargin < 0.1 ? '#f5222d' : metrics.grossMargin < 0.2 ? '#faad14' : '#52c41a',
       progress: true,
-      threshold: '参考线: 20%',
+
       tooltip: '(销售额 - 采购额) / 销售额',
     },
     {

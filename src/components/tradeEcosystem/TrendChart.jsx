@@ -1,15 +1,15 @@
 import React from 'react';
-import { Card, Radio } from 'antd';
+import { Card, Row, Col } from 'antd';
 import ReactECharts from 'echarts-for-react';
 
 /**
- * 月度趋势图表
+ * 月度趋势图表（左右排列）
  */
 const TrendChart = ({ monthlyTrend }) => {
-  // 月度趋势图配置
-  const trendOption = {
+  // 月度交易金额趋势（左侧）
+  const amountOption = {
     title: {
-      text: '月度交易趋势',
+      text: '月度交易金额趋势',
       left: 'center',
       textStyle: { fontSize: 14, fontWeight: 'normal' },
     },
@@ -21,11 +21,11 @@ const TrendChart = ({ monthlyTrend }) => {
       data: ['销售额', '采购额'],
       bottom: 0,
     },
-    grid: { left: '3%', right: '4%', bottom: '10%', top: '15%', containLabel: true },
+    grid: { left: '3%', right: '4%', bottom: '12%', top: '15%', containLabel: true },
     xAxis: {
       type: 'category',
       boundaryGap: false,
-      data: monthlyTrend.map(item => item.month.substring(5)), // 只显示月份
+      data: monthlyTrend.map(item => item.month.substring(5)),
       axisLabel: { fontSize: 10 },
     },
     yAxis: {
@@ -78,27 +78,31 @@ const TrendChart = ({ monthlyTrend }) => {
     ],
   };
 
-  // 开票数量趋势
+  // 月度开票数量趋势（右侧）
   const countOption = {
     title: {
-      text: '开票数量趋势',
+      text: '月度开票数量趋势',
       left: 'center',
-      textStyle: { fontSize: 12, fontWeight: 'normal' },
+      textStyle: { fontSize: 14, fontWeight: 'normal' },
     },
     tooltip: {
       trigger: 'axis',
     },
-    grid: { left: '3%', right: '4%', bottom: '5%', top: '20%', containLabel: true },
+    legend: {
+      data: ['销售开票', '采购开票'],
+      bottom: 0,
+    },
+    grid: { left: '3%', right: '4%', bottom: '12%', top: '15%', containLabel: true },
     xAxis: {
       type: 'category',
       data: monthlyTrend.map(item => item.month.substring(5)),
-      axisLabel: { fontSize: 9 },
+      axisLabel: { fontSize: 10 },
     },
     yAxis: {
       type: 'value',
       name: '张数',
-      nameTextStyle: { fontSize: 9 },
-      axisLabel: { fontSize: 9 },
+      nameTextStyle: { fontSize: 10 },
+      axisLabel: { fontSize: 10 },
     },
     series: [
       {
@@ -119,9 +123,15 @@ const TrendChart = ({ monthlyTrend }) => {
   };
 
   return (
-    <Card title="月度交易趋势" bordered={false} bodyStyle={{ padding: 12 }}>
-      <ReactECharts option={trendOption} style={{ height: 220 }} />
-      <ReactECharts option={countOption} style={{ height: 160 }} />
+    <Card bordered={false} bodyStyle={{ padding: 12 }}>
+      <Row gutter={[16, 0]}>
+        <Col span={12}>
+          <ReactECharts option={amountOption} style={{ height: 280 }} />
+        </Col>
+        <Col span={12}>
+          <ReactECharts option={countOption} style={{ height: 280 }} />
+        </Col>
+      </Row>
     </Card>
   );
 };

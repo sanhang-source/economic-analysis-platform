@@ -50,22 +50,22 @@ const TradeEcosystem = () => {
       {/* 3. 风险洞察指标 */}
       <RiskMetricsPanel metrics={metrics} />
 
-      {/* 4. 供应商分析 | 客户分析 | 月度趋势 */}
+      {/* 4. 月度交易趋势 */}
+      <TrendChart monthlyTrend={monthlyTrend} />
+
+      {/* 5. 十大供应商 | 十大客户 */}
       <Row gutter={[16, 16]}>
-        <Col span={8}>
+        <Col span={12}>
           <SupplierChart 
             topSuppliers={topSuppliers} 
             localPurchaseRatio={metrics.localPurchaseRatio}
           />
         </Col>
-        <Col span={8}>
+        <Col span={12}>
           <CustomerChart 
             topCustomers={topCustomers} 
             localSalesRatio={metrics.localSalesRatio}
           />
-        </Col>
-        <Col span={8}>
-          <TrendChart monthlyTrend={monthlyTrend} />
         </Col>
       </Row>
 
