@@ -1,5 +1,5 @@
 import React from 'react';
-import { Input, List, Tag, Segmented } from 'antd';
+import { Input, List, Tag, Button } from 'antd';
 import { SearchOutlined } from '@ant-design/icons';
 
 /**
@@ -16,25 +16,29 @@ const ClanList = ({
   clanList,
 }) => {
   // 分类配置
-  const categoryOptions = [
-    { value: 'group', label: '集团系' },
-    { value: 'listed', label: '上市系' },
-    { value: 'top500', label: '中国500强' },
+  const categoryConfig = [
+    { key: 'group', label: '集团系' },
+    { key: 'listed', label: '上市系' },
+    { key: 'top500', label: '中国500强' },
   ];
 
   return (
     <div className="w-80 bg-white border-r border-gray-200 flex flex-col h-full">
       {/* 顶部搜索 */}
       <div className="p-4 border-b border-gray-200 flex-shrink-0">
-        {/* 分类分段控制器 */}
-        <div className="mb-3">
-          <Segmented
-            value={category}
-            onChange={(value) => { setCategory(value); }}
-            options={categoryOptions}
-            block
-            size="small"
-          />
+        {/* 分类标签按钮 */}
+        <div className="flex gap-2 mb-3">
+          {categoryConfig.map((item) => (
+            <Button
+              key={item.key}
+              type={category === item.key ? 'primary' : 'default'}
+              size="small"
+              className="flex-1"
+              onClick={() => { setCategory(item.key); }}
+            >
+              {item.label}
+            </Button>
+          ))}
         </div>
         
         <Input
@@ -53,19 +57,16 @@ const ClanList = ({
           dataSource={filteredClanList}
           renderItem={(item, index) => (
             <List.Item
-              className={`cursor-pointer transition-colors px-0 ${
+              className={`cursor-pointer transition-all px-0 ${
                 selectedClan === item.id 
                   ? 'bg-blue-50' 
                   : 'hover:bg-gray-50'
               }`}
-              style={{
-                borderLeft: selectedClan === item.id ? '4px solid #1677ff' : '4px solid transparent',
-              }}
               onClick={() => setSelectedClan(item.id)}
             >
-              <div className="px-4 py-3 w-full">
+              <div className="px-3 py-3 w-full">
                 {/* 第一行：所属系 + 企业名称 */}
-                <div className="flex items-center gap-2 mb-2">
+                <div className="flex items-center gap-2 mb-3">
                   <Tag 
                     size="small"
                     color={selectedClan === item.id ? 'blue' : 'default'}
@@ -82,21 +83,21 @@ const ClanList = ({
                   </span>
                 </div>
                 
-                {/* 第二行：统计信息 - 三栏卡片样式 */}
-                <div className="grid grid-cols-3 gap-2 text-center mt-2">
-                  <div className="bg-gray-50 rounded p-2">
+                {/* 第二行：统计信息 - 三栏卡片样式（白色背景） */}
+                <div className="grid grid-cols-3 gap-2 text-center">
+                  <div className="bg-white rounded p-2">
                     <div className="text-sm font-bold text-green-600">
                       {item.shenzhenCount}
                     </div>
                     <div className="text-xs text-gray-500">深圳企业</div>
                   </div>
-                  <div className="bg-gray-50 rounded p-2">
+                  <div className="bg-white rounded p-2">
                     <div className="text-sm font-bold text-gray-700">
                       {item.count}
                     </div>
                     <div className="text-xs text-gray-500">成员企业</div>
                   </div>
-                  <div className="bg-gray-50 rounded p-2">
+                  <div className="bg-white rounded p-2">
                     <div className="text-sm font-bold text-blue-600">
                       {Math.round((item.shenzhenCount / item.count) * 100)}%
                     </div>

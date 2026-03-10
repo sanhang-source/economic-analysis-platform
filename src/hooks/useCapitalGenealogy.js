@@ -18,8 +18,6 @@ export const useCapitalGenealogy = () => {
   const [region, setRegion] = useState('全市');
   const [category, setCategory] = useState('group');
   const [loading, setLoading] = useState(false);
-  const [selectedRows, setSelectedRows] = useState([]);
-  const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [currentMembers, setCurrentMembers] = useState(defaultMembers);
 
   // 根据分类获取列表
@@ -31,10 +29,15 @@ export const useCapitalGenealogy = () => {
     }
   }, [category]);
 
-  // 当前选中的系族
+  // 所有企业列表（用于查找当前选中的企业，不受分类切换影响）
+  const allClans = useMemo(() => {
+    return [...groupList, ...listedList, ...top500List];
+  }, []);
+
+  // 当前选中的系族（从所有企业中查找，不受分类切换影响）
   const currentClan = useMemo(() => {
-    return clanList.find(c => c.id === selectedClan) || clanList[0];
-  }, [selectedClan, clanList]);
+    return allClans.find(c => c.id === selectedClan) || allClans[0];
+  }, [selectedClan, allClans]);
 
   // 搜索过滤
   const filteredClanList = useMemo(() => {
@@ -84,8 +87,6 @@ export const useCapitalGenealogy = () => {
   useEffect(() => {
     if (selectedClan) {
       setLoading(true);
-      setSelectedRows([]);
-      setSelectedRowKeys([]);
       // 模拟API延迟
       const timer = setTimeout(() => {
         setCurrentMembers(memberCompaniesData[selectedClan] || defaultMembers);
@@ -103,20 +104,21 @@ export const useCapitalGenealogy = () => {
   }, []);
 
   // 导出企业名单
-  const handleExport = () => {
-    const dataToExport = selectedRows.length > 0 ? selectedRows : currentMembers;
+  const handleExport = (dataToExport) => {
+    const exportData = dataToExport || currentMembers;
     
     // 构建CSV内容
-    const headers = ['企业名称', '级次', '行业', '持股比例', '注册资本', '所属区域'];
-    const rows = dataToExport.map(item => [
+    const headers = ['企业名称', '成员级别', '行业', '注册资本', '成立日期', '地区', '地址'];
+    const rows = exportData.map(item => [
       item.name,
-      item.level === 'core' ? '核心企业' : 
-        item.level === 'first' ? '一级子公司' : 
-        item.level === 'second' ? '二级子公司' : '参股企业',
+      item.level === 'core' ? '0级' : 
+        item.level === 'first' ? '1级' : 
+        item.level === 'second' ? '2级' : '参股',
       item.industry || '-',
-      item.ratio + '%',
       item.capital,
-      item.region === 'local' ? '深圳' : item.regionName,
+      item.foundedDate || '-',
+      item.region === 'local' ? '本地' : '外地',
+      item.address || '-',
     ]);
     
     const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
@@ -128,29 +130,25 @@ export const useCapitalGenealogy = () => {
     link.download = `${currentClan?.name}_企业名单_${new Date().toISOString().slice(0, 10)}.csv`;
     link.click();
     
-    message.success(`已导出 ${dataToExport.length} 家企业`);
+    message.success(`已导出 ${exportData.length} 家企业`);
   };
 
   // 加入招商库
-  const handleAddToInvestment = () => {
-    if (selectedRows.length === 0) {
+  const handleAddToInvestment = (enterprises) => {
+    if (enterprises.length === 0) {
       message.warning('请先选择企业');
       return;
     }
-    message.success(`已将 ${selectedRows.length} 家企业加入招商库`);
-    setSelectedRowKeys([]);
-    setSelectedRows([]);
+    message.success(`已将 ${enterprises.length} 家企业加入招商库`);
   };
 
   // 加入关注库
-  const handleAddToWatchlist = () => {
-    if (selectedRows.length === 0) {
+  const handleAddToWatchlist = (enterprises) => {
+    if (enterprises.length === 0) {
       message.warning('请先选择企业');
       return;
     }
-    message.success(`已将 ${selectedRows.length} 家企业加入关注库`);
-    setSelectedRowKeys([]);
-    setSelectedRows([]);
+    message.success(`已将 ${enterprises.length} 家企业加入关注库`);
   };
 
   return {
@@ -164,10 +162,6 @@ export const useCapitalGenealogy = () => {
     category,
     setCategory,
     loading,
-    selectedRows,
-    setSelectedRows,
-    selectedRowKeys,
-    setSelectedRowKeys,
     currentMembers,
     
     // 数据

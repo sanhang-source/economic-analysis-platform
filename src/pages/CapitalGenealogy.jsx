@@ -26,10 +26,6 @@ const CapitalGenealogy = () => {
     category,
     setCategory,
     loading,
-    selectedRows,
-    setSelectedRows,
-    selectedRowKeys,
-    setSelectedRowKeys,
     currentMembers,
     currentClan,
     clanList,
@@ -42,7 +38,7 @@ const CapitalGenealogy = () => {
   } = useCapitalGenealogy();
 
   return (
-    <div>
+    <div className="-m-4 p-4 bg-gray-50 min-h-full">
       {/* 页面标题和区域选择 */}
       <div className="flex items-center justify-between mb-4">
         <div>
@@ -73,7 +69,7 @@ const CapitalGenealogy = () => {
         />
 
         {/* 右侧详情区 */}
-        <div className="flex-1 bg-white overflow-auto h-full ml-4">
+        <div className="flex-1 overflow-auto h-full ml-4">
           {currentClan && (
             <>
               {/* 核心企业信息卡片 */}
@@ -86,10 +82,6 @@ const CapitalGenealogy = () => {
               <MemberTable
                 currentMembers={currentMembers}
                 loading={loading}
-                selectedRows={selectedRows}
-                selectedRowKeys={selectedRowKeys}
-                setSelectedRows={setSelectedRows}
-                setSelectedRowKeys={setSelectedRowKeys}
                 handleAddToInvestment={handleAddToInvestment}
                 handleAddToWatchlist={handleAddToWatchlist}
                 handleExport={handleExport}

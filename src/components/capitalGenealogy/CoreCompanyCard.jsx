@@ -15,7 +15,7 @@ const CoreCompanyCard = ({ currentClan, regionStats }) => {
   if (!currentClan) return null;
 
   return (
-    <Card className="border-0 shadow-none">
+    <Card className="border-0 shadow-none mb-4 bg-white">
       {/* 头部：头像和名称 */}
       <div className="flex items-start gap-4 mb-4">
         <Avatar
@@ -70,10 +70,10 @@ const CoreCompanyCard = ({ currentClan, regionStats }) => {
           <span className="font-semibold">成员企业分布</span>
         </div>
         <div className="grid grid-cols-2 gap-4">
-          {/* 深圳企业 */}
+          {/* 本地企业 */}
           <div className="bg-green-50 border border-green-200 rounded-lg p-4">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-gray-600 text-sm">深圳企业</span>
+              <span className="text-gray-600 text-sm">本地企业</span>
               <span className="text-2xl font-bold text-green-600">{regionStats.localCount}<span className="text-sm font-normal ml-1">家</span></span>
             </div>
             <div className="flex flex-wrap gap-1">
