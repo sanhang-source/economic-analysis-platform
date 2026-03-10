@@ -188,9 +188,9 @@ const EnterpriseTable = ({
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+    <div style={{ display: 'flex', flexDirection: 'column' }}>
       {/* 筛选和操作栏 */}
-      <div style={{ flexShrink: 0 }} className="flex items-center justify-between mb-4 p-3 bg-gray-50 rounded-lg">
+      <div className="flex items-center justify-between mb-4 p-3 bg-gray-50 rounded-lg">
         <Space size={8}>
           <Tag 
             color={areaFilter === 'all' ? 'blue' : 'default'}
@@ -251,22 +251,20 @@ const EnterpriseTable = ({
         </Space>
       </div>
 
-      {/* 表格 - 由Antd Table自己处理滚动 */}
-      <div style={{ flex: 1, overflow: 'auto' }}>
-        <Table
-          rowKey="id"
-          rowSelection={rowSelection}
-          columns={columns}
-          dataSource={filteredData}
-          scroll={{ x: 1300 }}
-          pagination={{
-            pageSize: 10,
-            showSizeChanger: true,
-            showTotal: (total) => `共 ${total} 条`,
-          }}
-          size="small"
-        />
-      </div>
+      {/* 表格 - 自然撑开，垂直方向不限制高度 */}
+      <Table
+        rowKey="id"
+        rowSelection={rowSelection}
+        columns={columns}
+        dataSource={filteredData}
+        scroll={{ x: 1300 }}
+        pagination={{
+          pageSize: 10,
+          showSizeChanger: true,
+          showTotal: (total) => `共 ${total} 条`,
+        }}
+        size="small"
+      />
     </div>
   );
 };

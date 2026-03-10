@@ -548,8 +548,8 @@ export default function IndustryGraph() {
         {/* Right Content */}
         <Card
           className="flex-1"
-          style={{ maxHeight: 800, minWidth: 0, overflow: 'hidden' }}
-          styles={{ body: { padding: 0, display: 'flex', flexDirection: 'column', maxHeight: 743, overflow: 'hidden' } }}
+          style={{ maxHeight: 800, minWidth: 0, overflow: 'auto' }}
+          styles={{ body: { padding: 0, display: 'flex', flexDirection: 'column', overflow: 'visible' } }}
           title={
             <div className="flex items-center justify-between">
               <span className="font-semibold">产业结构</span>
@@ -578,9 +578,9 @@ export default function IndustryGraph() {
                 label: '企业清单',
                 // 企业清单tab默认可点击，默认选中产业链根节点
                 // disabled: false,
-                style: { padding: '0 16px 16px', overflow: 'hidden', height: 'calc(100vh - 200px)', display: 'flex', flexDirection: 'column' },
+                style: { padding: '0 16px 16px', display: 'flex', flexDirection: 'column' },
                 children: selectedNodeInfo ? (
-                  <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
+                  <div style={{ width: '100%', display: 'flex', flexDirection: 'column' }}>
                     <Card size="small" className="mb-4" style={{ width: '100%', flexShrink: 0 }}>
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
@@ -606,14 +606,12 @@ export default function IndustryGraph() {
                         </Space>
                       </div>
                     </Card>
-                    <div style={{ flex: 1, overflow: 'hidden', minHeight: 0 }}>
-                      <EnterpriseTable 
-                        data={nodeEnterprises} 
-                        currentNodeName={selectedNodeInfo?.name}
-                        onExport={(data) => console.log('导出企业:', data)}
-                        onJoinInvestment={(enterprise) => console.log('加入招商库:', enterprise)}
-                      />
-                    </div>
+                    <EnterpriseTable 
+                      data={nodeEnterprises} 
+                      currentNodeName={selectedNodeInfo?.name}
+                      onExport={(data) => console.log('导出企业:', data)}
+                      onJoinInvestment={(enterprise) => console.log('加入招商库:', enterprise)}
+                    />
                   </div>
                 ) : (
                   <Empty description="请点击层级节点查看企业清单" />
