@@ -19,6 +19,12 @@ export const useCapitalGenealogy = () => {
   const [category, setCategory] = useState('group');
   const [loading, setLoading] = useState(false);
   const [currentMembers, setCurrentMembers] = useState(defaultMembers);
+  
+  // 排序配置
+  const [sortConfig, setSortConfig] = useState({
+    field: 'shenzhenCount', // 'shenzhenCount' | 'percentage'
+    order: 'desc' // 'asc' | 'desc'
+  });
 
   // 根据分类获取列表
   const clanList = useMemo(() => {
@@ -39,14 +45,33 @@ export const useCapitalGenealogy = () => {
     return allClans.find(c => c.id === selectedClan) || allClans[0];
   }, [selectedClan, allClans]);
 
-  // 搜索过滤
+  // 搜索过滤和排序
   const filteredClanList = useMemo(() => {
-    if (!searchValue) return clanList;
-    return clanList.filter(c => 
-      c.name.toLowerCase().includes(searchValue.toLowerCase()) ||
-      c.coreCompany.toLowerCase().includes(searchValue.toLowerCase())
-    );
-  }, [searchValue, clanList]);
+    let list = clanList;
+    
+    // 搜索过滤
+    if (searchValue) {
+      list = list.filter(c => 
+        c.name.toLowerCase().includes(searchValue.toLowerCase()) ||
+        c.coreCompany.toLowerCase().includes(searchValue.toLowerCase())
+      );
+    }
+    
+    // 排序
+    list = [...list].sort((a, b) => {
+      let comparison = 0;
+      if (sortConfig.field === 'shenzhenCount') {
+        comparison = a.shenzhenCount - b.shenzhenCount;
+      } else if (sortConfig.field === 'percentage') {
+        const percentageA = Math.round((a.shenzhenCount / a.count) * 100);
+        const percentageB = Math.round((b.shenzhenCount / b.count) * 100);
+        comparison = percentageA - percentageB;
+      }
+      return sortConfig.order === 'asc' ? comparison : -comparison;
+    });
+    
+    return list;
+  }, [searchValue, clanList, sortConfig]);
 
   // 统计深圳/外地企业数量及行业分布
   const regionStats = useMemo(() => {
@@ -163,6 +188,8 @@ export const useCapitalGenealogy = () => {
     setCategory,
     loading,
     currentMembers,
+    sortConfig,
+    setSortConfig,
     
     // 数据
     clanList,

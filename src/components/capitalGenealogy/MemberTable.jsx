@@ -74,7 +74,7 @@ const MemberTable = ({
       title: '成员级别',
       dataIndex: 'level',
       key: 'level',
-      width: 90,
+      width: 100,
       align: 'center',
       render: (level) => {
         const levelMap = {
@@ -98,7 +98,7 @@ const MemberTable = ({
       title: '注册资本',
       dataIndex: 'capital',
       key: 'capital',
-      width: 130,
+      width: 120,
     },
     {
       title: '成立日期',
@@ -152,7 +152,7 @@ const MemberTable = ({
   };
 
   return (
-    <Card className="border-0 shadow-none bg-white">
+    <Card className="border-0 shadow-none bg-white" title="成员企业清单">
       {/* 筛选和操作栏 */}
       <div className="flex items-center justify-between mb-4 p-3 bg-gray-50 rounded-lg">
         <Space size={8}>

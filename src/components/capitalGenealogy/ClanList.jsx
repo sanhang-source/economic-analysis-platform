@@ -3,6 +3,26 @@ import { Input, List, Tag, Button } from 'antd';
 import { SearchOutlined } from '@ant-design/icons';
 
 /**
+ * 排序选项组件
+ */
+const SortOption = ({ label, field, sortConfig, onSort }) => {
+  const isActive = sortConfig.field === field;
+  return (
+    <span
+      onClick={() => onSort(field)}
+      className={`text-xs cursor-pointer transition-colors ${
+        isActive ? 'text-blue-600 font-medium' : 'text-gray-600 hover:text-gray-800'
+      }`}
+    >
+      {label}
+      {isActive && (
+        <span className="ml-1">{sortConfig.order === 'desc' ? '↓' : '↑'}</span>
+      )}
+    </span>
+  );
+};
+
+/**
  * 系族列表组件 - 左侧边栏
  */
 const ClanList = ({
@@ -14,6 +34,8 @@ const ClanList = ({
   selectedClan,
   setSelectedClan,
   clanList,
+  sortConfig,
+  setSortConfig,
 }) => {
   // 分类配置
   const categoryConfig = [
@@ -21,6 +43,14 @@ const ClanList = ({
     { key: 'listed', label: '上市系' },
     { key: 'top500', label: '中国500强' },
   ];
+  
+  // 处理排序
+  const handleSort = (field) => {
+    setSortConfig(prev => ({
+      field,
+      order: prev.field === field && prev.order === 'desc' ? 'asc' : 'desc'
+    }));
+  };
 
   return (
     <div className="w-80 bg-white border-r border-gray-200 flex flex-col h-full">
@@ -49,6 +79,22 @@ const ClanList = ({
           value={searchValue}
           onChange={(e) => setSearchValue(e.target.value)}
         />
+        
+        {/* 排序选项 */}
+        <div className="flex items-center gap-4 mt-3">
+          <SortOption 
+            label="数量" 
+            field="shenzhenCount" 
+            sortConfig={sortConfig} 
+            onSort={handleSort} 
+          />
+          <SortOption 
+            label="占比" 
+            field="percentage" 
+            sortConfig={sortConfig} 
+            onSort={handleSort} 
+          />
+        </div>
       </div>
 
       {/* 系族列表 */}

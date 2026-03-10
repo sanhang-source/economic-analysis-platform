@@ -32,6 +32,8 @@ const CapitalGenealogy = () => {
     filteredClanList,
     regionStats,
     regionOptions,
+    sortConfig,
+    setSortConfig,
     handleExport,
     handleAddToInvestment,
     handleAddToWatchlist,
@@ -66,6 +68,8 @@ const CapitalGenealogy = () => {
           selectedClan={selectedClan}
           setSelectedClan={setSelectedClan}
           clanList={clanList}
+          sortConfig={sortConfig}
+          setSortConfig={setSortConfig}
         />
 
         {/* 右侧详情区 */}
