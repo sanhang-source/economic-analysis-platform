@@ -52,7 +52,7 @@ const MetricOverview = ({ metrics, invoiceStats }) => {
   ];
 
   return (
-    <Card bordered={false} bodyStyle={{ padding: 16 }}>
+    <Card variant="borderless" styles={{ body: { padding: 16 } }}>
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
         {metricCards.map((card, index) => (
           <div key={index} style={{ textAlign: 'center', flex: 1 }}>

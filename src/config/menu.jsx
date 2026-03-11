@@ -62,7 +62,7 @@ export const menuConfig = [
       {
         key: '/industry/trade',
         icon: <SwapOutlined />,
-        label: '交易生态',
+        label: '供应链分析',
       },
     ],
   },
@@ -164,7 +164,7 @@ export const breadcrumbMap = {
   '/industry/graph': ['产业大脑', '区域产业'],
 
   '/industry/capital': ['产业大脑', '企业族群'],
-  '/industry/trade': ['产业大脑', '交易生态'],
+  '/industry/trade': ['产业大脑', '供应链分析'],
   '/enterprise': ['企业档案'],
   '/enterprise/list': ['企业档案', '企业名录'],
   '/enterprise/profile': ['企业档案', '一企一档'],

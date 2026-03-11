@@ -1,5 +1,7 @@
 import React from 'react';
-import { Row, Col } from 'antd';
+import { Row, Col, Button, Breadcrumb } from 'antd';
+import { ArrowLeftOutlined } from '@ant-design/icons';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useTradeEcosystem } from '../hooks/useTradeEcosystem';
 
 // 子组件
@@ -13,16 +15,14 @@ import RegionDistribution from '../components/tradeEcosystem/RegionDistribution'
 import ProductAnalysis from '../components/tradeEcosystem/ProductAnalysis';
 
 /**
- * TradeEcosystem - 交易生态页面（重构版）
+ * TradeEcosystem - 供应链分析详情页
  * 
- * 页面布局：
- * 1. 企业基本信息（全宽）
- * 2. 数据概览卡片（全宽）
- * 3. 风险洞察指标（全宽）
- * 4. 供应商分析 | 客户分析 | 月度趋势（三列）
- * 5. 地区分布 | 商品分析（两列）
+ * 展示单个企业的供应链生态详情
  */
 const TradeEcosystem = () => {
+  const navigate = useNavigate();
+  const { id } = useParams(); // 获取企业ID
+  
   const {
     companyInfo,
     invoiceStats,
@@ -37,6 +37,22 @@ const TradeEcosystem = () => {
 
   return (
     <div className="-m-4 p-4 bg-gray-50 min-h-full space-y-4">
+      {/* 面包屑 + 返回按钮 */}
+      <div className="flex items-center justify-between mb-2">
+        <Breadcrumb
+          items={[
+            { title: <a onClick={() => navigate('/industry/trade')}>供应链分析</a> },
+            { title: '企业详情' },
+          ]}
+        />
+        <Button
+          icon={<ArrowLeftOutlined />}
+          onClick={() => navigate('/industry/trade')}
+        >
+          返回列表
+        </Button>
+      </div>
+
       {/* 1. 企业基本信息 */}
       <CompanyProfileCard 
         companyInfo={companyInfo} 
@@ -69,7 +85,7 @@ const TradeEcosystem = () => {
         </Col>
       </Row>
 
-      {/* 5. 地区分布 | 商品分析 */}
+      {/* 6. 地区分布 | 商品分析 */}
       <Row gutter={[16, 16]}>
         <Col span={12}>
           <RegionDistribution regionDistribution={regionDistribution} />

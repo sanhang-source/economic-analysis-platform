@@ -484,7 +484,7 @@ const EconomicMonitor = () => {
       {/* 维度选择卡片 - 轻量标签样式 */}
       <Card 
         className="mb-5 shadow-sm" 
-        bodyStyle={{ padding: '12px 20px 16px' }}
+        styles={{ body: { padding: '12px 20px 16px' } }}
         headStyle={{ padding: '12px 16px' }}
         title={
           <div className="flex items-center justify-between">
@@ -813,7 +813,7 @@ const EconomicMonitor = () => {
           <Card
             title="企业数量趋势"
             className="shadow-sm h-full"
-            bodyStyle={{ padding: '12px' }}
+            styles={{ body: { padding: '12px' } }}
           >
             <ReactECharts
               option={enterpriseChartOption}
@@ -826,7 +826,7 @@ const EconomicMonitor = () => {
           <Card
             title="纳税金额趋势"
             className="shadow-sm h-full"
-            bodyStyle={{ padding: '12px' }}
+            styles={{ body: { padding: '12px' } }}
           >
             <ReactECharts
               option={taxChartOption}
@@ -839,7 +839,7 @@ const EconomicMonitor = () => {
           <Card
             title="用工人数趋势"
             className="shadow-sm h-full"
-            bodyStyle={{ padding: '12px' }}
+            styles={{ body: { padding: '12px' } }}
           >
             <ReactECharts
               option={employmentChartOption}
@@ -852,7 +852,7 @@ const EconomicMonitor = () => {
           <Card
             title="专利数量趋势"
             className="shadow-sm h-full"
-            bodyStyle={{ padding: '12px' }}
+            styles={{ body: { padding: '12px' } }}
           >
             <ReactECharts
               option={patentChartOption}

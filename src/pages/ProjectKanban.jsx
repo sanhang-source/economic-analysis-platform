@@ -218,7 +218,7 @@ const ProjectCard = ({ project, actionMenuItems }) => {
     <Card
       className="cursor-move hover:shadow-lg transition-all duration-200 group"
       size="small"
-      bodyStyle={{ padding: 12 }}
+      styles={{ body: { padding: 12 } }}
       style={{
         borderLeft: `3px solid ${project.statusColor}`,
       }}

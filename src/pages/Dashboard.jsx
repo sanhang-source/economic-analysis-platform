@@ -119,7 +119,7 @@ const Dashboard = () => {
           <Card
             title="快捷入口"
             className="h-full"
-            bodyStyle={{ padding: '20px' }}
+            styles={{ body: { padding: '20px' } }}
           >
             <Row gutter={[16, 16]}>
               {shortcuts.map((item) => (

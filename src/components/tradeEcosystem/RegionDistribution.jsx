@@ -60,7 +60,7 @@ const RegionDistribution = ({ regionDistribution }) => {
   };
 
   return (
-    <Card title="十大客户销售地区" bordered={false} bodyStyle={{ padding: 12 }}>
+    <Card title="十大客户销售地区" variant="borderless" styles={{ body: { padding: 12 } }}>
       <ReactECharts option={barOption} style={{ height: 320 }} />
     </Card>
   );

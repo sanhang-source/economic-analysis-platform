@@ -206,7 +206,7 @@ const InvestmentMap = () => {
     <Card
       size="small"
       className="mb-3 hover:shadow-md transition-shadow cursor-pointer"
-      bodyStyle={{ padding: 12 }}
+      styles={{ body: { padding: 12 } }}
       onClick={() => handleLocate(company)}
     >
       {/* 第一行：企业名称 */}
@@ -412,7 +412,7 @@ const InvestmentMap = () => {
           // 展开状态
           <Card
             className="h-full shadow-lg flex flex-col"
-            bodyStyle={{ height: '100%', padding: 0, display: 'flex', flexDirection: 'column' }}
+            styles={{ body: { height: '100%', padding: 0, display: 'flex', flexDirection: 'column' } }}
           >
             {/* 面板头部 */}
             <div className="p-4 border-b border-gray-200">

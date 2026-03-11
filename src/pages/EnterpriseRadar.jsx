@@ -468,7 +468,7 @@ const EnterpriseRadar = () => {
             <Card
               hoverable
               className="cursor-pointer"
-              bodyStyle={{ padding: 20 }}
+              styles={{ body: { padding: 20 } }}
               onClick={() => handleTabChange('risk')}
             >
               <div className="flex items-center justify-between">
@@ -499,7 +499,7 @@ const EnterpriseRadar = () => {
             <Card
               hoverable
               className="cursor-pointer"
-              bodyStyle={{ padding: 20 }}
+              styles={{ body: { padding: 20 } }}
               onClick={() => handleTabChange('relocation')}
             >
               <div className="flex items-center justify-between">
@@ -530,7 +530,7 @@ const EnterpriseRadar = () => {
             <Card
               hoverable
               className="cursor-pointer"
-              bodyStyle={{ padding: 20 }}
+              styles={{ body: { padding: 20 } }}
               onClick={() => handleTabChange('opportunity')}
             >
               <div className="flex items-center justify-between">

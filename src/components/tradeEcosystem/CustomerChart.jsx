@@ -55,7 +55,7 @@ const CustomerChart = ({ topCustomers, localSalesRatio }) => {
   const totalAmount = topCustomers.reduce((sum, c) => sum + c.amount, 0);
 
   return (
-    <Card title="十大客户（销售）" bordered={false} bodyStyle={{ padding: 12 }}>
+    <Card title="十大客户（销售）" variant="borderless" styles={{ body: { padding: 12 } }}>
       <div className="flex gap-3">
         <div className="flex-[4]">
           <ReactECharts option={barOption} style={{ height: 320 }} />

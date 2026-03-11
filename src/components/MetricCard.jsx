@@ -7,7 +7,7 @@ import { ArrowUpOutlined, ArrowDownOutlined } from '@ant-design/icons';
  * 用于数字驾驶舱展示关键指标数据
  */
 const MetricCard = ({ title, value, unit, growth, growthMoM, icon, color, subText }) => (
-  <Card className="h-full hover:shadow-lg transition-shadow" bodyStyle={{ padding: 20 }}>
+  <Card className="h-full hover:shadow-lg transition-shadow" styles={{ body: { padding: 20 } }}>
     <div className="flex items-start justify-between">
       <div>
         <div className="text-gray-500 text-sm mb-2">{title}</div>

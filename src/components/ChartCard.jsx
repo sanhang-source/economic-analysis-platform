@@ -16,16 +16,18 @@ const ChartCard = ({
   tooltip,
   children,
   className = '',
-  bodyStyle = {},
+  styles = {},
   loading = false,
   height = 'auto',
 }) => {
   return (
     <Card
       className={`shadow-md hover:shadow-lg transition-shadow rounded-xl ${className}`}
-      bodyStyle={{
-        padding: '20px',
-        ...bodyStyle,
+      styles={{
+        body: {
+          padding: '20px',
+          ...styles.body,
+        },
       }}
       style={{ height }}
       loading={loading}

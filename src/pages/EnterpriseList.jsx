@@ -416,7 +416,7 @@ const EnterpriseList = () => {
       </Card>
 
       {/* 数据表格 */}
-      <Card className="shadow-sm" bodyStyle={{ padding: 0 }}>
+      <Card className="shadow-sm" styles={{ body: { padding: 0 } }}>
         <Table
           rowSelection={rowSelection}
           columns={columns}

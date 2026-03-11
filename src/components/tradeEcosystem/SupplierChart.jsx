@@ -55,7 +55,7 @@ const SupplierChart = ({ topSuppliers, localPurchaseRatio }) => {
   const totalAmount = topSuppliers.reduce((sum, s) => sum + s.amount, 0);
 
   return (
-    <Card title="十大供应商（采购）" bordered={false} bodyStyle={{ padding: 12 }}>
+    <Card title="十大供应商（采购）" variant="borderless" styles={{ body: { padding: 12 } }}>
       <div className="flex gap-3">
         <div className="flex-[4]">
           <ReactECharts option={barOption} style={{ height: 320 }} />

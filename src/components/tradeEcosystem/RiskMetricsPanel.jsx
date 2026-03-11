@@ -75,8 +75,8 @@ const RiskMetricsPanel = ({ metrics }) => {
   return (
     <Card 
       title="风险洞察指标" 
-      bordered={false}
-      bodyStyle={{ padding: 16 }}
+      variant="borderless"
+      styles={{ body: { padding: 16 } }}
     >
       <Row gutter={[24, 16]}>
         {metricItems.map((item, index) => (

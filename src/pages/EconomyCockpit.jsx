@@ -117,24 +117,24 @@ const EconomyCockpit = () => {
       {/* 第二行：趋势分析（2x2布局） */}
       <Row gutter={[16, 16]} className="mb-5">
         <Col span={12}>
-          <Card title="企业总数趋势（近12个月）" bodyStyle={{ padding: 12, height: 320 }}>
+          <Card title="企业总数趋势（近12个月）" styles={{ body: { padding: 12, height: 320 } }}>
             <ReactECharts key="enterprise-trend" option={enterpriseTrendOption} style={{ height: '100%' }} />
           </Card>
         </Col>
         <Col span={12}>
-          <Card title="纳税总额趋势（近12个月）" bodyStyle={{ padding: 12, height: 320 }}>
+          <Card title="纳税总额趋势（近12个月）" styles={{ body: { padding: 12, height: 320 } }}>
             <ReactECharts option={taxTrendOption} style={{ height: '100%' }} />
           </Card>
         </Col>
       </Row>
       <Row gutter={[16, 16]} className="mb-5">
         <Col span={12}>
-          <Card title="用工总数趋势（近12个月）" bodyStyle={{ padding: 12, height: 320 }}>
+          <Card title="用工总数趋势（近12个月）" styles={{ body: { padding: 12, height: 320 } }}>
             <ReactECharts key="employment-trend" option={employmentTrendOption} style={{ height: '100%' }} />
           </Card>
         </Col>
         <Col span={12}>
-          <Card title="专利总数趋势（近12个月）" bodyStyle={{ padding: 12, height: 320 }}>
+          <Card title="专利总数趋势（近12个月）" styles={{ body: { padding: 12, height: 320 } }}>
             <ReactECharts option={patentTrendOption} style={{ height: '100%' }} />
           </Card>
         </Col>
@@ -143,17 +143,17 @@ const EconomyCockpit = () => {
       {/* 第三行：结构分析（第一行：3列） */}
       <Row gutter={[16, 16]} className="mb-5">
         <Col span={8}>
-          <Card title={<span>资质企业分布<span className="text-gray-400 text-xs ml-1">（家）</span></span>} bodyStyle={{ padding: 12, height: 300 }}>
+          <Card title={<span>资质企业分布<span className="text-gray-400 text-xs ml-1">（家）</span></span>} styles={{ body: { padding: 12, height: 300 } }}>
             <ReactECharts option={qualificationOption} style={{ height: '100%' }} />
           </Card>
         </Col>
         <Col span={8}>
-          <Card title={<span>行业分布<span className="text-gray-400 text-xs ml-1">（家）</span></span>} bodyStyle={{ padding: 12, height: 300 }}>
+          <Card title={<span>行业分布<span className="text-gray-400 text-xs ml-1">（家）</span></span>} styles={{ body: { padding: 12, height: 300 } }}>
             <ReactECharts option={industryOption} style={{ height: '100%' }} />
           </Card>
         </Col>
         <Col span={8}>
-          <Card title={<span>企业年限结构<span className="text-gray-400 text-xs ml-1">（家）</span></span>} bodyStyle={{ padding: 12, height: 300 }}>
+          <Card title={<span>企业年限结构<span className="text-gray-400 text-xs ml-1">（家）</span></span>} styles={{ body: { padding: 12, height: 300 } }}>
             <ReactECharts option={lifecycleOption} style={{ height: '100%' }} />
           </Card>
         </Col>
@@ -162,17 +162,17 @@ const EconomyCockpit = () => {
       {/* 第四行：结构分析（第二行：3列） */}
       <Row gutter={[16, 16]}>
         <Col span={8}>
-          <Card title={<span>税收贡献分层<span className="text-gray-400 text-xs ml-1">（家）</span></span>} bodyStyle={{ padding: 12, height: 300 }}>
+          <Card title={<span>税收贡献分层<span className="text-gray-400 text-xs ml-1">（家）</span></span>} styles={{ body: { padding: 12, height: 300 } }}>
             <ReactECharts option={taxContributionOption} style={{ height: '100%' }} />
           </Card>
         </Col>
         <Col span={8}>
-          <Card title={<span>产业分布<span className="text-gray-400 text-xs ml-1">（家）</span></span>} bodyStyle={{ padding: 12, height: 300 }}>
+          <Card title={<span>产业分布<span className="text-gray-400 text-xs ml-1">（家）</span></span>} styles={{ body: { padding: 12, height: 300 } }}>
             <ReactECharts option={strategicIndustriesOption} style={{ height: '100%' }} />
           </Card>
         </Col>
         <Col span={8}>
-          <Card title={<span>用工规模结构<span className="text-gray-400 text-xs ml-1">（家）</span></span>} bodyStyle={{ padding: 12, height: 300 }}>
+          <Card title={<span>用工规模结构<span className="text-gray-400 text-xs ml-1">（家）</span></span>} styles={{ body: { padding: 12, height: 300 } }}>
             <ReactECharts option={employmentScaleOption} style={{ height: '100%' }} />
           </Card>
         </Col>

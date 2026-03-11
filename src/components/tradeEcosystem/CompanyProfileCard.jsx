@@ -41,7 +41,7 @@ const CompanyProfileCard = ({ companyInfo, invoiceStats, dataUpdateTime }) => {
   ];
 
   return (
-    <Card bordered={false} bodyStyle={{ padding: 16 }}>
+    <Card variant="borderless" styles={{ body: { padding: 16 } }}>
       {/* 右上角数据更新时间 */}
       <div className="absolute top-4 right-4">
         <Text type="secondary" className="text-xs">

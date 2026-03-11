@@ -15,6 +15,7 @@ import LeadsPool from './pages/LeadsPool';
 
 import CapitalGenealogy from './pages/CapitalGenealogy';
 import TradeEcosystem from './pages/TradeEcosystem';
+import TradeEcosystemList from './pages/TradeEcosystemList';
 import EconomicMonitor from './pages/EconomicMonitor';
 
 import PolicySimulation from './pages/PolicySimulation';
@@ -72,7 +73,8 @@ const App = () => {
             <Route path="industry/graph" element={<IndustryGraph />} />
 
             <Route path="industry/capital" element={<CapitalGenealogy />} />
-            <Route path="industry/trade" element={<TradeEcosystem />} />
+            <Route path="industry/trade" element={<TradeEcosystemList />} />
+            <Route path="industry/trade/detail/:id" element={<TradeEcosystem />} />
             
             {/* 企业档案子页面 */}
             <Route path="enterprise/list" element={<EnterpriseList />} />

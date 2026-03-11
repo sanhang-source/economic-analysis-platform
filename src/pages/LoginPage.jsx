@@ -316,14 +316,16 @@ const LoginPage = () => {
                         ? `0 8px 32px ${module.color}30` 
                         : '0 4px 16px rgba(0, 0, 0, 0.2)',
                     }}
-                    bodyStyle={{ 
-                      padding: '20px 16px',
-                      textAlign: 'center',
-                      height: '100%',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'center',
-                      justifyContent: 'center',
+                    styles={{ 
+                      body: {
+                        padding: '20px 16px',
+                        textAlign: 'center',
+                        height: '100%',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      },
                     }}
                   >
                     {/* 图标 */}

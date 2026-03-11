@@ -61,7 +61,7 @@ const ProductAnalysis = ({ topProducts }) => {
   };
 
   return (
-    <Card title="十大热销商品" bordered={false} bodyStyle={{ padding: 12 }}>
+    <Card title="十大热销商品" variant="borderless" styles={{ body: { padding: 12 } }}>
       <ReactECharts option={barOption} style={{ height: 320 }} />
     </Card>
   );
