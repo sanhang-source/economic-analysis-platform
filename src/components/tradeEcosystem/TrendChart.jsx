@@ -123,7 +123,7 @@ const TrendChart = ({ monthlyTrend }) => {
   };
 
   return (
-    <Card bordered={false} bodyStyle={{ padding: 12 }}>
+    <Card title="月度趋势" bordered={false} bodyStyle={{ padding: 12 }}>
       <Row gutter={[16, 0]}>
         <Col span={12}>
           <ReactECharts option={amountOption} style={{ height: 280 }} />

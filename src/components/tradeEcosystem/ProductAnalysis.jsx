@@ -47,7 +47,7 @@ const ProductAnalysis = ({ topProducts }) => {
         data: topProducts.map(item => ({
           value: item.amount,
           itemStyle: {
-            color: item.ratio > 15 ? '#1677ff' : item.ratio > 8 ? '#52c41a' : '#faad14',
+            color: '#13c2c2',
           },
         })).reverse(),
         label: {

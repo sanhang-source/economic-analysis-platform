@@ -43,10 +43,10 @@ const RegionDistribution = ({ regionDistribution }) => {
     series: [
       {
         type: 'bar',
-        data: regionDistribution.map((item, index) => ({
+        data: regionDistribution.map(item => ({
           value: item.value,
           itemStyle: {
-            color: ['#1677ff', '#13c2c2', '#722ed1', '#eb2f96', '#fa8c16', '#52c41a', '#fadb14', '#bfbfbf'][index % 8],
+            color: '#fa8c16',
           },
         })).reverse(),
         label: {

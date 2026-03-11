@@ -53,18 +53,18 @@ const TradeEcosystem = () => {
       {/* 4. 月度交易趋势 */}
       <TrendChart monthlyTrend={monthlyTrend} />
 
-      {/* 5. 十大供应商 | 十大客户 */}
+      {/* 5. 十大客户 | 十大供应商 */}
       <Row gutter={[16, 16]}>
-        <Col span={12}>
-          <SupplierChart 
-            topSuppliers={topSuppliers} 
-            localPurchaseRatio={metrics.localPurchaseRatio}
-          />
-        </Col>
         <Col span={12}>
           <CustomerChart 
             topCustomers={topCustomers} 
             localSalesRatio={metrics.localSalesRatio}
+          />
+        </Col>
+        <Col span={12}>
+          <SupplierChart 
+            topSuppliers={topSuppliers} 
+            localPurchaseRatio={metrics.localPurchaseRatio}
           />
         </Col>
       </Row>

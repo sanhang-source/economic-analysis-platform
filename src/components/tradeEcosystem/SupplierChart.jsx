@@ -62,15 +62,9 @@ const SupplierChart = ({ topSuppliers, localPurchaseRatio }) => {
         </div>
         <div className="flex-1 flex flex-col justify-center gap-4">
           <div className="bg-blue-50 rounded-lg p-4 text-center">
-            <div className="text-gray-500 text-sm mb-2">本地采购占比</div>
+            <div className="text-gray-500 text-sm mb-2">本地采购金额占比</div>
             <div className="text-3xl font-bold text-blue-600">
               {(localPurchaseRatio * 100).toFixed(1)}%
-            </div>
-            <div className="text-xs text-gray-400 mt-2">
-              本地{localSuppliers.length}家 / 共{topSuppliers.length}家
-            </div>
-            <div className="text-xs text-gray-400 mt-1">
-              金额占比: {(localAmount / totalAmount * 100).toFixed(1)}%
             </div>
           </div>
           <div className="flex gap-2 justify-center">
