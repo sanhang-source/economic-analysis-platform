@@ -42,12 +42,33 @@ const MainLayout = () => {
 
   // 获取当前面包屑 - 使用 useMemo 缓存
   const breadcrumbs = useMemo(() => {
-    const paths = breadcrumbMap[location.pathname] || ['工作台'];
+    // 尝试精确匹配
+    let paths = breadcrumbMap[location.pathname];
+    // 如果没有精确匹配，尝试前缀匹配（用于详情页）
+    // 按路径长度降序排序，确保最长的匹配优先
+    if (!paths) {
+      const sortedEntries = Object.entries(breadcrumbMap).sort(
+        (a, b) => b[0].length - a[0].length
+      );
+      for (const [key, value] of sortedEntries) {
+        if (location.pathname.startsWith(key)) {
+          paths = value;
+          break;
+        }
+      }
+    }
+    paths = paths || ['工作台'];
     return paths.map((path, index) => ({
       title: path,
       key: index,
     }));
   }, [location.pathname]);
+
+  // 检测是否在供应链分析详情页
+  const isSupplyChainDetail = location.pathname.includes('/industry/trade/detail/');
+  const handleBackToList = () => {
+    navigate('/industry/trade');
+  };
 
   // 处理菜单点击
   const handleMenuClick = ({ key }) => {
@@ -94,7 +115,13 @@ const MainLayout = () => {
         <Menu
           theme="light"
           mode="inline"
-          selectedKeys={[location.pathname]}
+          selectedKeys={(() => {
+            // 处理详情页菜单选中
+            if (location.pathname.startsWith('/industry/trade/detail/')) {
+              return ['/industry/trade'];
+            }
+            return [location.pathname];
+          })()}
           openKeys={collapsed ? [] : undefined}
           items={menuConfig}
           onClick={handleMenuClick}

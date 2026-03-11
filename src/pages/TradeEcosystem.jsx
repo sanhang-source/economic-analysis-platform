@@ -1,7 +1,7 @@
 import React from 'react';
-import { Row, Col, Button, Breadcrumb } from 'antd';
+import { Row, Col, Button } from 'antd';
 import { ArrowLeftOutlined } from '@ant-design/icons';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useTradeEcosystem } from '../hooks/useTradeEcosystem';
 
 // 子组件
@@ -37,14 +37,8 @@ const TradeEcosystem = () => {
 
   return (
     <div className="-m-4 p-4 bg-gray-50 min-h-full space-y-4">
-      {/* 面包屑 + 返回按钮 */}
-      <div className="flex items-center justify-between mb-2">
-        <Breadcrumb
-          items={[
-            { title: <a onClick={() => navigate('/industry/trade')}>供应链分析</a> },
-            { title: '企业详情' },
-          ]}
-        />
+      {/* 返回列表按钮 */}
+      <div>
         <Button
           icon={<ArrowLeftOutlined />}
           onClick={() => navigate('/industry/trade')}

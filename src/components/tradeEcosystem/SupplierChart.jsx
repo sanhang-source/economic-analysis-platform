@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { Card, Tag, Button, Table } from 'antd';
+import { Card, Tag, Button, Table, Dropdown, message } from 'antd';
 import ReactECharts from 'echarts-for-react';
-import { BarChartOutlined, TableOutlined } from '@ant-design/icons';
+import { BarChartOutlined, TableOutlined, PlusOutlined, DownOutlined } from '@ant-design/icons';
 
 /**
  * 供应商分析图表（支持图表/列表切换）
@@ -21,7 +21,7 @@ const SupplierChart = ({ topSuppliers, localPurchaseRatio }) => {
       axisPointer: { type: 'shadow' },
       formatter: '{b}: ¥{c}万',
     },
-    grid: { left: '3%', right: '8%', bottom: '3%', top: '15%', containLabel: true },
+    grid: { left: '3%', right: '8%', bottom: '3%', top: '12%', containLabel: true },
     xAxis: {
       type: 'value',
       axisLabel: { formatter: '{value}' },
@@ -52,6 +52,29 @@ const SupplierChart = ({ topSuppliers, localPurchaseRatio }) => {
     ],
   };
 
+  // 处理加入操作
+  const handleJoin = (type, record) => {
+    if (type === 'investment') {
+      message.success(`已将 ${record.name} 加入招商库`);
+    }
+  };
+
+  // 加入下拉菜单
+  const getJoinMenu = (record) => ({
+    items: [
+      {
+        key: 'investment',
+        label: '加入招商库',
+        onClick: () => handleJoin('investment', record),
+      },
+      {
+        key: 'watchlist',
+        label: '加入关注库',
+        disabled: true,
+      },
+    ],
+  });
+
   // 列表表格列
   const columns = [
     {
@@ -74,7 +97,8 @@ const SupplierChart = ({ topSuppliers, localPurchaseRatio }) => {
     {
       title: '地区',
       dataIndex: 'isLocal',
-      width: 60,
+      width: 80,
+      align: 'center',
       render: (isLocal) => (
         <Tag color={isLocal ? 'green' : 'default'} size="small">
           {isLocal ? '本地' : '外地'}
@@ -84,20 +108,36 @@ const SupplierChart = ({ topSuppliers, localPurchaseRatio }) => {
     {
       title: '采购金额',
       dataIndex: 'amount',
-      width: 90,
+      width: 120,
       align: 'right',
       render: (amount) => `¥${amount.toLocaleString()}万`,
+    },
+    {
+      title: '操作',
+      key: 'action',
+      width: 100,
+      align: 'center',
+      render: (_, record) => (
+        <Dropdown menu={getJoinMenu(record)} placement="bottomRight">
+          <Button size="small">
+            <PlusOutlined /> 加入 <DownOutlined />
+          </Button>
+        </Dropdown>
+      ),
     },
   ];
 
   // 计算本地供应商数量
   const localSuppliers = topSuppliers.filter(s => s.isLocal);
 
+  // 卡片固定高度
+  const cardHeight = 360;
+
   return (
     <Card 
       title="十大供应商（采购）" 
       variant="borderless" 
-      styles={{ body: { padding: 12 } }}
+      styles={{ body: { padding: 12, height: cardHeight } }}
       extra={
         <Button 
           size="small" 
@@ -108,34 +148,37 @@ const SupplierChart = ({ topSuppliers, localPurchaseRatio }) => {
         </Button>
       }
     >
-      {viewMode === 'chart' ? (
-        <div className="flex gap-3">
-          <div className="flex-[4]">
-            <ReactECharts option={barOption} style={{ height: 320 }} />
-          </div>
-          <div className="flex-1 flex flex-col justify-center gap-4">
-            <div className="bg-blue-50 rounded-lg p-4 text-center">
-              <div className="text-gray-500 text-sm mb-2">本地采购金额占比</div>
-              <div className="text-3xl font-bold text-blue-600">
-                {(localPurchaseRatio * 100).toFixed(1)}%
+      <div style={{ height: '100%' }}>
+        {viewMode === 'chart' ? (
+          <div className="flex gap-3 h-full">
+            <div className="flex-[4] h-full">
+              <ReactECharts option={barOption} style={{ height: '100%' }} />
+            </div>
+            <div className="flex-1 flex flex-col justify-center gap-4 h-full">
+              <div className="bg-blue-50 rounded-lg p-4 text-center">
+                <div className="text-gray-500 text-sm mb-2">本地采购金额占比</div>
+                <div className="text-3xl font-bold text-blue-600">
+                  {(localPurchaseRatio * 100).toFixed(1)}%
+                </div>
+              </div>
+              <div className="flex gap-2 justify-center">
+                <Tag color="blue">本地 {localSuppliers.length}家</Tag>
+                <Tag>外地 {topSuppliers.length - localSuppliers.length}家</Tag>
               </div>
             </div>
-            <div className="flex gap-2 justify-center">
-              <Tag color="blue">本地 {localSuppliers.length}家</Tag>
-              <Tag>外地 {topSuppliers.length - localSuppliers.length}家</Tag>
-            </div>
           </div>
-        </div>
-      ) : (
-        <Table
-          size="small"
-          columns={columns}
-          dataSource={topSuppliers}
-          pagination={false}
-          rowKey="id"
-          scroll={{ y: 320 }}
-        />
-      )}
+        ) : (
+          <Table
+            size="small"
+            columns={columns}
+            dataSource={topSuppliers}
+            pagination={false}
+            rowKey="id"
+            scroll={{ y: 280 }}
+            style={{ height: '100%' }}
+          />
+        )}
+      </div>
     </Card>
   );
 };

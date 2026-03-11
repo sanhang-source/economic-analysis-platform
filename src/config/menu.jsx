@@ -165,6 +165,7 @@ export const breadcrumbMap = {
 
   '/industry/capital': ['产业大脑', '企业族群'],
   '/industry/trade': ['产业大脑', '供应链分析'],
+  '/industry/trade/detail': ['产业大脑', '供应链分析', '企业详情'],
   '/enterprise': ['企业档案'],
   '/enterprise/list': ['企业档案', '企业名录'],
   '/enterprise/profile': ['企业档案', '一企一档'],
