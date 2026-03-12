@@ -1,553 +1,474 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   Card,
-  Select,
+  Button,
   DatePicker,
+  Statistic,
   Row,
   Col,
-  Statistic,
-  Table,
-  Typography,
   Tag,
+  Divider,
+  Typography,
   Space,
-  Empty,
-  Button,
-  Tooltip,
+  Badge,
 } from 'antd';
 import {
+  CalculatorOutlined,
+  ExperimentOutlined,
+  BarChartOutlined,
+  CalendarOutlined,
   ArrowUpOutlined,
-  ArrowDownOutlined,
-  InfoCircleOutlined,
-  TrophyOutlined,
-  WarningOutlined,
-  SearchOutlined,
-  DownloadOutlined,
+  AreaChartOutlined,
+  PieChartOutlined,
 } from '@ant-design/icons';
 import ReactECharts from 'echarts-for-react';
 import dayjs from 'dayjs';
 
 const { Title, Text } = Typography;
 const { RangePicker } = DatePicker;
-const { Option } = Select;
 
 /**
- * PolicyEvaluation - 政策评估页面
- * 提供政策效果评估、核心指标对比、企业绩效分析功能
+ * PolicyEvaluation - 政策评估页面（成效评估系统）
+ * 参考 policy_effect.html 功能重构
+ * 基于 DID (Difference-in-Differences) 双重差分模型测算政策净效应
  */
 const PolicyEvaluation = () => {
-  const [loading, setLoading] = useState(false);
-  const [hasResult, setHasResult] = useState(false);
-  const [selectedPolicy, setSelectedPolicy] = useState(null);
-  const scatterRef = useRef(null);
-  const trendRef = useRef(null);
+  // 评估区间
+  const [dateRange, setDateRange] = useState([dayjs('2025-01-01'), dayjs('2025-12-31')]);
+  
+  // 导入状态
+  const [testGroup, setTestGroup] = useState({ imported: true, count: 85 });
+  const [controlGroup, setControlGroup] = useState({ imported: true, count: 120 });
+  
+  // 是否已测算
+  const [hasResult, setHasResult] = useState(true);
 
-  // 政策选项
-  const policyOptions = [
-    { value: 'policy_2022_high_tech', label: '2022年高企认定奖励' },
-    { value: 'policy_2022_rd_subsidy', label: '2022年研发投入补贴' },
-    { value: 'policy_2023_tech_upgrade', label: '2023年技改补贴' },
-    { value: 'policy_2023_talent', label: '2023年人才引进补贴' },
-    { value: 'policy_2023_energy', label: '2023年节能减排补贴' },
-    { value: 'policy_2023_digital', label: '2023年数字化转型补贴' },
-  ];
-
-  // 核心指标数据
-  const [metrics, setMetrics] = useState({
-    revenue: { before: 0, after: 0, growth: 0 },
-    tax: { before: 0, after: 0, growth: 0 },
-    rdInvestment: { before: 0, after: 0, growth: 0 },
-  });
-
-  // 模拟散点图数据 - 补贴金额 vs 新增税收
-  const scatterData = [
-    [50, 80, '华为技术有限公司'],
-    [30, 45, '腾讯科技（深圳）有限公司'],
-    [80, 120, '比亚迪股份有限公司'],
-    [20, 15, '大疆创新科技有限公司'],
-    [60, 90, '迈瑞生物医疗电子股份有限公司'],
-    [40, 35, '中兴通讯股份有限公司'],
-    [100, 50, '某低效企业A'], // 高投入低产出
-    [90, 40, '某低效企业B'], // 高投入低产出
-    [25, 60, '顺丰控股股份有限公司'],
-    [35, 55, '立讯精密工业股份有限公司'],
-    [45, 25, '欧菲光集团股份有限公司'],
-    [55, 75, '欣旺达电子股份有限公司'],
-    [70, 30, '某低效企业C'], // 高投入低产出
-    [15, 35, '某创新企业D'],
-    [85, 95, '某高效企业E'],
-  ];
-
-  // 散点图配置
-  const scatterOption = {
-    title: {
-      text: '补贴金额 vs 新增税收分布',
-      left: 'center',
-      textStyle: { fontSize: 14, fontWeight: 'normal' },
-    },
-    tooltip: {
-      trigger: 'item',
-      formatter: (params) => {
-        return `${params.data[2]}<br/>补贴金额: ¥${params.data[0]}万<br/>新增税收: ¥${params.data[1]}万`;
-      },
-    },
-    grid: { left: '10%', right: '10%', bottom: '15%', top: '20%' },
-    xAxis: {
-      name: '补贴金额（万元）',
-      nameLocation: 'middle',
-      nameGap: 30,
-      type: 'value',
-      splitLine: { lineStyle: { type: 'dashed' } },
-    },
-    yAxis: {
-      name: '新增税收（万元）',
-      nameLocation: 'middle',
-      nameGap: 40,
-      type: 'value',
-      splitLine: { lineStyle: { type: 'dashed' } },
-    },
-    series: [
-      {
-        name: '企业分布',
-        type: 'scatter',
-        symbolSize: 16,
-        data: scatterData,
-        itemStyle: {
-          color: (params) => {
-            // 高投入低产出：补贴金额 > 70 且 新增税收 < 50
-            if (params.data[0] > 70 && params.data[1] < 50) {
-              return '#f5222d'; // 红色预警
-            }
-            return '#1677ff';
-          },
-          shadowBlur: 10,
-          shadowColor: 'rgba(0,0,0,0.1)',
-        },
-        markLine: {
-          silent: true,
-          lineStyle: { type: 'dashed', color: '#999' },
-          data: [
-            { xAxis: 70, label: { formatter: '高投入线' } },
-            { yAxis: 50, label: { formatter: '低产出线' } },
-          ],
-        },
-        markArea: {
-          silent: true,
-          itemStyle: { color: 'rgba(245, 34, 45, 0.05)' },
-          data: [
-            [
-              { xAxis: 70, yAxis: 0 },
-              { xAxis: 120, yAxis: 50 },
-            ],
-          ],
-        },
-      },
-    ],
+  // 实验组数据
+  const testGroupData = {
+    tax: { value: 4.25, unit: '亿', growth: 12.5 },
+    employment: { value: 1240, unit: '人', growth: 5.3 },
+    ip: { value: 320, unit: '件', growth: 18.0 },
   };
 
-  // 双轴趋势图数据
-  const trendMonths = ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'];
-  const subsidyAmounts = [120, 132, 101, 134, 90, 230, 210, 180, 200, 250, 280, 300];
-  const growthRates = [12, 15, 8, 18, 5, 25, 22, 19, 23, 28, 32, 35];
+  // 对照组数据
+  const controlGroupData = {
+    tax: { value: 3.80, unit: '亿', growth: 4.1 },
+    employment: { value: 1105, unit: '人', growth: 0.2 },
+    ip: { value: 180, unit: '件', growth: 6.5 },
+  };
 
-  // 双轴趋势图配置
-  const trendOption = {
-    title: {
-      text: '补贴发放量与产值增长率趋势',
-      left: 'center',
-      textStyle: { fontSize: 14, fontWeight: 'normal' },
-    },
+  // DID 净效应计算
+  const netEffects = useMemo(() => {
+    return {
+      tax: (testGroupData.tax.growth - controlGroupData.tax.growth).toFixed(1),
+      employment: (testGroupData.employment.growth - controlGroupData.employment.growth).toFixed(1),
+      ip: (testGroupData.ip.growth - controlGroupData.ip.growth).toFixed(1),
+    };
+  }, []);
+
+  // 纳税趋势图配置
+  const taxTrendOption = {
     tooltip: {
       trigger: 'axis',
       axisPointer: { type: 'cross' },
     },
     legend: {
-      data: ['补贴发放量', '产值增长率'],
-      bottom: 10,
+      data: ['实验组 (享受政策)', '对照组 (未享受)'],
+      bottom: 0,
     },
-    grid: { left: '10%', right: '10%', bottom: '15%', top: '20%' },
+    grid: {
+      left: '3%',
+      right: '4%',
+      bottom: '15%',
+      top: '10%',
+      containLabel: true,
+    },
     xAxis: {
       type: 'category',
-      data: trendMonths,
-      axisPointer: { type: 'shadow' },
+      boundaryGap: false,
+      data: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'],
+      axisLine: { lineStyle: { color: '#94a3b8' } },
     },
-    yAxis: [
-      {
-        type: 'value',
-        name: '补贴发放量（万元）',
-        position: 'left',
-        axisLine: { show: true, lineStyle: { color: '#1677ff' } },
-        axisLabel: { formatter: '{value}' },
-      },
-      {
-        type: 'value',
-        name: '产值增长率（%）',
-        position: 'right',
-        axisLine: { show: true, lineStyle: { color: '#00d4aa' } },
-        axisLabel: { formatter: '{value}%' },
-      },
-    ],
+    yAxis: {
+      type: 'value',
+      splitLine: { lineStyle: { color: '#f1f5f9' } },
+      axisLine: { show: false },
+      axisTick: { show: false },
+    },
     series: [
       {
-        name: '补贴发放量',
-        type: 'bar',
-        data: subsidyAmounts,
-        itemStyle: { color: '#1677ff', borderRadius: [4, 4, 0, 0] },
-        barWidth: '50%',
+        name: '实验组 (享受政策)',
+        type: 'line',
+        smooth: true,
+        symbol: 'none',
+        lineStyle: { width: 2, color: '#0ea5e9' },
+        areaStyle: {
+          color: {
+            type: 'linear',
+            x: 0,
+            y: 0,
+            x2: 0,
+            y2: 1,
+            colorStops: [
+              { offset: 0, color: 'rgba(14, 165, 233, 0.3)' },
+              { offset: 1, color: 'rgba(14, 165, 233, 0.05)' },
+            ],
+          },
+        },
+        data: [100, 102, 105, 110, 115, 122, 130, 138, 145, 150, 155, 162],
       },
       {
-        name: '产值增长率',
+        name: '对照组 (未享受)',
         type: 'line',
-        yAxisIndex: 1,
-        data: growthRates,
-        itemStyle: { color: '#00d4aa' },
-        lineStyle: { width: 3 },
-        symbol: 'circle',
-        symbolSize: 8,
+        smooth: true,
+        symbol: 'none',
+        lineStyle: { width: 2, color: '#94a3b8', type: 'dashed' },
+        data: [100, 101, 102, 103, 104, 106, 108, 110, 112, 113, 115, 116],
       },
     ],
   };
 
-  // 高绩效企业Top5
-  const highPerformanceData = [
-    { key: '1', name: '华为技术有限公司', subsidy: 50, contribution: 80, roi: 160, growth: 45 },
-    { key: '2', name: '比亚迪股份有限公司', subsidy: 80, contribution: 120, roi: 150, growth: 68 },
-    { key: '3', name: '迈瑞生物医疗电子股份有限公司', subsidy: 60, contribution: 90, roi: 150, growth: 52 },
-    { key: '4', name: '顺丰控股股份有限公司', subsidy: 25, contribution: 60, roi: 240, growth: 38 },
-    { key: '5', name: '某创新企业D', subsidy: 15, contribution: 35, roi: 233, growth: 42 },
-  ];
-
-  // 低绩效预警Top5
-  const lowPerformanceData = [
-    { key: '1', name: '某低效企业A', subsidy: 100, contribution: 50, roi: 50, growth: -12 },
-    { key: '2', name: '某低效企业B', subsidy: 90, contribution: 40, roi: 44, growth: -8 },
-    { key: '3', name: '某低效企业C', subsidy: 70, contribution: 30, roi: 43, growth: -15 },
-    { key: '4', name: '欧菲光集团股份有限公司', subsidy: 45, contribution: 25, roi: 56, growth: -5 },
-    { key: '5', name: '某低效企业E', subsidy: 55, contribution: 20, roi: 36, growth: -18 },
-  ];
-
-  // 高绩效表格列
-  const highPerformanceColumns = [
-    {
-      title: '排名',
-      dataIndex: 'key',
-      width: 60,
-      render: (text, record, index) => (
-        <Tag color={index < 3 ? 'gold' : 'default'} style={{ fontWeight: 'bold' }}>
-          {index + 1}
-        </Tag>
-      ),
+  // 知识产权结构图配置
+  const ipStructureOption = {
+    tooltip: {
+      trigger: 'axis',
+      axisPointer: { type: 'shadow' },
     },
-    {
-      title: '企业名称',
-      dataIndex: 'name',
-      render: (text) => <Text strong>{text}</Text>,
+    legend: {
+      data: ['实验组', '对照组'],
+      bottom: 0,
     },
-    {
-      title: '补贴金额',
-      dataIndex: 'subsidy',
-      align: 'right',
-      render: (value) => `¥${value}万`,
+    grid: {
+      left: '3%',
+      right: '4%',
+      bottom: '15%',
+      top: '10%',
+      containLabel: true,
     },
-    {
-      title: '税收贡献',
-      dataIndex: 'contribution',
-      align: 'right',
-      render: (value) => `¥${value}万`,
+    xAxis: {
+      type: 'category',
+      data: ['发明专利', '实用新型', '外观设计', '软件著作权'],
+      axisTick: { show: false },
+      axisLine: { lineStyle: { color: '#e2e8f0' } },
+      axisLabel: { color: '#64748b' },
     },
-    {
-      title: '投入产出比',
-      dataIndex: 'roi',
-      align: 'right',
-      render: (value) => (
-        <Text type="success" strong>
-          {value}%
-        </Text>
-      ),
+    yAxis: {
+      type: 'value',
+      splitLine: { lineStyle: { color: '#f1f5f9' } },
+      axisLine: { show: false },
+      axisTick: { show: false },
+      axisLabel: { color: '#64748b' },
     },
-    {
-      title: '增长率',
-      dataIndex: 'growth',
-      align: 'right',
-      render: (value) => (
-        <Tag color="green" icon={<ArrowUpOutlined />}>
-          {value}%
-        </Tag>
-      ),
-    },
-  ];
-
-  // 低绩效表格列
-  const lowPerformanceColumns = [
-    {
-      title: '排名',
-      dataIndex: 'key',
-      width: 60,
-      render: (text, record, index) => (
-        <Tag color="red" style={{ fontWeight: 'bold' }}>
-          {index + 1}
-        </Tag>
-      ),
-    },
-    {
-      title: '企业名称',
-      dataIndex: 'name',
-      render: (text) => <Text strong>{text}</Text>,
-    },
-    {
-      title: '补贴金额',
-      dataIndex: 'subsidy',
-      align: 'right',
-      render: (value) => `¥${value}万`,
-    },
-    {
-      title: '税收贡献',
-      dataIndex: 'contribution',
-      align: 'right',
-      render: (value) => `¥${value}万`,
-    },
-    {
-      title: '投入产出比',
-      dataIndex: 'roi',
-      align: 'right',
-      render: (value) => (
-        <Text type="danger" strong>
-          {value}%
-        </Text>
-      ),
-    },
-    {
-      title: '增长率',
-      dataIndex: 'growth',
-      align: 'right',
-      render: (value) => (
-        <Tag color="red" icon={<ArrowDownOutlined />}>
-          {value}%
-        </Tag>
-      ),
-    },
-  ];
-
-  // 执行评估
-  const handleEvaluate = () => {
-    if (!selectedPolicy) {
-      return;
-    }
-    setLoading(true);
-
-    // 模拟数据加载
-    setTimeout(() => {
-      setMetrics({
-        revenue: { before: 125.8, after: 168.5, growth: 33.9 },
-        tax: { before: 18.6, after: 26.2, growth: 40.9 },
-        rdInvestment: { before: 8.2, after: 12.8, growth: 56.1 },
-      });
-      setHasResult(true);
-      setLoading(false);
-    }, 800);
+    series: [
+      {
+        name: '实验组',
+        type: 'bar',
+        barWidth: '40%',
+        itemStyle: {
+          color: '#0ea5e9',
+          borderRadius: [4, 4, 0, 0],
+        },
+        data: [120, 80, 50, 70],
+      },
+      {
+        name: '对照组',
+        type: 'bar',
+        barWidth: '40%',
+        itemStyle: {
+          color: '#cbd5e1',
+          borderRadius: [4, 4, 0, 0],
+        },
+        data: [60, 50, 40, 30],
+      },
+    ],
   };
 
-  // 对比卡片组件
-  const ComparisonCard = ({ title, before, after, growth, prefix = '¥', suffix = '亿' }) => (
-    <Card className="h-full">
-      <div className="mb-4">
-        <Text type="secondary">{title}</Text>
+  // 开始测算
+  const handleCalculate = () => {
+    setHasResult(true);
+  };
+
+  // 指标卡片组件
+  const MetricCard = ({ title, value, unit, growth, isTestGroup = true }) => (
+    <div className={`rounded-lg p-4 border transition hover:shadow-md ${isTestGroup ? 'bg-slate-50 border-slate-100' : 'bg-slate-50 border-slate-100 grayscale opacity-90'}`}>
+      <div className="text-xs text-slate-500 mb-1">{title}</div>
+      <div className="text-xl font-bold text-slate-800">
+        {unit === '¥' && '¥ '}{value} {unit !== '¥' && unit}
       </div>
-      <Row gutter={16} align="middle">
-        <Col span={11}>
-          <Statistic
-            title={<Text type="secondary">政策前</Text>}
-            value={before}
-            precision={1}
-            prefix={prefix}
-            suffix={suffix}
-            valueStyle={{ color: '#999', fontSize: 20 }}
-          />
-        </Col>
-        <Col span={2} className="text-center">
-          <ArrowUpOutlined style={{ color: '#1677ff', fontSize: 20 }} />
-        </Col>
-        <Col span={11}>
-          <Statistic
-            title={<Text type="secondary">政策后</Text>}
-            value={after}
-            precision={1}
-            prefix={prefix}
-            suffix={suffix}
-            valueStyle={{ color: '#1677ff', fontSize: 24, fontWeight: 'bold' }}
-          />
-          <div className="mt-1">
-            <Tag color="blue" icon={<ArrowUpOutlined />}>
-              +{growth}%
-            </Tag>
-          </div>
-        </Col>
-      </Row>
-    </Card>
+      <div className={`text-sm font-bold mt-1 flex items-center ${growth > 0 ? 'text-green-600' : 'text-slate-500'}`}>
+        <ArrowUpOutlined className="mr-1" />
+        +{growth}%
+      </div>
+    </div>
   );
 
   return (
-    <div className="h-full flex flex-col -m-6">
+    <div className="h-full flex flex-col -m-6 bg-slate-100">
       {/* 页面标题 */}
-      <div className="bg-white px-6 py-4 border-b border-gray-200">
-        <Title level={4} className="!mb-0">政策评估</Title>
-        <Text type="secondary">评估政策实施效果，分析企业绩效表现</Text>
+      <div className="bg-white px-6 py-4 border-b border-slate-200">
+        <Title level={4} className="!mb-0 flex items-center">
+          <AreaChartOutlined className="mr-2" />
+          政策绩效评估中心
+        </Title>
+        <Text type="secondary">基于 DID (Difference-in-Differences) 双重差分模型测算政策净效应</Text>
       </div>
 
-      <div className="flex-1 overflow-auto bg-gray-50 p-5">
-        {/* 顶部筛选栏 */}
-        <Card className="mb-5">
-          <Space size="large" align="center">
+      <div className="flex-1 overflow-auto p-6">
+        {/* 1. 顶部配置与导入区 */}
+        <Card className="mb-6 shadow-sm">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
-              <Text type="secondary" className="mr-2">选择政策:</Text>
-              <Select
-                style={{ width: 280 }}
-                placeholder="请选择要评估的政策"
-                value={selectedPolicy}
-                onChange={setSelectedPolicy}
-                allowClear
-              >
-                {policyOptions.map((policy) => (
-                  <Option key={policy.value} value={policy.value}>
-                    {policy.label}
-                  </Option>
-                ))}
-              </Select>
+              <h1 className="text-xl font-bold text-slate-800">成效评估配置</h1>
+              <p className="text-sm text-slate-500 mt-1">
+                基于 <span className="font-mono text-blue-600 bg-blue-50 px-1 rounded">DID (Difference-in-Differences)</span> 双重差分模型测算政策净效应。
+              </p>
             </div>
-            <div>
-              <Text type="secondary" className="mr-2">评估时间范围:</Text>
+
+            {/* 时间选择器 */}
+            <div className="flex items-center bg-slate-50 border border-slate-300 rounded-md px-3 py-2">
+              <CalendarOutlined className="text-slate-400 mr-3" />
+              <span className="text-sm text-slate-500 mr-2">评估区间:</span>
               <RangePicker
-                picker="year"
-                defaultValue={[dayjs('2022'), dayjs('2023')]}
-                disabled
+                value={dateRange}
+                onChange={setDateRange}
+                className="bg-transparent border-0"
+                style={{ width: 240 }}
               />
-              <Tooltip title="对比政策实施前后的年度数据">
-                <InfoCircleOutlined className="ml-2 text-gray-400" />
-              </Tooltip>
             </div>
+          </div>
+
+          <Divider className="my-4" />
+
+          <div className="flex flex-wrap gap-4 items-center">
+            {/* 导入实验组 */}
+            <Button
+              type="dashed"
+              className="h-auto py-2 px-4 border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 border-2"
+            >
+              <div className="flex items-center">
+                <div className="w-8 h-8 rounded-full bg-blue-200 flex items-center justify-center mr-3">
+                  <ExperimentOutlined className="text-blue-700" />
+                </div>
+                <div className="text-left">
+                  <div className="text-xs opacity-70">Step 1</div>
+                  <div>导入实验组 (享受政策)</div>
+                </div>
+                {testGroup.imported && (
+                  <Badge
+                    count={`已导入 ${testGroup.count} 家`}
+                    style={{ backgroundColor: '#fff', color: '#1677ff', border: '1px solid #d9d9d9' }}
+                    className="ml-3"
+                  />
+                )}
+              </div>
+            </Button>
+
+            {/* 导入对照组 */}
+            <Button
+              type="dashed"
+              className="h-auto py-2 px-4 border-slate-300 bg-slate-50 text-slate-600 hover:bg-slate-100 border-2"
+            >
+              <div className="flex items-center">
+                <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center mr-3">
+                  <BarChartOutlined className="text-slate-600" />
+                </div>
+                <div className="text-left">
+                  <div className="text-xs opacity-70">Step 2</div>
+                  <div>导入对照组 (未享受)</div>
+                </div>
+                {controlGroup.imported && (
+                  <Badge
+                    count={`已导入 ${controlGroup.count} 家`}
+                    style={{ backgroundColor: '#fff', color: '#666', border: '1px solid #d9d9d9' }}
+                    className="ml-3"
+                  />
+                )}
+              </div>
+            </Button>
+
+            <div className="flex-1"></div>
+
+            {/* 开始测算按钮 */}
             <Button
               type="primary"
-              icon={<SearchOutlined />}
-              loading={loading}
-              onClick={handleEvaluate}
-              disabled={!selectedPolicy}
+              size="large"
+              icon={<CalculatorOutlined />}
+              onClick={handleCalculate}
+              className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 border-0 shadow-md"
             >
-              开始评估
+              开始测算
             </Button>
-            <Button icon={<DownloadOutlined />}>导出报告</Button>
-          </Space>
+          </div>
         </Card>
 
-        {!hasResult ? (
-          <div className="bg-white rounded-lg h-96 flex items-center justify-center">
-            <Empty
-              image={Empty.PRESENTED_IMAGE_SIMPLE}
-              description={selectedPolicy ? '点击"开始评估"查看政策效果' : '请先选择要评估的政策'}
-            />
-          </div>
-        ) : (
-          <div className="space-y-5">
-            {/* 核心指标对比卡 */}
-            <Row gutter={16}>
-              <Col span={8}>
-                <ComparisonCard
-                  title="受惠企业营收总额"
-                  before={metrics.revenue.before}
-                  after={metrics.revenue.after}
-                  growth={metrics.revenue.growth}
-                />
-              </Col>
-              <Col span={8}>
-                <ComparisonCard
-                  title="受惠企业纳税总额"
-                  before={metrics.tax.before}
-                  after={metrics.tax.after}
-                  growth={metrics.tax.growth}
-                />
-              </Col>
-              <Col span={8}>
-                <ComparisonCard
-                  title="受惠企业研发投入"
-                  before={metrics.rdInvestment.before}
-                  after={metrics.rdInvestment.after}
-                  growth={metrics.rdInvestment.growth}
-                />
-              </Col>
-            </Row>
+        {/* 2. 中部核心指标对比 */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+          {/* 实验组 */}
+          <Card
+            className="shadow-sm border-t-4 border-t-blue-500"
+            title={
+              <div className="flex items-center">
+                <span className="w-2 h-6 bg-blue-500 rounded mr-3"></span>
+                <span className="text-lg font-bold text-slate-800">实验组数据</span>
+                <Tag color="blue" className="ml-2">政策受益群体</Tag>
+              </div>
+            }
+          >
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <MetricCard
+                title="纳税总额"
+                value={testGroupData.tax.value}
+                unit="亿"
+                growth={testGroupData.tax.growth}
+                isTestGroup={true}
+              />
+              <MetricCard
+                title="用工规模"
+                value={testGroupData.employment.value}
+                unit="人"
+                growth={testGroupData.employment.growth}
+                isTestGroup={true}
+              />
+              <MetricCard
+                title="新增知识产权"
+                value={testGroupData.ip.value}
+                unit="件"
+                growth={testGroupData.ip.growth}
+                isTestGroup={true}
+              />
+            </div>
+          </Card>
 
-            {/* 成效分析图表 */}
-            <Row gutter={16}>
-              <Col span={12}>
-                <Card>
-                  <div className="flex items-center justify-between mb-2">
-                    <Title level={5} className="!mb-0">补贴效果散点分析</Title>
-                    <Tooltip title="右下角红色区域为'高投入低产出'预警企业">
-                      <InfoCircleOutlined className="text-gray-400" />
-                    </Tooltip>
-                  </div>
-                  <Text type="secondary" className="text-xs block mb-2">
-                    红色区域：高投入低产出预警
-                  </Text>
-                  <ReactECharts
-                    ref={scatterRef}
-                    option={scatterOption}
-                    style={{ height: 350 }}
-                  />
-                </Card>
-              </Col>
-              <Col span={12}>
-                <Card>
-                  <Title level={5} className="!mb-4">补贴发放与产值增长趋势</Title>
-                  <ReactECharts
-                    ref={trendRef}
-                    option={trendOption}
-                    style={{ height: 350 }}
-                  />
-                </Card>
-              </Col>
-            </Row>
+          {/* 对照组 */}
+          <Card
+            className="shadow-sm border-t-4 border-t-slate-400"
+            title={
+              <div className="flex items-center">
+                <span className="w-2 h-6 bg-slate-400 rounded mr-3"></span>
+                <span className="text-lg font-bold text-slate-700">对照组数据</span>
+                <Tag className="ml-2">自然增长基准</Tag>
+              </div>
+            }
+          >
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <MetricCard
+                title="纳税总额"
+                value={controlGroupData.tax.value}
+                unit="亿"
+                growth={controlGroupData.tax.growth}
+                isTestGroup={false}
+              />
+              <MetricCard
+                title="用工规模"
+                value={controlGroupData.employment.value}
+                unit="人"
+                growth={controlGroupData.employment.growth}
+                isTestGroup={false}
+              />
+              <MetricCard
+                title="新增知识产权"
+                value={controlGroupData.ip.value}
+                unit="件"
+                growth={controlGroupData.ip.growth}
+                isTestGroup={false}
+              />
+            </div>
+          </Card>
+        </div>
 
-            {/* 企业绩效红黑榜 */}
-            <Row gutter={16}>
-              <Col span={12}>
-                <Card
-                  title={
-                    <Space>
-                      <TrophyOutlined style={{ color: '#faad14' }} />
-                      <span>高绩效企业 Top5</span>
-                      <Tag color="success">拿钱少·贡献大</Tag>
-                    </Space>
-                  }
-                >
-                  <Table
-                    columns={highPerformanceColumns}
-                    dataSource={highPerformanceData}
-                    pagination={false}
-                    size="small"
-                    rowClassName={(record, index) => (index < 3 ? 'bg-yellow-50' : '')}
-                  />
-                </Card>
-              </Col>
-              <Col span={12}>
-                <Card
-                  title={
-                    <Space>
-                      <WarningOutlined style={{ color: '#f5222d' }} />
-                      <span>低绩效预警 Top5</span>
-                      <Tag color="error">拿钱多·贡献负增长</Tag>
-                    </Space>
-                  }
-                >
-                  <Table
-                    columns={lowPerformanceColumns}
-                    dataSource={lowPerformanceData}
-                    pagination={false}
-                    size="small"
-                  />
-                </Card>
-              </Col>
-            </Row>
+        {/* 中部横幅：净效应展示 */}
+        <div className="bg-gradient-to-r from-indigo-600 to-purple-700 rounded-lg p-5 text-white shadow-lg mb-6 relative overflow-hidden">
+          {/* 装饰背景 */}
+          <div className="absolute -right-10 -top-10 w-40 h-40 bg-white opacity-10 rounded-full blur-2xl"></div>
+
+          <div className="flex flex-col md:flex-row items-center justify-between relative z-10">
+            <div className="flex items-center mb-4 md:mb-0">
+              <div className="bg-white/20 p-3 rounded-full mr-4 backdrop-blur-sm">
+                <BarChartOutlined className="text-2xl" />
+              </div>
+              <div>
+                <div className="font-bold text-xl tracking-tight">政策净效应评估 (DID)</div>
+                <div className="text-indigo-100 text-sm opacity-90 mt-1">
+                  净效应 = (实验组变化 - 对照组变化)，剔除市场自然增长因素
+                </div>
+              </div>
+            </div>
+            <div className="flex gap-10">
+              <div className="text-center group cursor-default">
+                <div className="text-xs text-indigo-200 uppercase tracking-wider font-semibold mb-1 group-hover:text-white transition">
+                  纳税净增效
+                </div>
+                <div className="font-bold text-3xl text-white group-hover:scale-110 transition-transform">
+                  +{netEffects.tax}%
+                </div>
+              </div>
+              <div className="text-center border-l border-white/20 pl-10 group cursor-default">
+                <div className="text-xs text-indigo-200 uppercase tracking-wider font-semibold mb-1 group-hover:text-white transition">
+                  就业净增效
+                </div>
+                <div className="font-bold text-3xl text-white group-hover:scale-110 transition-transform">
+                  +{netEffects.employment}%
+                </div>
+              </div>
+              <div className="text-center border-l border-white/20 pl-10 group cursor-default">
+                <div className="text-xs text-indigo-200 uppercase tracking-wider font-semibold mb-1 group-hover:text-white transition">
+                  创新净增效
+                </div>
+                <div className="font-bold text-3xl text-white group-hover:scale-110 transition-transform">
+                  +{netEffects.ip}%
+                </div>
+              </div>
+            </div>
           </div>
-        )}
+        </div>
+
+        {/* 3. 下部趋势图表 */}
+        <Row gutter={24}>
+          <Col span={12}>
+            <Card
+              className="shadow-sm"
+              title={
+                <div className="flex items-center">
+                  <AreaChartOutlined className="mr-2 text-blue-600" />
+                  <span className="font-bold text-slate-700">纳税趋势对比图</span>
+                </div>
+              }
+              extra={
+                <div className="flex items-center space-x-2 text-xs">
+                  <span className="flex items-center">
+                    <span className="w-2 h-2 rounded-full bg-blue-500 mr-1"></span>
+                    实验组
+                  </span>
+                  <span className="flex items-center">
+                    <span className="w-2 h-2 rounded-full bg-slate-400 mr-1"></span>
+                    对照组
+                  </span>
+                </div>
+              }
+            >
+              <ReactECharts option={taxTrendOption} style={{ height: 280 }} />
+            </Card>
+          </Col>
+          <Col span={12}>
+            <Card
+              className="shadow-sm"
+              title={
+                <div className="flex items-center">
+                  <PieChartOutlined className="mr-2 text-purple-600" />
+                  <span className="font-bold text-slate-700">知识产权结构分布</span>
+                </div>
+              }
+              extra={
+                <select className="text-xs border border-slate-300 rounded px-2 py-1 bg-white focus:outline-none">
+                  <option>按总量统计</option>
+                  <option>按人均统计</option>
+                </select>
+              }
+            >
+              <ReactECharts option={ipStructureOption} style={{ height: 280 }} />
+            </Card>
+          </Col>
+        </Row>
       </div>
     </div>
   );

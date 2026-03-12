@@ -1,596 +1,547 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   Card,
-  Form,
-  Input,
-  Select,
   Button,
-  Space,
-  Row,
-  Col,
-  Statistic,
+  Select,
+  Radio,
+  InputNumber,
   Table,
   Tag,
+  Divider,
   Typography,
-  Tooltip,
-  Popconfirm,
-  message,
-  Empty,
+  Space,
+  Pagination,
 } from 'antd';
 import {
-  PlusOutlined,
-  MinusCircleOutlined,
-  CalculatorOutlined,
-  ReloadOutlined,
-  DeleteOutlined,
-  InfoCircleOutlined,
-  BuildOutlined,
-  WalletOutlined,
-  RiseOutlined,
+  FilterOutlined,
+  SearchOutlined,
   DownloadOutlined,
+  FileTextOutlined,
+  CloseCircleOutlined,
+  FileSearchOutlined,
 } from '@ant-design/icons';
-import ReactECharts from 'echarts-for-react';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
 
 /**
- * PolicySimulation - 政策试算页面
- * 提供政策条件配置、企业筛选、推演结果展示功能
+ * PolicySimulation - 政策试算页面（企业筛选系统）
+ * 参考 policy_engine.html 功能重构
  */
 const PolicySimulation = () => {
-  const [form] = Form.useForm();
-  const [loading, setLoading] = useState(false);
-  const [hasResult, setHasResult] = useState(false);
-  const [enterpriseData, setEnterpriseData] = useState([]);
-  const chartRef1 = useRef(null);
-  const chartRef2 = useRef(null);
-
-  // 模拟统计数据
-  const [statistics, setStatistics] = useState({
-    enterpriseCount: 0,
-    totalSubsidy: 0,
-    investmentEstimate: 0,
+  // 筛选条件状态
+  const [filters, setFilters] = useState({
+    establishedYear: '5+',
+    status: 'active',
+    registeredCapitalMin: null,
+    registeredCapitalMax: null,
+    paidInCapitalMin: null,
+    paidInCapitalMax: null,
+    capitalBackground: 'private',
+    employeeCountMin: null,
+    employeeCountMax: null,
+    industry: 'tech',
   });
 
-  // 筛选条件字段选项
-  const filterFields = [
-    { value: 'revenue', label: '营业收入', unit: '元' },
-    { value: 'tax', label: '纳税额', unit: '元' },
-    { value: 'tax_growth', label: '纳税增长率', unit: '%' },
-    { value: 'revenue_growth', label: '营收增长率', unit: '%' },
-    { value: 'industry', label: '所属行业', unit: '' },
-    { value: 'scale', label: '企业规模', unit: '' },
-    { value: 'employee_count', label: '员工人数', unit: '人' },
-    { value: 'rd_investment', label: '研发投入', unit: '元' },
-  ];
-
-  // 运算符选项
-  const operators = [
-    { value: '>', label: '大于' },
-    { value: '>=', label: '大于等于' },
-    { value: '<', label: '小于' },
-    { value: '<=', label: '小于等于' },
-    { value: '=', label: '等于' },
-    { value: '!=', label: '不等于' },
-    { value: 'contains', label: '包含' },
-  ];
-
-  // 补贴标准选项
-  const subsidyTypes = [
-    { value: 'revenue_growth', label: '营收增长奖励' },
-    { value: 'tech_upgrade', label: '技改补贴' },
-    { value: 'rd_investment', label: '研发投入补贴' },
-    { value: 'talent_introduction', label: '人才引进补贴' },
-    { value: 'energy_saving', label: '节能减排补贴' },
-    { value: 'digital_upgrade', label: '数字化转型补贴' },
-  ];
+  // 分页状态
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   // 模拟企业数据
   const mockEnterpriseData = [
-    { key: '1', name: '华为技术有限公司', grid: '南山区', industry: '电子信息', scale: '规上', revenue: 8500000000, subsidyAmount: 100000 },
-    { key: '2', name: '腾讯科技（深圳）有限公司', grid: '南山区', industry: '软件和信息服务', scale: '规上', revenue: 5600000000, subsidyAmount: 100000 },
-    { key: '3', name: '比亚迪股份有限公司', grid: '坪山区', industry: '新能源汽车', scale: '规上', revenue: 4200000000, subsidyAmount: 100000 },
-    { key: '4', name: '大疆创新科技有限公司', grid: '南山区', industry: '智能制造', scale: '规上', revenue: 1800000000, subsidyAmount: 100000 },
-    { key: '5', name: '迈瑞生物医疗电子股份有限公司', grid: '南山区', industry: '生物医药', scale: '规上', revenue: 1200000000, subsidyAmount: 100000 },
-    { key: '6', name: '中兴通讯股份有限公司', grid: '南山区', industry: '电子信息', scale: '规上', revenue: 1100000000, subsidyAmount: 100000 },
-    { key: '7', name: '顺丰控股股份有限公司', grid: '福田区', industry: '现代物流', scale: '规上', revenue: 1500000000, subsidyAmount: 100000 },
-    { key: '8', name: '立讯精密工业股份有限公司', grid: '宝安区', industry: '智能制造', scale: '规上', revenue: 980000000, subsidyAmount: 100000 },
-    { key: '9', name: '欧菲光集团股份有限公司', grid: '光明区', industry: '电子信息', scale: '规上', revenue: 750000000, subsidyAmount: 100000 },
-    { key: '10', name: '欣旺达电子股份有限公司', grid: '宝安区', industry: '新能源汽车', scale: '规上', revenue: 680000000, subsidyAmount: 100000 },
+    {
+      key: '1',
+      name: '腾讯科技（深圳）有限公司',
+      industry: '软件和信息技术服务业',
+      creditCode: '9144030071526726XG',
+      establishedDate: '2000-02-24',
+      status: '存续',
+      policyCount: 45,
+      avatar: '腾',
+      avatarColor: 'bg-blue-100 text-blue-600',
+    },
+    {
+      key: '2',
+      name: '比亚迪股份有限公司',
+      industry: '汽车制造业',
+      creditCode: '91440300192317458F',
+      establishedDate: '1995-02-10',
+      status: '存续',
+      policyCount: 62,
+      avatar: 'BYD',
+      avatarColor: 'bg-gray-100 text-gray-600',
+    },
+    {
+      key: '3',
+      name: '深圳市大疆创新科技有限公司',
+      industry: '计算机、通信和其他电子设备制造业',
+      creditCode: '914403007954257495',
+      establishedDate: '2006-11-06',
+      status: '存续',
+      policyCount: 28,
+      avatar: 'DJI',
+      avatarColor: 'bg-slate-200 text-slate-700',
+    },
+    {
+      key: '4',
+      name: '华为技术有限公司',
+      industry: '计算机、通信和其他电子设备制造业',
+      creditCode: '914403001922038216',
+      establishedDate: '1987-09-15',
+      status: '存续',
+      policyCount: 89,
+      avatar: 'HW',
+      avatarColor: 'bg-red-100 text-red-600',
+    },
+    {
+      key: '5',
+      name: '顺丰控股股份有限公司',
+      industry: '交通运输、仓储和邮政业',
+      creditCode: '91440300MA5F11K58Y',
+      establishedDate: '2016-12-05',
+      status: '存续',
+      policyCount: 33,
+      avatar: 'SF',
+      avatarColor: 'bg-stone-100 text-stone-600',
+    },
+    {
+      key: '6',
+      name: '中兴通讯股份有限公司',
+      industry: '计算机、通信和其他电子设备制造业',
+      creditCode: '91440300192312233X',
+      establishedDate: '1997-11-11',
+      status: '存续',
+      policyCount: 56,
+      avatar: '中兴',
+      avatarColor: 'bg-blue-50 text-blue-500',
+    },
+    {
+      key: '7',
+      name: '迈瑞生物医疗电子股份有限公司',
+      industry: '专用设备制造业',
+      creditCode: '914403007084411869',
+      establishedDate: '1999-01-25',
+      status: '存续',
+      policyCount: 41,
+      avatar: 'MR',
+      avatarColor: 'bg-green-100 text-green-600',
+    },
+    {
+      key: '8',
+      name: '招商银行股份有限公司',
+      industry: '货币金融服务',
+      creditCode: '9144030010001686XA',
+      establishedDate: '1987-03-31',
+      status: '存续',
+      policyCount: 72,
+      avatar: '招行',
+      avatarColor: 'bg-red-50 text-red-500',
+    },
+    {
+      key: '9',
+      name: '平安科技（深圳）有限公司',
+      industry: '软件和信息技术服务业',
+      creditCode: '9144030071526726XG',
+      establishedDate: '2008-09-24',
+      status: '存续',
+      policyCount: 38,
+      avatar: 'PA',
+      avatarColor: 'bg-orange-100 text-orange-600',
+    },
+    {
+      key: '10',
+      name: '深圳市投资控股有限公司',
+      industry: '商务服务业',
+      creditCode: '9144030071526726XG',
+      establishedDate: '2004-10-21',
+      status: '存续',
+      policyCount: 25,
+      avatar: '投控',
+      avatarColor: 'bg-purple-100 text-purple-600',
+    },
   ];
 
-  // 行业分布数据
-  const industryData = [
-    { value: 35, name: '电子信息' },
-    { value: 25, name: '新能源汽车' },
-    { value: 18, name: '智能制造' },
-    { value: 12, name: '生物医药' },
-    { value: 10, name: '现代物流' },
-  ];
+  // 总匹配数（模拟）
+  const totalMatched = 1245;
 
-  // 规模分布数据
-  const scaleData = {
-    categories: ['规上企业', '规下企业', '微型企业'],
-    values: [128, 25, 5],
+  // 已选条件标签
+  const activeFilters = useMemo(() => {
+    const tags = [];
+    if (filters.establishedYear) {
+      const yearMap = {
+        '0-1': '1年以内',
+        '1-3': '1-3年',
+        '3-5': '3-5年',
+        '5+': '5年以上',
+      };
+      tags.push({ key: 'establishedYear', label: `成立年限：${yearMap[filters.establishedYear]}` });
+    }
+    if (filters.capitalBackground) {
+      const bgMap = {
+        state: '国有企业',
+        private: '民营企业',
+        hkt: '港澳台投资',
+        foreign: '外商投资',
+      };
+      tags.push({ key: 'capitalBackground', label: `背景：${bgMap[filters.capitalBackground]}` });
+    }
+    if (filters.industry) {
+      const industryMap = {
+        tech: '信息传输、软件和信息技术服务业',
+        make: '制造业',
+        finance: '金融业',
+        logistics: '交通运输、仓储和邮政业',
+      };
+      tags.push({ key: 'industry', label: `行业：${industryMap[filters.industry]}` });
+    }
+    return tags;
+  }, [filters]);
+
+  // 移除筛选条件
+  const removeFilter = (key) => {
+    setFilters((prev) => ({ ...prev, [key]: key === 'status' ? 'active' : null }));
   };
 
-  // 饼图配置
-  const pieOption = {
-    tooltip: {
-      trigger: 'item',
-      formatter: '{a} <br/>{b}: {c}家 ({d}%)',
-    },
-    legend: {
-      orient: 'vertical',
-      right: 10,
-      top: 'center',
-      itemWidth: 10,
-      itemHeight: 10,
-      textStyle: {
-        fontSize: 12,
-      },
-    },
-    series: [
-      {
-        name: '行业分布',
-        type: 'pie',
-        radius: ['40%', '70%'],
-        center: ['35%', '50%'],
-        avoidLabelOverlap: false,
-        itemStyle: {
-          borderRadius: 4,
-          borderColor: '#fff',
-          borderWidth: 2,
-        },
-        label: {
-          show: false,
-        },
-        emphasis: {
-          label: {
-            show: true,
-            fontSize: 14,
-            fontWeight: 'bold',
-          },
-        },
-        data: industryData,
-      },
-    ],
-    color: ['#1677ff', '#00d4aa', '#faad14', '#f5222d', '#722ed1'],
+  // 清空所有筛选
+  const clearAllFilters = () => {
+    setFilters({
+      establishedYear: null,
+      status: 'active',
+      registeredCapitalMin: null,
+      registeredCapitalMax: null,
+      paidInCapitalMin: null,
+      paidInCapitalMax: null,
+      capitalBackground: null,
+      employeeCountMin: null,
+      employeeCountMax: null,
+      industry: null,
+    });
   };
 
-  // 柱状图配置
-  const barOption = {
-    tooltip: {
-      trigger: 'axis',
-      axisPointer: {
-        type: 'shadow',
-      },
-    },
-    grid: {
-      left: '3%',
-      right: '4%',
-      bottom: '3%',
-      containLabel: true,
-    },
-    xAxis: {
-      type: 'category',
-      data: scaleData.categories,
-      axisTick: {
-        alignWithLabel: true,
-      },
-    },
-    yAxis: {
-      type: 'value',
-      name: '企业数（家）',
-    },
-    series: [
-      {
-        name: '企业数量',
-        type: 'bar',
-        barWidth: '50%',
-        data: scaleData.values,
-        itemStyle: {
-          color: '#1677ff',
-          borderRadius: [4, 4, 0, 0],
-        },
-      },
-    ],
+  // 执行查询
+  const handleSearch = () => {
+    setCurrentPage(1);
+    // 这里可以调用实际的查询API
   };
 
   // 表格列定义
   const columns = [
     {
-      title: '企业名称',
+      title: '企业名称 / 行业',
       dataIndex: 'name',
       key: 'name',
-      render: (text) => <Text strong>{text}</Text>,
-    },
-    {
-      title: '所属网格',
-      dataIndex: 'grid',
-      key: 'grid',
-      render: (text) => <Tag color="blue">{text}</Tag>,
-    },
-    {
-      title: '所属行业',
-      dataIndex: 'industry',
-      key: 'industry',
-    },
-    {
-      title: '企业规模',
-      dataIndex: 'scale',
-      key: 'scale',
-      render: (text) => (
-        <Tag color={text === '规上' ? 'green' : 'default'}>{text}</Tag>
+      render: (text, record) => (
+        <div className="flex items-center">
+          <div className={`flex-shrink-0 h-10 w-10 rounded-full flex items-center justify-center font-bold text-sm ${record.avatarColor}`}>
+            {record.avatar}
+          </div>
+          <div className="ml-4">
+            <div className="text-sm font-medium text-slate-900">{text}</div>
+            <div className="text-xs text-slate-500 mt-0.5">{record.industry}</div>
+          </div>
+        </div>
       ),
     },
     {
-      title: '营业收入',
-      dataIndex: 'revenue',
-      key: 'revenue',
-      align: 'right',
-      render: (value) => `¥${(value / 100000000).toFixed(2)}亿`,
+      title: '统一社会信用代码',
+      dataIndex: 'creditCode',
+      key: 'creditCode',
+      render: (text) => <span className="text-sm text-slate-600 font-mono">{text}</span>,
     },
     {
-      title: '预估补贴金额',
-      dataIndex: 'subsidyAmount',
-      key: 'subsidyAmount',
-      align: 'right',
+      title: '成立日期',
+      dataIndex: 'establishedDate',
+      key: 'establishedDate',
+      render: (text) => <span className="text-sm text-slate-600">{text}</span>,
+    },
+    {
+      title: '经营状态',
+      dataIndex: 'status',
+      key: 'status',
+      render: (text) => (
+        <Tag color="green" className="rounded-full">
+          {text}
+        </Tag>
+      ),
+    },
+    {
+      title: '历史申请政策数',
+      dataIndex: 'policyCount',
+      key: 'policyCount',
+      align: 'center',
       render: (value) => (
-        <Text type="success" strong>
-          ¥{value.toLocaleString()}
-        </Text>
+        <span className="inline-flex items-center justify-center h-8 px-3 rounded text-sm font-bold bg-blue-50 text-blue-700 border border-blue-100">
+          {value}
+        </span>
       ),
     },
     {
       title: '操作',
       key: 'action',
-      width: 100,
-      render: (_, record) => (
-        <Popconfirm
-          title="确认移除"
-          description={`确定要移除企业"${record.name}"吗？`}
-          onConfirm={() => handleRemoveEnterprise(record.key)}
-          okText="确认"
-          cancelText="取消"
-        >
-          <Button type="link" danger icon={<DeleteOutlined />}>
-            移除
-          </Button>
-        </Popconfirm>
+      align: 'right',
+      render: () => (
+        <a className="text-blue-600 hover:text-blue-800 text-sm font-medium">查看详情</a>
       ),
     },
   ];
 
-  // 开始试算
-  const handleCalculate = async () => {
-    try {
-      const values = await form.validateFields();
-      setLoading(true);
-
-      // 模拟API调用延迟
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      // 模拟计算结果
-      const count = mockEnterpriseData.length;
-      const subsidyPerEnterprise = parseInt(values.subsidyAmount) || 10;
-      const totalSubsidy = count * subsidyPerEnterprise * 10000;
-      const investmentEstimate = totalSubsidy * 3.3; // 假设拉动投资比例为1:3.3
-
-      setStatistics({
-        enterpriseCount: count,
-        totalSubsidy,
-        investmentEstimate,
-      });
-      setEnterpriseData(mockEnterpriseData);
-      setHasResult(true);
-      message.success('试算完成！');
-    } catch (error) {
-      console.error('Form validation failed:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // 重置表单
-  const handleReset = () => {
-    form.resetFields();
-    setHasResult(false);
-    setEnterpriseData([]);
-    setStatistics({
-      enterpriseCount: 0,
-      totalSubsidy: 0,
-      investmentEstimate: 0,
-    });
-    message.info('已重置试算条件');
-  };
-
-  // 移除企业
-  const handleRemoveEnterprise = (key) => {
-    const newData = enterpriseData.filter((item) => item.key !== key);
-    setEnterpriseData(newData);
-    setStatistics((prev) => ({
-      ...prev,
-      enterpriseCount: newData.length,
-      totalSubsidy: newData.length * 100000,
-      investmentEstimate: newData.length * 100000 * 3.3,
-    }));
-    message.success('已移除企业');
-  };
-
   return (
-    <div className="h-full flex flex-col -m-6">
-      {/* 页面标题 */}
-      <div className="bg-white px-6 py-4 border-b border-gray-200">
-        <Title level={4} className="!mb-0">政策试算</Title>
-        <Text type="secondary">配置政策条件，模拟推演政策实施效果</Text>
-      </div>
+    <div className="h-full flex -m-6">
+      {/* 左侧筛选栏 */}
+      <aside className="w-80 bg-white border-r border-slate-200 flex flex-col shadow-sm">
+        {/* 筛选标题 */}
+        <div className="p-4 border-b border-slate-100 bg-slate-50">
+          <h2 className="font-semibold text-slate-700 flex items-center">
+            <FilterOutlined className="mr-2 text-blue-600" />
+            企业筛选条件
+          </h2>
+        </div>
 
-      <div className="flex-1 flex overflow-hidden">
-        {/* 左侧配置区 */}
-        <div className="w-96 bg-white border-r border-gray-200 overflow-auto">
-          <div className="p-5">
-            <Title level={5} className="!mb-4 flex items-center gap-2">
-              <CalculatorOutlined />
-              政策试算条件配置
-            </Title>
-
-            <Form
-              form={form}
-              layout="vertical"
-              initialValues={{
-                subsidyType: 'revenue_growth',
-                subsidyAmount: 10,
-                conditions: [{}],
-              }}
-            >
-              {/* 政策名称 */}
-              <Form.Item
-                label="政策名称"
-                name="policyName"
-                rules={[{ required: true, message: '请输入政策名称' }]}
+        {/* 筛选表单 */}
+        <div className="p-5 space-y-6 flex-1 overflow-y-auto">
+          {/* 1. 基础信息 */}
+          <div>
+            <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">
+              基础信息
+            </label>
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-slate-700 mb-1">成立年限</label>
+              <Select
+                className="w-full"
+                placeholder="全部"
+                value={filters.establishedYear}
+                onChange={(value) => setFilters((prev) => ({ ...prev, establishedYear: value }))}
               >
-                <Input placeholder="请输入政策名称" />
-              </Form.Item>
+                <Option value="">全部</Option>
+                <Option value="0-1">1年以内</Option>
+                <Option value="1-3">1 - 3 年</Option>
+                <Option value="3-5">3 - 5 年</Option>
+                <Option value="5+">5 年以上</Option>
+              </Select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">经营状态</label>
+              <Radio.Group
+                value={filters.status}
+                onChange={(e) => setFilters((prev) => ({ ...prev, status: e.target.value }))}
+                className="flex space-x-2"
+              >
+                <Radio.Button value="active" className="text-xs">存续</Radio.Button>
+                <Radio.Button value="inactive" className="text-xs">注销</Radio.Button>
+                <Radio.Button value="revoked" className="text-xs">吊销</Radio.Button>
+              </Radio.Group>
+            </div>
+          </div>
 
-              {/* 补贴标准 */}
-              <Form.Item label="补贴标准" required>
-                <Space.Compact className="w-full">
-                  <Form.Item
-                    name="subsidyType"
-                    noStyle
-                    rules={[{ required: true, message: '请选择补贴类型' }]}
-                  >
-                    <Select style={{ width: '60%' }} placeholder="选择补贴类型">
-                      {subsidyTypes.map((type) => (
-                        <Option key={type.value} value={type.value}>
-                          {type.label}
-                        </Option>
-                      ))}
-                    </Select>
-                  </Form.Item>
-                  <Form.Item
-                    name="subsidyAmount"
-                    noStyle
-                    rules={[{ required: true, message: '请输入金额' }]}
-                  >
-                    <Input
-                      type="number"
-                      style={{ width: '40%' }}
-                      addonAfter="万元/家"
-                    />
-                  </Form.Item>
-                </Space.Compact>
-              </Form.Item>
+          <Divider className="!my-4" />
 
-              {/* 筛选条件 */}
-              <div className="mb-2">
-                <Text strong>筛选条件</Text>
+          {/* 2. 资本与背景 */}
+          <div>
+            <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">
+              资本与背景
+            </label>
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-slate-700 mb-1">注册资本 (万元)</label>
+              <div className="flex items-center space-x-2">
+                <InputNumber
+                  className="w-full"
+                  placeholder="0"
+                  min={0}
+                  value={filters.registeredCapitalMin}
+                  onChange={(value) => setFilters((prev) => ({ ...prev, registeredCapitalMin: value }))}
+                />
+                <span className="text-slate-400">-</span>
+                <InputNumber
+                  className="w-full"
+                  placeholder="不限"
+                  min={0}
+                  value={filters.registeredCapitalMax}
+                  onChange={(value) => setFilters((prev) => ({ ...prev, registeredCapitalMax: value }))}
+                />
               </div>
-
-              <Form.List name="conditions">
-                {(fields, { add, remove }) => (
-                  <div className="space-y-3">
-                    {fields.map(({ key, name, ...restField }) => (
-                      <div
-                        key={key}
-                        className="p-3 bg-gray-50 rounded-lg border border-gray-200"
-                      >
-                        <div className="flex items-center justify-between mb-2">
-                          <Tag color="blue">条件 {name + 1}</Tag>
-                          {fields.length > 1 && (
-                            <MinusCircleOutlined
-                              className="text-red-500 cursor-pointer"
-                              onClick={() => remove(name)}
-                            />
-                          )}
-                        </div>
-
-                        <Space direction="vertical" className="w-full" size="small">
-                          <Form.Item
-                            {...restField}
-                            name={[name, 'field']}
-                            rules={[{ required: true, message: '选择字段' }]}
-                            className="!mb-2"
-                          >
-                            <Select placeholder="选择筛选字段">
-                              {filterFields.map((field) => (
-                                <Option key={field.value} value={field.value}>
-                                  {field.label}
-                                </Option>
-                              ))}
-                            </Select>
-                          </Form.Item>
-
-                          <Form.Item
-                            {...restField}
-                            name={[name, 'operator']}
-                            rules={[{ required: true, message: '选择运算符' }]}
-                            className="!mb-2"
-                          >
-                            <Select placeholder="选择运算符">
-                              {operators.map((op) => (
-                                <Option key={op.value} value={op.value}>
-                                  {op.label}
-                                </Option>
-                              ))}
-                            </Select>
-                          </Form.Item>
-
-                          <Form.Item
-                            {...restField}
-                            name={[name, 'value']}
-                            rules={[{ required: true, message: '输入数值' }]}
-                            className="!mb-0"
-                          >
-                            <Input placeholder="输入条件值" />
-                          </Form.Item>
-                        </Space>
-                      </div>
-                    ))}
-
-                    <Button
-                      type="dashed"
-                      onClick={() => add()}
-                      block
-                      icon={<PlusOutlined />}
-                    >
-                      添加筛选条件
-                    </Button>
-                  </div>
-                )}
-              </Form.List>
-
-              {/* 操作按钮 */}
-              <div className="mt-6 space-y-2">
-                <Button
-                  type="primary"
-                  icon={<CalculatorOutlined />}
-                  loading={loading}
-                  onClick={handleCalculate}
-                  block
-                  size="large"
-                >
-                  开始试算
-                </Button>
-                <Button
-                  icon={<ReloadOutlined />}
-                  onClick={handleReset}
-                  block
-                >
-                  重置
-                </Button>
+            </div>
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-slate-700 mb-1">实缴资本 (万元)</label>
+              <div className="flex items-center space-x-2">
+                <InputNumber
+                  className="w-full"
+                  placeholder="0"
+                  min={0}
+                  value={filters.paidInCapitalMin}
+                  onChange={(value) => setFilters((prev) => ({ ...prev, paidInCapitalMin: value }))}
+                />
+                <span className="text-slate-400">-</span>
+                <InputNumber
+                  className="w-full"
+                  placeholder="不限"
+                  min={0}
+                  value={filters.paidInCapitalMax}
+                  onChange={(value) => setFilters((prev) => ({ ...prev, paidInCapitalMax: value }))}
+                />
               </div>
-            </Form>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">资本背景</label>
+              <Select
+                className="w-full"
+                placeholder="不限"
+                value={filters.capitalBackground}
+                onChange={(value) => setFilters((prev) => ({ ...prev, capitalBackground: value }))}
+              >
+                <Option value="">不限</Option>
+                <Option value="state">国有企业</Option>
+                <Option value="private">民营企业</Option>
+                <Option value="hkt">港澳台投资</Option>
+                <Option value="foreign">外商投资</Option>
+              </Select>
+            </div>
+          </div>
+
+          <Divider className="!my-4" />
+
+          {/* 3. 规模与行业 */}
+          <div>
+            <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">
+              规模与行业
+            </label>
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-slate-700 mb-1">社保人数 (人)</label>
+              <div className="flex items-center space-x-2">
+                <InputNumber
+                  className="w-full"
+                  placeholder="Min"
+                  min={0}
+                  value={filters.employeeCountMin}
+                  onChange={(value) => setFilters((prev) => ({ ...prev, employeeCountMin: value }))}
+                />
+                <span className="text-slate-400">-</span>
+                <InputNumber
+                  className="w-full"
+                  placeholder="Max"
+                  min={0}
+                  value={filters.employeeCountMax}
+                  onChange={(value) => setFilters((prev) => ({ ...prev, employeeCountMax: value }))}
+                />
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">行业分类</label>
+              <Select
+                className="w-full"
+                placeholder="全部行业"
+                value={filters.industry}
+                onChange={(value) => setFilters((prev) => ({ ...prev, industry: value }))}
+              >
+                <Option value="">全部行业</Option>
+                <Option value="tech">信息传输、软件和信息技术服务业</Option>
+                <Option value="make">制造业</Option>
+                <Option value="finance">金融业</Option>
+                <Option value="logistics">交通运输、仓储和邮政业</Option>
+              </Select>
+            </div>
           </div>
         </div>
 
-        {/* 右侧推演结果区 */}
-        <div className="flex-1 bg-gray-50 overflow-auto p-5">
-          {!hasResult ? (
-            <div className="h-full flex items-center justify-center">
-              <Empty
-                image={Empty.PRESENTED_IMAGE_SIMPLE}
-                description="请先配置政策条件并点击开始试算"
+        {/* 底部查询按钮 */}
+        <div className="p-4 border-t border-slate-200 bg-slate-50">
+          <Button
+            type="primary"
+            icon={<SearchOutlined />}
+            className="w-full"
+            size="large"
+            onClick={handleSearch}
+          >
+            执行查询
+          </Button>
+        </div>
+      </aside>
+
+      {/* 右侧主体内容 */}
+      <main className="flex-1 flex flex-col overflow-hidden bg-slate-100">
+        {/* 顶部：已选条件 & 操作栏 */}
+        <div className="bg-white border-b border-slate-200 px-6 py-4 shadow-sm space-y-4 shrink-0">
+          <div className="flex items-center justify-between">
+            {/* 已选条件 */}
+            <div className="flex items-center space-x-3 overflow-x-auto pb-1 flex-1">
+              <span className="text-sm font-semibold text-slate-500 uppercase tracking-wider whitespace-nowrap">
+                已选条件:
+              </span>
+              <div className="flex space-x-2">
+                {activeFilters.map((tag) => (
+                  <Tag
+                    key={tag.key}
+                    color="blue"
+                    closable
+                    onClose={() => removeFilter(tag.key)}
+                    className="px-3 py-1 text-sm"
+                  >
+                    {tag.label}
+                  </Tag>
+                ))}
+              </div>
+              {activeFilters.length > 0 && (
+                <Button
+                  type="link"
+                  size="small"
+                  className="text-xs"
+                  onClick={clearAllFilters}
+                  icon={<CloseCircleOutlined />}
+                >
+                  清空
+                </Button>
+              )}
+            </div>
+
+            {/* 匹配数量 */}
+            <div className="text-right whitespace-nowrap pl-4">
+              <span className="text-sm text-slate-500">当前匹配企业：</span>
+              <span className="text-2xl font-bold text-blue-600">{totalMatched.toLocaleString()}</span>
+              <span className="text-sm text-slate-500"> 家</span>
+            </div>
+          </div>
+
+          {/* 操作按钮 */}
+          <div className="flex justify-end space-x-3 pt-3 border-t border-slate-100">
+            <Button icon={<DownloadOutlined />}>导出企业清单</Button>
+            <Button type="primary" icon={<FileTextOutlined />} className="bg-indigo-600 hover:bg-indigo-700">
+              生成政策制定报告
+            </Button>
+          </div>
+        </div>
+
+        {/* 企业列表区域 */}
+        <div className="flex-1 overflow-auto p-6">
+          <div className="bg-white shadow-sm rounded-lg border border-slate-200 flex flex-col">
+            <Table
+              columns={columns}
+              dataSource={mockEnterpriseData}
+              pagination={false}
+              rowClassName="hover:bg-slate-50"
+            />
+
+            {/* 分页 */}
+            <div className="px-6 py-4 border-t border-slate-200 bg-slate-50 flex items-center justify-between">
+              <div className="text-sm text-slate-500">
+                显示 <span className="font-medium text-slate-900">{(currentPage - 1) * pageSize + 1}</span> 到{' '}
+                <span className="font-medium text-slate-900">{Math.min(currentPage * pageSize, totalMatched)}</span>{' '}
+                条，共 <span className="font-medium text-slate-900">{totalMatched.toLocaleString()}</span> 条
+              </div>
+              <Pagination
+                current={currentPage}
+                pageSize={pageSize}
+                total={totalMatched}
+                onChange={(page, size) => {
+                  setCurrentPage(page);
+                  setPageSize(size);
+                }}
+                showSizeChanger
+                showQuickJumper
+                pageSizeOptions={['10', '20', '50', '100']}
               />
             </div>
-          ) : (
-            <div className="space-y-5">
-              {/* KPI 卡片 */}
-              <Row gutter={16}>
-                <Col span={8}>
-                  <Card>
-                    <Statistic
-                      title="符合条件企业数"
-                      value={statistics.enterpriseCount}
-                      suffix="家"
-                      valueStyle={{ color: '#1677ff' }}
-                      prefix={<BuildOutlined />}
-                    />
-                  </Card>
-                </Col>
-                <Col span={8}>
-                  <Card>
-                    <Statistic
-                      title="预计财政总支出"
-                      value={statistics.totalSubsidy}
-                      precision={0}
-                      formatter={(value) => `¥${(value / 10000).toFixed(0)}万`}
-                      valueStyle={{ color: '#00d4aa' }}
-                      prefix={<WalletOutlined />}
-                    />
-                  </Card>
-                </Col>
-                <Col span={8}>
-                  <Card>
-                    <Statistic
-                      title={
-                        <span>
-                          拉动投资预估
-                          <Tooltip title="计算公式：预计财政总支出 × 3.3（基于历史数据模型）">
-                            <InfoCircleOutlined className="ml-1 text-gray-400" />
-                          </Tooltip>
-                        </span>
-                      }
-                      value={statistics.investmentEstimate}
-                      precision={0}
-                      formatter={(value) => `¥${(value / 100000000).toFixed(2)}亿`}
-                      valueStyle={{ color: '#faad14' }}
-                      prefix={<RiseOutlined />}
-                    />
-                  </Card>
-                </Col>
-              </Row>
-
-              {/* 企业分布图表 */}
-              <Row gutter={16}>
-                <Col span={12}>
-                  <Card title="符合条件企业行业分布">
-                    <ReactECharts
-                      ref={chartRef1}
-                      option={pieOption}
-                      style={{ height: 280 }}
-                    />
-                  </Card>
-                </Col>
-                <Col span={12}>
-                  <Card title="符合条件企业规模分布">
-                    <ReactECharts
-                      ref={chartRef2}
-                      option={barOption}
-                      style={{ height: 280 }}
-                    />
-                  </Card>
-                </Col>
-              </Row>
-
-              {/* 企业明细列表 */}
-              <Card
-                title={`企业明细列表（共 ${enterpriseData.length} 家）`}
-                extra={
-                  <Space>
-                    <Button type="link" icon={<DownloadOutlined />}>
-                      导出名单
-                    </Button>
-                  </Space>
-                }
-              >
-                <Table
-                  columns={columns}
-                  dataSource={enterpriseData}
-                  pagination={{
-                    pageSize: 5,
-                    showSizeChanger: true,
-                    showTotal: (total) => `共 ${total} 家企业`,
-                  }}
-                  size="small"
-                />
-              </Card>
-            </div>
-          )}
+          </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 };
