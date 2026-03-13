@@ -235,13 +235,13 @@ const CapitalGenealogy = () => {
                 {/* 核心指标 */}
                 <div className="grid grid-cols-2 gap-4 mb-4">
                   <div className="bg-gray-50 rounded-lg p-3">
-                    <div className="text-xs text-gray-500 mb-1">集团总营收</div>
+                    <div className="text-xs text-gray-500 mb-1">集团营收</div>
                     <div className="text-lg font-bold text-gray-800">
                       {formatAmount(group.groupTotalRevenue)}
                     </div>
                   </div>
                   <div className="bg-blue-50 rounded-lg p-3">
-                    <div className="text-xs text-blue-600 mb-1">前海总营收</div>
+                    <div className="text-xs text-blue-600 mb-1">前海营收</div>
                     <div className="text-lg font-bold text-blue-600">
                       {formatAmount(group.qianhaiRevenue)}
                     </div>
@@ -268,7 +268,7 @@ const CapitalGenealogy = () => {
                 {/* 底部统计 */}
                 <div className="flex justify-between text-sm text-gray-500 pt-3 border-t border-gray-100">
                   <span>成员企业: {group.count}家</span>
-                  <span>前海: {group.shenzhenCount}家</span>
+                  <span>前海企业: {group.shenzhenCount}家</span>
                 </div>
               </Card>
             );
