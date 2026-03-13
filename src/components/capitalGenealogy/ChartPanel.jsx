@@ -19,7 +19,7 @@ const ChartPanel = memo(({
       <div className="flex items-center gap-1">
         <span>{title}</span>
         <Tooltip title={tooltip}>
-          <QuestionCircleOutlined className="text-gray-400 cursor-help" />
+          <QuestionCircleOutlined className="text-gray-400 hover:text-blue-500 cursor-pointer text-base ml-1" />
         </Tooltip>
       </div>
     );

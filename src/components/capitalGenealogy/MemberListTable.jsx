@@ -1,22 +1,45 @@
 import React, { memo, useMemo } from 'react';
-import { Table, Tag, Card, Typography } from 'antd';
+import { Table, Tag, Card, Typography, Button, message } from 'antd';
+import { PlusOutlined, ExportOutlined } from '@ant-design/icons';
 
 const { Title } = Typography;
 
-const LEVEL_CONFIG = {
-  core: { text: '核心', color: 'blue' },
-  first: { text: '一级', color: 'green' },
-  second: { text: '二级', color: 'orange' },
-  associate: { text: '参股', color: 'default' }
-};
+const LEVEL_MAP = { core: '0级', first: '1级', second: '2级', associate: '参股' };
 
 const MemberListTable = memo(({ 
   dataSource, 
   memberFilter,
   memberCounts,
   onFilterChange,
-  loading = false 
+  loading = false,
+  onAddToPool
 }) => {
+  const handleExport = () => {
+    const exportData = dataSource.map(item => ({
+      '企业名称': item.name,
+      '行业': item.industry,
+      '所在地区': item.regionName,
+      '成员级别': LEVEL_MAP[item.level] || item.level,
+      '注册资本': item.capital,
+      '成立日期': item.foundedDate,
+      '营业收入': item.revenue ? `${item.revenue}亿` : '-',
+    }));
+    
+    const headers = Object.keys(exportData[0] || {});
+    const csvContent = [
+      headers.join(','),
+      ...exportData.map(row => headers.map(h => row[h] || '-').join(','))
+    ].join('\n');
+    
+    const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `成员企业清单_${new Date().toLocaleDateString()}.csv`;
+    link.click();
+    
+    message.success(`已导出 ${dataSource.length} 家企业数据`);
+  };
+
   const columns = useMemo(() => [
     {
       title: '企业名称',
@@ -29,21 +52,15 @@ const MemberListTable = memo(({
       ),
     },
     {
-      title: '地区',
+      title: '所在地区',
       dataIndex: 'regionName',
       width: 100,
-      render: (text, record) => (
-        <Tag color={record.region === 'local' ? 'green' : 'default'}>{text}</Tag>
-      ),
     },
     {
-      title: '级别',
+      title: '成员级别',
       dataIndex: 'level',
       width: 90,
-      render: (level) => {
-        const config = LEVEL_CONFIG[level] || LEVEL_CONFIG.associate;
-        return <Tag color={config.color}>{config.text}</Tag>;
-      },
+      render: (level) => <Tag color="blue">{LEVEL_MAP[level] || level}</Tag>,
     },
     {
       title: '注册资本',
@@ -56,12 +73,30 @@ const MemberListTable = memo(({
       width: 110,
     },
     {
-      title: '营收',
+      title: '营业收入',
       dataIndex: 'revenue',
       width: 100,
       render: (value) => value ? `${value}亿` : '-',
     },
-  ], []);
+    {
+      title: '操作',
+      key: 'action',
+      width: 130,
+      render: (_, record) => {
+        if (record.region === 'local') return null;
+        return (
+          <Button 
+            type="primary" 
+            size="small" 
+            icon={<PlusOutlined />}
+            onClick={() => onAddToPool?.(record)}
+          >
+            加入招商库
+          </Button>
+        );
+      },
+    },
+  ], [onAddToPool]);
 
   const FilterTags = useMemo(() => (
     <div className="flex items-center gap-2">
@@ -88,7 +123,15 @@ const MemberListTable = memo(({
       title={
         <div className="flex items-center justify-between">
           <Title level={5} className="!mb-0">成员企业清单</Title>
-          {FilterTags}
+          <div className="flex items-center gap-4">
+            {FilterTags}
+            <Button 
+              icon={<ExportOutlined />}
+              onClick={handleExport}
+            >
+              导出
+            </Button>
+          </div>
         </div>
       }
       variant="borderless"

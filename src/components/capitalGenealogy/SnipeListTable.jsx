@@ -1,16 +1,44 @@
 import React, { memo, useMemo } from 'react';
-import { Table, Tag, Button, Empty } from 'antd';
-import { PlusOutlined } from '@ant-design/icons';
+import { Table, Tag, Button, Empty, message } from 'antd';
+import { PlusOutlined, ExportOutlined } from '@ant-design/icons';
 import FilterDescription from './FilterDescription';
 
-const LEVEL_MAP = { core: '核心', first: '一级', second: '二级' };
+const LEVEL_MAP = { core: '0级', first: '1级', second: '2级' };
 
 const SnipeListTable = memo(({ 
   type, 
   dataSource, 
   loading = false,
-  onAddToPool 
+  onAddToPool,
+  onExport
 }) => {
+  const handleExport = () => {
+    const exportData = dataSource.map(item => ({
+      '企业名称': item.name,
+      '行业': item.industry,
+      '所在地区': item.regionName,
+      '注册资本': item.capital,
+      '成立日期': item.foundedDate,
+      '营业收入': item.revenue ? `${item.revenue}亿` : '-',
+      '成员级别': LEVEL_MAP[item.level] || item.level,
+    }));
+    
+    const headers = Object.keys(exportData[0] || {});
+    const csvContent = [
+      headers.join(','),
+      ...exportData.map(row => headers.map(h => row[h] || '-').join(','))
+    ].join('\n');
+    
+    const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `${type === 'cashcow' ? '盯存量企业清单' : '盯增量企业清单'}_${new Date().toLocaleDateString()}.csv`;
+    link.click();
+    
+    message.success(`已导出 ${dataSource.length} 家企业数据`);
+    onExport?.(dataSource);
+  };
+
   const columns = useMemo(() => [
     {
       title: '企业名称',
@@ -26,9 +54,6 @@ const SnipeListTable = memo(({
       title: '所在地区',
       dataIndex: 'regionName',
       width: 100,
-      render: (text, record) => (
-        <Tag color={record.region === 'local' ? 'green' : 'red'}>{text}</Tag>
-      ),
     },
     {
       title: '注册资本',
@@ -41,7 +66,7 @@ const SnipeListTable = memo(({
       width: 110,
     },
     {
-      title: type === 'cashcow' ? '营收' : '级别',
+      title: type === 'cashcow' ? '营业收入' : '成员级别',
       dataIndex: type === 'cashcow' ? 'revenue' : 'level',
       width: 100,
       render: (value) => {
@@ -51,6 +76,17 @@ const SnipeListTable = memo(({
         return <Tag color="blue">{LEVEL_MAP[value] || value}</Tag>;
       },
     },
+    ...(type === 'cashcow' ? [{
+      title: '成员级别',
+      dataIndex: 'level',
+      width: 100,
+      render: (value) => <Tag color="blue">{LEVEL_MAP[value] || value}</Tag>,
+    }] : [{
+      title: '营业收入',
+      dataIndex: 'revenue',
+      width: 100,
+      render: (value) => value ? <span className="text-red-600 font-bold">{value}亿</span> : '-',
+    }]),
     {
       title: '操作',
       key: 'action',

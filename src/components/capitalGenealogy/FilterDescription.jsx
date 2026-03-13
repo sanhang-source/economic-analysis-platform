@@ -1,8 +1,8 @@
 import React, { memo } from 'react';
 
 const FILTER_DESCRIPTIONS = {
-  cashcow: '筛选条件：外地企业、级别为核心/一级/二级、营收不低于1亿元',
-  newproject: '筛选条件：外地企业、级别为核心/一级/二级、近3年成立、注册资本不低于5000万元'
+  cashcow: '筛选条件：外地企业、营业收入不低于1亿元',
+  newproject: '筛选条件：外地企业、成立日期在近3年内、成员级别为1级/2级、注册资本不低于5000万元'
 };
 
 const FilterDescription = memo(({ type }) => (

@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button, Tabs, Badge, Tag, Card, Typography, Empty, Spin, message, Row, Col } from 'antd';
-import { ArrowLeftOutlined } from '@ant-design/icons';
+import { ArrowLeftOutlined, ExportOutlined } from '@ant-design/icons';
 import { 
   ClanHeaderCard, 
   ChartPanel, 
@@ -14,6 +14,8 @@ import {
 import useCapitalGenealogyDetail from '../hooks/useCapitalGenealogyDetail';
 
 const { Title } = Typography;
+
+const LEVEL_MAP = { core: '0级', first: '1级', second: '2级' };
 
 const CapitalGenealogyDetail = () => {
   const { id } = useParams();
@@ -43,6 +45,33 @@ const CapitalGenealogyDetail = () => {
   const handleAddToPool = useCallback((record) => {
     message.success(`已将 ${record.name} 加入招商库`);
   }, []);
+
+  const handleExportSnipeList = useCallback(() => {
+    const dataSource = activeTab === 'cashcow' ? cashCowList : newProjectList;
+    const exportData = dataSource.map(item => ({
+      '企业名称': item.name,
+      '行业': item.industry,
+      '所在地区': item.regionName,
+      '注册资本': item.capital,
+      '成立日期': item.foundedDate,
+      '营业收入': item.revenue ? `${item.revenue}亿` : '-',
+      '成员级别': LEVEL_MAP[item.level] || item.level,
+    }));
+    
+    const headers = Object.keys(exportData[0] || {});
+    const csvContent = [
+      headers.join(','),
+      ...exportData.map(row => headers.map(h => row[h] || '-').join(','))
+    ].join('\n');
+    
+    const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `${activeTab === 'cashcow' ? '盯存量企业清单' : '盯增量企业清单'}_${new Date().toLocaleDateString()}.csv`;
+    link.click();
+    
+    message.success(`已导出 ${dataSource.length} 家企业数据`);
+  }, [activeTab, cashCowList, newProjectList]);
 
   const chartConfigs = useMemo(() => ({
     industryGap: createIndustryGapOption(industryGapData),
@@ -129,7 +158,7 @@ const CapitalGenealogyDetail = () => {
               data={investmentTrendData}
               loading={loading}
               emptyText="暂无近三年投资数据"
-              tooltip="筛选条件：成立日期在近3年内、层级为核心/1级/2级、注册资本≥5000万元"
+              tooltip="分析企业：成立日期在近3年内、成员级别为1级/2级、注册资本不低于5000万元"
             />
           </Col>
           <Col span={8}>
@@ -139,15 +168,26 @@ const CapitalGenealogyDetail = () => {
               data={cityFlowData}
               loading={loading}
               emptyText="暂无外流数据，所有高质量新增企业均在前海"
-              tooltip="筛选条件：成立日期在近3年内、层级为核心/1级/2级、注册资本≥5000万元、非前海企业"
+              tooltip="分析企业：成立日期在近3年内、成员级别为1级/2级、注册资本不低于5000万元、非前海企业"
             />
           </Col>
         </Row>
 
         <Card 
-          title={<Title level={5} className="!mb-0">靶向狙击清单</Title>}
+          title={
+            <div className="flex items-center justify-between">
+              <Title level={5} className="!mb-0">靶向狙击清单</Title>
+              <Button 
+                icon={<ExportOutlined />}
+                onClick={handleExportSnipeList}
+              >
+                导出
+              </Button>
+            </div>
+          }
           className="mb-6"
           variant="borderless"
+          styles={{ body: { paddingTop: 8 } }}
         >
           <Tabs 
             activeKey={activeTab} 
@@ -162,6 +202,7 @@ const CapitalGenealogyDetail = () => {
           memberCounts={memberCounts}
           onFilterChange={setMemberFilter}
           loading={loading}
+          onAddToPool={handleAddToPool}
         />
       </Spin>
     </div>
