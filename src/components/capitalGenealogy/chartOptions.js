@@ -44,11 +44,13 @@ export const createIndustryGapOption = (data) => ({
     {
       name: '全国营收',
       type: 'bar',
-      data: data.map(d => -d.nationalRevenue),
-      itemStyle: { 
-        color: ANT_COLORS.primary,
-        borderRadius: [4, 0, 0, 4]
-      },
+      data: data.map(d => ({
+        value: -d.nationalRevenue,
+        itemStyle: {
+          color: d.qianhaiRevenue === 0 ? '#9ca3af' : ANT_COLORS.primary,
+          borderRadius: [4, 0, 0, 4]
+        }
+      })),
       barGap: '-100%',
       label: { show: false }
     },

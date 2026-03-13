@@ -129,6 +129,7 @@ const CapitalGenealogyDetail = () => {
               data={investmentTrendData}
               loading={loading}
               emptyText="暂无近三年投资数据"
+              tooltip="筛选条件：成立日期在近3年内、层级为核心/1级/2级、注册资本≥5000万元"
             />
           </Col>
           <Col span={8}>
@@ -138,6 +139,7 @@ const CapitalGenealogyDetail = () => {
               data={cityFlowData}
               loading={loading}
               emptyText="暂无外流数据，所有高质量新增企业均在前海"
+              tooltip="筛选条件：成立日期在近3年内、层级为核心/1级/2级、注册资本≥5000万元、非前海企业"
             />
           </Col>
         </Row>

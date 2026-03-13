@@ -1,5 +1,6 @@
 import React, { memo } from 'react';
-import { Card, Empty, Spin } from 'antd';
+import { Card, Empty, Spin, Tooltip } from 'antd';
+import { QuestionCircleOutlined } from '@ant-design/icons';
 import ReactECharts from 'echarts-for-react';
 
 const ChartPanel = memo(({ 
@@ -8,11 +9,25 @@ const ChartPanel = memo(({
   data, 
   height = 380,
   loading = false,
-  emptyText = '暂无数据'
+  emptyText = '暂无数据',
+  tooltip
 }) => {
+  const renderTitle = () => {
+    if (!tooltip) return title;
+    
+    return (
+      <div className="flex items-center gap-1">
+        <span>{title}</span>
+        <Tooltip title={tooltip}>
+          <QuestionCircleOutlined className="text-gray-400 cursor-help" />
+        </Tooltip>
+      </div>
+    );
+  };
+
   return (
     <Card 
-      title={title} 
+      title={renderTitle()} 
       variant="borderless"
       styles={{ body: { padding: 12 } }}
     >

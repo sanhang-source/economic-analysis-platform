@@ -38,11 +38,11 @@ export const useCapitalGenealogyDetail = (clanId) => {
     
     return Object.values(industryMap)
       .filter(item => item.nationalRevenue > 0)
-      .sort((a, b) => {
-        if (a.qianhaiRevenue === 0 && b.qianhaiRevenue !== 0) return -1;
-        if (a.qianhaiRevenue !== 0 && b.qianhaiRevenue === 0) return 1;
-        return a.qianhaiRevenue - b.qianhaiRevenue;
-      })
+      .map(item => ({
+        ...item,
+        gap: item.nationalRevenue - item.qianhaiRevenue
+      }))
+      .sort((a, b) => a.gap - b.gap)
       .slice(0, 8);
   }, [members]);
 
