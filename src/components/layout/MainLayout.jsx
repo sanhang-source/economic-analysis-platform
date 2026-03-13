@@ -116,9 +116,13 @@ const MainLayout = () => {
           theme="light"
           mode="inline"
           selectedKeys={(() => {
-            // 处理详情页菜单选中
+            // 处理详情页菜单选中 - 供应链分析
             if (location.pathname.startsWith('/industry/trade/detail/')) {
               return ['/industry/trade'];
+            }
+            // 处理详情页菜单选中 - 集团系挖潜
+            if (location.pathname.startsWith('/industry/capital/detail/')) {
+              return ['/industry/capital'];
             }
             return [location.pathname];
           })()}

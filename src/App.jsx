@@ -14,6 +14,7 @@ import LoginPage from './pages/LoginPage';
 import LeadsPool from './pages/LeadsPool';
 
 import CapitalGenealogy from './pages/CapitalGenealogy';
+import CapitalGenealogyDetail from './pages/CapitalGenealogyDetail';
 import TradeEcosystem from './pages/TradeEcosystem';
 import TradeEcosystemList from './pages/TradeEcosystemList';
 import EconomicMonitor from './pages/EconomicMonitor';
@@ -73,6 +74,7 @@ const App = () => {
             <Route path="industry/graph" element={<IndustryGraph />} />
 
             <Route path="industry/capital" element={<CapitalGenealogy />} />
+            <Route path="industry/capital/detail/:id" element={<CapitalGenealogyDetail />} />
             <Route path="industry/trade" element={<TradeEcosystemList />} />
             <Route path="industry/trade/detail/:id" element={<TradeEcosystem />} />
             

@@ -57,7 +57,7 @@ export const menuConfig = [
       {
         key: '/industry/capital',
         icon: <NodeIndexOutlined />,
-        label: '企业族群',
+        label: '集团系挖潜',
       },
       {
         key: '/industry/trade',
@@ -163,7 +163,8 @@ export const breadcrumbMap = {
   '/industry': ['产业大脑'],
   '/industry/graph': ['产业大脑', '区域产业'],
 
-  '/industry/capital': ['产业大脑', '企业族群'],
+  '/industry/capital': ['产业大脑', '集团系挖潜'],
+  '/industry/capital/detail': ['产业大脑', '集团系挖潜', '挖潜详情'],
   '/industry/trade': ['产业大脑', '供应链分析'],
   '/industry/trade/detail': ['产业大脑', '供应链分析', '企业详情'],
   '/enterprise': ['企业档案'],
