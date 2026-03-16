@@ -53,7 +53,11 @@ export const menuConfig = [
         icon: <ShareAltOutlined />,
         label: '区域产业',
       },
-
+      {
+        key: '/industry/642-nav',
+        icon: <ApartmentOutlined />,
+        label: '642产业导航',
+      },
       {
         key: '/industry/capital',
         icon: <NodeIndexOutlined />,
@@ -162,7 +166,7 @@ export const breadcrumbMap = {
   '/investment/projects': ['招商引资', '项目看板'],
   '/industry': ['产业大脑'],
   '/industry/graph': ['产业大脑', '区域产业'],
-
+  '/industry/642-nav': ['产业大脑', '642产业导航'],
   '/industry/capital': ['产业大脑', '集团系挖潜'],
   '/industry/capital/detail': ['产业大脑', '集团系挖潜', '挖潜详情'],
   '/industry/trade': ['产业大脑', '供应链分析'],

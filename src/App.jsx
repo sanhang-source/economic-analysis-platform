@@ -17,6 +17,7 @@ import CapitalGenealogy from './pages/CapitalGenealogy';
 import CapitalGenealogyDetail from './pages/CapitalGenealogyDetail';
 import TradeEcosystem from './pages/TradeEcosystem';
 import TradeEcosystemList from './pages/TradeEcosystemList';
+import Industry642Nav from './pages/Industry642Nav';
 import EconomicMonitor from './pages/EconomicMonitor';
 
 import PolicySimulation from './pages/PolicySimulation';
@@ -72,6 +73,7 @@ const App = () => {
             
             {/* 产业大脑子页面 */}
             <Route path="industry/graph" element={<IndustryGraph />} />
+            <Route path="industry/642-nav" element={<Industry642Nav />} />
 
             <Route path="industry/capital" element={<CapitalGenealogy />} />
             <Route path="industry/capital/detail/:id" element={<CapitalGenealogyDetail />} />
