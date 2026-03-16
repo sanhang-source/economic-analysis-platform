@@ -1,6 +1,7 @@
-import React, { useState, useMemo } from 'react';
-import { Typography, Card, Collapse, Empty } from 'antd';
-import { useSearchParams } from 'react-router-dom';
+import React, { useMemo } from 'react';
+import { Card, Button } from 'antd';
+import { useSearchParams, useNavigate } from 'react-router-dom';
+import { ArrowLeftOutlined } from '@ant-design/icons';
 import { useSupplyChainList } from '../hooks/useSupplyChainList';
 
 // 子组件
@@ -17,24 +18,19 @@ import {
   allIndustries642,
 } from '../mock/industry642Mock';
 
-const { Title, Text } = Typography;
-const { Panel } = Collapse;
-
 /**
  * TradeEcosystemList - 产业供应链工作台（重构）
- * 
+ *
  * 路由：/industry/trade?industry=[产业名]
- * 
+ *
  * UI布局：上下分层结构
  * - 上半部分：产业供应链洞察（可折叠）
  * - 下半部分：核心企业清单
  */
 const TradeEcosystemList = () => {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const industryName = searchParams.get('industry');
-  
-  // 洞察面板折叠状态
-  const [insightsExpanded, setInsightsExpanded] = useState(!!industryName);
 
   const {
     data,
@@ -52,8 +48,8 @@ const TradeEcosystemList = () => {
   // 根据产业名称获取洞察数据
   const insightsData = useMemo(() => {
     if (!industryName) return null;
-    
-    const industry = allIndustries642.find(item => item.name === industryName);
+
+    const industry = allIndustries642.find((item) => item.name === industryName);
     if (!industry) return null;
 
     return {
@@ -62,57 +58,35 @@ const TradeEcosystemList = () => {
       topProducts: topProductsByIndustry[industry.id] || [],
       stats: {
         enterpriseCount: industry.enterpriseCount,
-        totalAmount: industry.totalSales + industry.totalPurchase,
+        totalSales: industry.totalSales,
+        totalPurchase: industry.totalPurchase,
+        localSalesRatio: industry.localSalesRatio,
         localSupportRatio: industry.localSupportRatio,
       },
     };
   }, [industryName]);
 
-  // 页面标题
-  const pageTitle = industryName 
-    ? `${industryName} - 产业供应链工作台` 
-    : '产业供应链工作台';
+  // 返回供应链生态页面
+  const handleBackToOverview = () => {
+    navigate('/industry/642-nav');
+  };
 
   return (
-    <div className="-m-4 p-4 bg-gray-50 min-h-full">
-      {/* 页面标题 */}
+    <div className="-m-4 min-h-full bg-gray-50 p-4">
+      {/* 返回按钮 */}
       <div className="mb-4">
-        <Title level={4} className="!mb-0">{pageTitle}</Title>
-        <Text type="secondary">
-          {industryName 
-            ? `基于发票数据分析，展示${industryName}的供应链生态与补链强链机会`
-            : '基于发票数据分析，展示产业供应链生态与核心企业清单'
-          }
-        </Text>
+        <Button icon={<ArrowLeftOutlined />} onClick={handleBackToOverview}>
+          返回产业大盘
+        </Button>
       </div>
 
-      {/* 上半部分：产业供应链洞察（可折叠） */}
+      {/* 上半部分：产业供应链洞察 */}
       {industryName && insightsData && (
-        <Collapse
-          activeKey={insightsExpanded ? ['insights'] : []}
-          onChange={(keys) => setInsightsExpanded(keys.includes('insights'))}
-          className="mb-4"
-          ghost
-        >
-          <Panel 
-            header="产业供应链洞察" 
-            key="insights"
-            className="bg-white rounded-lg"
-          >
-            <IndustryInsightsPanel
-              industryName={industryName}
-              insightsData={insightsData}
-            />
-          </Panel>
-        </Collapse>
+        <IndustryInsightsPanel industryName={industryName} insightsData={insightsData} />
       )}
 
       {/* 下半部分：核心企业清单 */}
-      <Card 
-        title="产业核心企业清单" 
-        variant="borderless"
-        className="mb-4"
-      >
+      <Card title="产业核心企业清单" variant="borderless" className="mb-4">
         {/* 筛选栏 */}
         <FilterBar
           filters={filters}

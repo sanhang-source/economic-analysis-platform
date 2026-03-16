@@ -1,6 +1,6 @@
 import React, { useState, memo } from 'react';
 import { Card, Tabs, Table, Button, Tag, Row, Col, Statistic, Empty } from 'antd';
-import { FireOutlined, TrophyOutlined, PlusOutlined } from '@ant-design/icons';
+import { FireOutlined, TrophyOutlined, PlusOutlined, ExportOutlined } from '@ant-design/icons';
 import ReactECharts from 'echarts-for-react';
 
 /**
@@ -42,21 +42,21 @@ const IndustryInsightsPanel = memo(({ industryName, insightsData }) => {
       ellipsis: true,
     },
     {
-      title: '服务本地企业数',
+      title: '本地合作企业数量',
       dataIndex: 'serviceCount',
-      width: 130,
-      render: (count) => <Tag color="blue">{count}家</Tag>,
+      width: 150,
+      render: (count) => `${count}家`,
     },
     {
-      title: '累计交易金额',
+      title: '累计采购金额',
       dataIndex: 'amount',
-      width: 130,
+      width: 150,
       render: (amount) => `${(amount / 10000).toFixed(1)}亿`,
     },
     {
       title: '操作',
       key: 'action',
-      width: 130,
+      width: 150,
       render: () => (
         <Button type="primary" size="small" icon={<PlusOutlined />}>
           加入招商库
@@ -85,21 +85,21 @@ const IndustryInsightsPanel = memo(({ industryName, insightsData }) => {
       ellipsis: true,
     },
     {
-      title: '服务本地企业数',
+      title: '本地合作企业数量',
       dataIndex: 'serviceCount',
-      width: 130,
-      render: (count) => <Tag color="blue">{count}家</Tag>,
+      width: 150,
+      render: (count) => `${count}家`,
     },
     {
-      title: '累计交易金额',
+      title: '累计销售金额',
       dataIndex: 'amount',
-      width: 130,
+      width: 150,
       render: (amount) => `${(amount / 10000).toFixed(1)}亿`,
     },
     {
       title: '操作',
       key: 'action',
-      width: 130,
+      width: 150,
       render: () => (
         <Button type="primary" size="small" icon={<PlusOutlined />}>
           加入招商库
@@ -111,9 +111,7 @@ const IndustryInsightsPanel = memo(({ industryName, insightsData }) => {
   // 优势商品图表配置
   const productChartOption = {
     tooltip: {
-      trigger: 'axis',
-      axisPointer: { type: 'shadow' },
-      formatter: '{b}: {c}亿 ({d}%)',
+      show: false,
     },
     grid: {
       left: '3%',
@@ -168,9 +166,9 @@ const IndustryInsightsPanel = memo(({ industryName, insightsData }) => {
       ),
       children: (
         <Row gutter={[16, 16]}>
-          <Col span={14}>
-            <Card 
-              title="补链靶向库" 
+          <Col span={24}>
+            <Card
+              title="补链靶向库"
               size="small"
               extra={<Tag color="error">急需引入</Tag>}
             >
@@ -188,18 +186,6 @@ const IndustryInsightsPanel = memo(({ industryName, insightsData }) => {
               )}
             </Card>
           </Col>
-          <Col span={10}>
-            <Card title="优势输出商品" size="small">
-              {topProducts.length > 0 ? (
-                <ReactECharts
-                  option={productChartOption}
-                  style={{ height: 320 }}
-                />
-              ) : (
-                <Empty description="暂无商品数据" />
-              )}
-            </Card>
-          </Col>
         </Row>
       ),
     },
@@ -208,16 +194,17 @@ const IndustryInsightsPanel = memo(({ industryName, insightsData }) => {
       label: (
         <span>
           <TrophyOutlined className="mr-1" />
-          强链/延链洞察（盯销售）
+          强链洞察（盯销售）
         </span>
       ),
       children: (
-        <Row gutter={[16, 16]}>
+        <Row gutter={[16, 16]} align="stretch">
           <Col span={14}>
-            <Card 
-              title="强链目标库" 
+            <Card
+              title="强链目标库"
               size="small"
               extra={<Tag color="success">优势输出</Tag>}
+              className="h-full"
             >
               {strengthenData.length > 0 ? (
                 <Table
@@ -234,11 +221,11 @@ const IndustryInsightsPanel = memo(({ industryName, insightsData }) => {
             </Card>
           </Col>
           <Col span={10}>
-            <Card title="优势输出商品" size="small">
+            <Card title="优势输出商品" size="small" className="h-full" styles={{ body: { height: 'calc(100% - 48px)', padding: 0 } }}>
               {topProducts.length > 0 ? (
                 <ReactECharts
                   option={productChartOption}
-                  style={{ height: 320 }}
+                  style={{ height: '100%' }}
                 />
               ) : (
                 <Empty description="暂无商品数据" />
@@ -254,14 +241,14 @@ const IndustryInsightsPanel = memo(({ industryName, insightsData }) => {
   const stats = insightsData?.stats || {};
 
   return (
-    <Card 
-      title={`${industryName || '产业'}供应链洞察`}
+    <Card
+      title={`产业供应链洞察 - ${industryName || ''}`}
       className="mb-4"
       variant="borderless"
     >
       {/* 基础看板 */}
-      <Row gutter={[16, 16]} className="mb-4">
-        <Col span={8}>
+      <Row gutter={[12, 12]} className="mb-4">
+        <Col flex="1">
           <Card size="small">
             <Statistic
               title="样本企业数"
@@ -270,23 +257,44 @@ const IndustryInsightsPanel = memo(({ industryName, insightsData }) => {
             />
           </Card>
         </Col>
-        <Col span={8}>
+        <Col flex="1">
           <Card size="small">
             <Statistic
-              title="产业总交易额"
-              value={stats.totalAmount ? (stats.totalAmount / 10000).toFixed(1) : 0}
+              title="采购总额"
+              value={stats.totalPurchase ? (stats.totalPurchase / 10000).toFixed(1) : 0}
               suffix="亿"
             />
           </Card>
         </Col>
-        <Col span={8}>
+        <Col flex="1">
           <Card size="small">
             <Statistic
-              title="本地配套率"
+              title="销售总额"
+              value={stats.totalSales ? (stats.totalSales / 10000).toFixed(1) : 0}
+              suffix="亿"
+            />
+          </Card>
+        </Col>
+        <Col flex="1">
+          <Card size="small">
+            <Statistic
+              title="本地采购率"
               value={stats.localSupportRatio || 0}
               suffix="%"
               valueStyle={{
                 color: (stats.localSupportRatio || 0) < 30 ? '#f5222d' : '#52c41a',
+              }}
+            />
+          </Card>
+        </Col>
+        <Col flex="1">
+          <Card size="small">
+            <Statistic
+              title="本地销售率"
+              value={stats.localSalesRatio || 0}
+              suffix="%"
+              valueStyle={{
+                color: (stats.localSalesRatio || 0) < 30 ? '#f5222d' : '#52c41a',
               }}
             />
           </Card>
@@ -299,6 +307,33 @@ const IndustryInsightsPanel = memo(({ industryName, insightsData }) => {
         onChange={setActiveTab}
         items={tabItems}
         type="card"
+        tabBarExtraContent={
+          <Button
+            icon={<ExportOutlined />}
+            onClick={() => {
+              const data = activeTab === 'supplement' ? supplementData : strengthenData;
+              const filename = activeTab === 'supplement' ? '外地供应商数据' : '外地客户数据';
+              // 导出CSV
+              const headers = activeTab === 'supplement'
+                ? ['排名', '外地供应商名称', '本地合作企业数量', '累计采购金额(亿)']
+                : ['排名', '外地客户名称', '本地合作企业数量', '累计销售金额(亿)'];
+              const rows = data.map(item => [
+                item.rank,
+                item.name,
+                `${item.serviceCount}家`,
+                (item.amount / 10000).toFixed(1)
+              ]);
+              const csvContent = [headers.join(','), ...rows.map(row => row.join(','))].join('\n');
+              const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
+              const link = document.createElement('a');
+              link.href = URL.createObjectURL(blob);
+              link.download = `${filename}-${industryName || '产业'}.csv`;
+              link.click();
+            }}
+          >
+            导出
+          </Button>
+        }
       />
     </Card>
   );

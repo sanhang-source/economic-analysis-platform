@@ -14,9 +14,9 @@ const getPenetrationLevel = (rate) => {
 };
 
 const formatAmount = (amount) => {
-  if (!amount) return '0亿';
-  if (amount >= 10000) return `${(amount / 10000).toFixed(1)}万亿`;
-  return `${amount}亿`;
+  if (!amount) return { value: '0', unit: '亿' };
+  if (amount >= 10000) return { value: (amount / 10000).toFixed(1), unit: '万亿' };
+  return { value: amount.toString(), unit: '亿' };
 };
 
 /**
@@ -193,7 +193,14 @@ const CapitalGenealogy = () => {
             <Card variant="borderless">
               <div className="text-gray-500 text-sm mb-1">集团总营收规模</div>
               <div className="text-2xl font-bold text-blue-500">
-                {formatAmount(stats.totalRevenue)}
+                {(() => {
+                  const { value, unit } = formatAmount(stats.totalRevenue);
+                  return (
+                    <>
+                      {value} <span className="text-sm font-normal">{unit}</span>
+                    </>
+                  );
+                })()}
               </div>
             </Card>
           </Col>
@@ -237,13 +244,19 @@ const CapitalGenealogy = () => {
                   <div className="bg-gray-50 rounded-lg p-3">
                     <div className="text-xs text-gray-500 mb-1">集团营收</div>
                     <div className="text-lg font-bold text-gray-800">
-                      {formatAmount(group.groupTotalRevenue)}
+                      {(() => {
+                        const { value, unit } = formatAmount(group.groupTotalRevenue);
+                        return `${value}${unit}`;
+                      })()}
                     </div>
                   </div>
                   <div className="bg-blue-50 rounded-lg p-3">
                     <div className="text-xs text-blue-600 mb-1">前海营收</div>
                     <div className="text-lg font-bold text-blue-600">
-                      {formatAmount(group.qianhaiRevenue)}
+                      {(() => {
+                        const { value, unit } = formatAmount(group.qianhaiRevenue);
+                        return `${value}${unit}`;
+                      })()}
                     </div>
                   </div>
                 </div>

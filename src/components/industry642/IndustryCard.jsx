@@ -10,9 +10,9 @@ import { FireOutlined, TrophyOutlined } from '@ant-design/icons';
  * @param {string} data.id - 产业ID
  * @param {string} data.name - 产业名称
  * @param {number} data.enterpriseCount - 样本企业数
- * @param {number} data.totalSales - 总销售额（万元）
- * @param {number} data.totalPurchase - 总采购额（万元）
- * @param {number} data.localSupportRatio - 本地配套率 %
+ * @param {number} data.totalSales - 销售总额（万元）
+ * @param {number} data.totalPurchase - 采购总额（万元）
+ * @param {number} data.localSupportRatio - 本地采购率 %
  * @param {number} data.localSalesRatio - 本地销售率 %
  * @param {boolean} data.urgentChainNeeded - 是否急需补链
  * @param {boolean} data.advantageChain - 是否优势强链
@@ -63,27 +63,27 @@ const IndustryCard = memo(({ data }) => {
 
       {/* 核心指标 */}
       <div className="grid grid-cols-2 gap-4 mb-4">
-        <div className="bg-blue-50 rounded-lg p-3">
-          <div className="text-xs text-gray-500 mb-1">总销售额</div>
-          <div className="text-lg font-bold text-blue-600">
-            {formatAmount(data.totalSales)}
-          </div>
-        </div>
         <div className="bg-green-50 rounded-lg p-3">
-          <div className="text-xs text-gray-500 mb-1">总采购额</div>
+          <div className="text-xs text-gray-500 mb-1">采购总额</div>
           <div className="text-lg font-bold text-green-600">
             {formatAmount(data.totalPurchase)}
+          </div>
+        </div>
+        <div className="bg-blue-50 rounded-lg p-3">
+          <div className="text-xs text-gray-500 mb-1">销售总额</div>
+          <div className="text-lg font-bold text-blue-600">
+            {formatAmount(data.totalSales)}
           </div>
         </div>
       </div>
 
       {/* 健康度指标 */}
       <div className="space-y-2">
-        {/* 本地配套率 */}
+        {/* 本地采购率 */}
         <div className="flex items-center justify-between">
-          <span className="text-sm text-gray-600">本地配套率</span>
+          <span className="text-sm text-gray-600">本地采购率</span>
           <div className="flex items-center gap-2">
-            <div 
+            <div
               className="w-24 h-2 bg-gray-200 rounded-full overflow-hidden"
             >
               <div

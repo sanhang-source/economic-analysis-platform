@@ -116,9 +116,9 @@ const MainLayout = () => {
           theme="light"
           mode="inline"
           selectedKeys={(() => {
-            // 处理详情页菜单选中 - 供应链分析
-            if (location.pathname.startsWith('/industry/trade/detail/')) {
-              return ['/industry/trade'];
+            // 处理详情页菜单选中 - 供应链生态（产业详情页和企业详情页都选中供应链生态）
+            if (location.pathname.startsWith('/industry/trade')) {
+              return ['/industry/642-nav'];
             }
             // 处理详情页菜单选中 - 集团系挖潜
             if (location.pathname.startsWith('/industry/capital/detail/')) {

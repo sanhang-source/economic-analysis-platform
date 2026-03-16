@@ -3,7 +3,7 @@
  * 6大现代服务业 + 4大战略性新兴产业 + 2大重点产业
  */
 
-// 现代服务业（6类）
+// 现代服务业（6个）
 export const modernServiceIndustries = [
   {
     id: 'info-service',
@@ -39,7 +39,7 @@ export const modernServiceIndustries = [
     localSupportRatio: 35.8,
     localSalesRatio: 68.2,
     urgentChainNeeded: false,
-    advantageChain: true, // 优势强链
+    advantageChain: false,
   },
   {
     id: 'professional-service',
@@ -79,7 +79,7 @@ export const modernServiceIndustries = [
   },
 ];
 
-// 战略性新兴产业（4类）
+// 战略性新兴产业（4个）
 export const strategicIndustries = [
   {
     id: 'ai-robot',
@@ -131,7 +131,7 @@ export const strategicIndustries = [
   },
 ];
 
-// 重点产业（2类）
+// 重点产业（2个）
 export const keyIndustries = [
   {
     id: 'cell-gene',
@@ -170,19 +170,19 @@ export const allIndustries642 = [
 export const industryCategories = [
   {
     key: 'modern',
-    title: '现代服务业（6类）',
+    title: '现代服务业（6个）',
     color: '#1677ff',
     bgColor: '#e6f4ff',
   },
   {
     key: 'strategic',
-    title: '战略性新兴产业（4类）',
+    title: '战略性新兴产业（4个）',
     color: '#52c41a',
     bgColor: '#f6ffed',
   },
   {
     key: 'key',
-    title: '重点产业（2类）',
+    title: '重点产业（2个）',
     color: '#fa8c16',
     bgColor: '#fff7e6',
   },
@@ -229,6 +229,13 @@ export const chainSupplementData = {
 
 // 强链/延链洞察 - Top外地客户聚合（按产业）
 export const chainStrengthenData = {
+  'info-service': [
+    { rank: 1, name: '阿里巴巴集团控股有限公司', serviceCount: 45, amount: 28500 },
+    { rank: 2, name: '腾讯云计算(北京)有限责任公司', serviceCount: 38, amount: 22800 },
+    { rank: 3, name: '百度在线网络技术(北京)有限公司', serviceCount: 32, amount: 18500 },
+    { rank: 4, name: '京东科技控股股份有限公司', serviceCount: 28, amount: 14200 },
+    { rank: 5, name: '网易(杭州)网络有限公司', serviceCount: 22, amount: 11500 },
+  ],
   'trade-logistics': [
     { rank: 1, name: '京东物流集团有限公司', serviceCount: 85, amount: 28500 },
     { rank: 2, name: '顺丰速运有限公司', serviceCount: 72, amount: 22800 },
