@@ -21,7 +21,7 @@ const IndustryCard = memo(({ data }) => {
   const navigate = useNavigate();
 
   const handleClick = () => {
-    navigate(`/industry/trade?industry=${data.name}`);
+    navigate(`/industry/trade?industry=${encodeURIComponent(data.name)}`);
   };
 
   // 格式化金额

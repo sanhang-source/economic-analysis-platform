@@ -1,7 +1,7 @@
 import React from 'react';
 import { Row, Col, Button } from 'antd';
 import { ArrowLeftOutlined } from '@ant-design/icons';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTradeEcosystem } from '../hooks/useTradeEcosystem';
 
 // 子组件
@@ -21,7 +21,9 @@ import ProductAnalysis from '../components/tradeEcosystem/ProductAnalysis';
  */
 const TradeEcosystem = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { id } = useParams(); // 获取企业ID
+  const industryName = decodeURIComponent(searchParams.get('industry') || ''); // 获取并解码产业名称
   
   const {
     companyInfo,
@@ -41,9 +43,9 @@ const TradeEcosystem = () => {
       <div>
         <Button
           icon={<ArrowLeftOutlined />}
-          onClick={() => navigate('/industry/trade')}
+          onClick={() => navigate(`/industry/trade${industryName ? `?industry=${encodeURIComponent(industryName)}` : ''}`)}
         >
-          返回列表
+          返回产业详情
         </Button>
       </div>
 
@@ -63,18 +65,18 @@ const TradeEcosystem = () => {
       {/* 4. 月度交易趋势 */}
       <TrendChart monthlyTrend={monthlyTrend} />
 
-      {/* 5. 十大客户 | 十大供应商 */}
+      {/* 5. 十大供应商 | 十大客户 */}
       <Row gutter={[16, 16]}>
-        <Col span={12}>
-          <CustomerChart 
-            topCustomers={topCustomers} 
-            localSalesRatio={metrics.localSalesRatio}
-          />
-        </Col>
         <Col span={12}>
           <SupplierChart 
             topSuppliers={topSuppliers} 
             localPurchaseRatio={metrics.localPurchaseRatio}
+          />
+        </Col>
+        <Col span={12}>
+          <CustomerChart 
+            topCustomers={topCustomers} 
+            localSalesRatio={metrics.localSalesRatio}
           />
         </Col>
       </Row>

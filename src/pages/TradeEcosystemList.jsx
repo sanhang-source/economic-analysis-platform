@@ -30,7 +30,7 @@ import {
 const TradeEcosystemList = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const industryName = searchParams.get('industry');
+  const industryName = decodeURIComponent(searchParams.get('industry') || '');
 
   const {
     data,
@@ -98,9 +98,6 @@ const TradeEcosystemList = () => {
         variant="borderless"
         className="mb-4"
       >
-        {/* 统计卡片 */}
-        <StatCards stats={overviewStats} />
-
         {/* 筛选栏 */}
         <FilterBar
           filters={filters}
@@ -111,14 +108,13 @@ const TradeEcosystemList = () => {
         />
 
         {/* 企业列表 */}
-        <Card variant="borderless" className="mt-4">
-          <EnterpriseTable
-            data={data}
-            pagination={pagination}
-            onPageChange={handlePageChange}
-            loading={loading}
-          />
-        </Card>
+        <EnterpriseTable
+          data={data}
+          pagination={pagination}
+          onPageChange={handlePageChange}
+          loading={loading}
+          industryName={industryName}
+        />
       </Card>
     </div>
   );

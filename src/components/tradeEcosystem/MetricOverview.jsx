@@ -10,7 +10,7 @@ const MetricOverview = ({ metrics, invoiceStats }) => {
     {
       title: '本年度累计开票金额',
       value: (invoiceStats.annualAmount / 10000).toFixed(2),
-      suffix: '亿元',
+      suffix: '亿',
       color: '#1677ff',
     },
     {
@@ -20,16 +20,16 @@ const MetricOverview = ({ metrics, invoiceStats }) => {
       color: '#52c41a',
     },
     {
-      title: '总销售额',
-      value: (metrics.totalSales / 10000).toFixed(2),
-      suffix: '亿元',
-      color: '#722ed1',
+      title: '采购总额',
+      value: (metrics.totalPurchase / 10000).toFixed(2),
+      suffix: '亿',
+      color: '#fa8c16',
     },
     {
-      title: '总采购额',
-      value: (metrics.totalPurchase / 10000).toFixed(2),
-      suffix: '亿元',
-      color: '#fa8c16',
+      title: '销售总额',
+      value: (metrics.totalSales / 10000).toFixed(2),
+      suffix: '亿',
+      color: '#722ed1',
     },
     {
       title: '毛利率估算',
@@ -38,16 +38,16 @@ const MetricOverview = ({ metrics, invoiceStats }) => {
       color: '#13c2c2',
     },
     {
-      title: '客户数量',
-      value: metrics.customerCount,
-      suffix: '家',
-      color: '#722ed1',
-    },
-    {
       title: '供应商数量',
       value: metrics.supplierCount,
       suffix: '家',
       color: '#fa8c16',
+    },
+    {
+      title: '客户数量',
+      value: metrics.customerCount,
+      suffix: '家',
+      color: '#722ed1',
     },
   ];
 
@@ -64,7 +64,12 @@ const MetricOverview = ({ metrics, invoiceStats }) => {
               >
                 {card.value}
               </span>
-              <span className="text-gray-500 text-sm">{card.suffix}</span>
+              <span 
+                className="text-sm"
+                style={{ color: card.color }}
+              >
+                {card.suffix}
+              </span>
             </div>
           </div>
         ))}

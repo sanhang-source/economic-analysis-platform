@@ -250,53 +250,57 @@ const IndustryInsightsPanel = memo(({ industryName, insightsData }) => {
       <Row gutter={[12, 12]} className="mb-4">
         <Col flex="1">
           <Card size="small">
-            <Statistic
-              title="样本企业数"
-              value={stats.enterpriseCount || 0}
-              suffix="家"
-            />
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: 14, color: '#666', marginBottom: 4 }}>样本企业数</div>
+              <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center', gap: 2 }}>
+                <span style={{ fontSize: 24, fontWeight: 'bold', color: '#1677ff' }}>{stats.enterpriseCount || 0}</span>
+                <span style={{ fontSize: 14, color: '#1677ff' }}>家</span>
+              </div>
+            </div>
           </Card>
         </Col>
         <Col flex="1">
           <Card size="small">
-            <Statistic
-              title="采购总额"
-              value={stats.totalPurchase ? (stats.totalPurchase / 10000).toFixed(1) : 0}
-              suffix="亿"
-            />
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: 14, color: '#666', marginBottom: 4 }}>采购总额</div>
+              <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center', gap: 2 }}>
+                <span style={{ fontSize: 24, fontWeight: 'bold', color: '#fa8c16' }}>{stats.totalPurchase ? (stats.totalPurchase / 10000).toFixed(1) : 0}</span>
+                <span style={{ fontSize: 14, color: '#fa8c16' }}>亿</span>
+              </div>
+            </div>
           </Card>
         </Col>
         <Col flex="1">
           <Card size="small">
-            <Statistic
-              title="销售总额"
-              value={stats.totalSales ? (stats.totalSales / 10000).toFixed(1) : 0}
-              suffix="亿"
-            />
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: 14, color: '#666', marginBottom: 4 }}>销售总额</div>
+              <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center', gap: 2 }}>
+                <span style={{ fontSize: 24, fontWeight: 'bold', color: '#722ed1' }}>{stats.totalSales ? (stats.totalSales / 10000).toFixed(1) : 0}</span>
+                <span style={{ fontSize: 14, color: '#722ed1' }}>亿</span>
+              </div>
+            </div>
           </Card>
         </Col>
         <Col flex="1">
           <Card size="small">
-            <Statistic
-              title="本地采购率"
-              value={stats.localSupportRatio || 0}
-              suffix="%"
-              valueStyle={{
-                color: (stats.localSupportRatio || 0) < 30 ? '#f5222d' : '#52c41a',
-              }}
-            />
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: 14, color: '#666', marginBottom: 4 }}>本地采购率</div>
+              <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center', gap: 2 }}>
+                <span style={{ fontSize: 24, fontWeight: 'bold', color: (stats.localSupportRatio || 0) < 30 ? '#f5222d' : '#52c41a' }}>{stats.localSupportRatio || 0}</span>
+                <span style={{ fontSize: 14, color: (stats.localSupportRatio || 0) < 30 ? '#f5222d' : '#52c41a' }}>%</span>
+              </div>
+            </div>
           </Card>
         </Col>
         <Col flex="1">
           <Card size="small">
-            <Statistic
-              title="本地销售率"
-              value={stats.localSalesRatio || 0}
-              suffix="%"
-              valueStyle={{
-                color: (stats.localSalesRatio || 0) < 30 ? '#f5222d' : '#52c41a',
-              }}
-            />
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: 14, color: '#666', marginBottom: 4 }}>本地销售率</div>
+              <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center', gap: 2 }}>
+                <span style={{ fontSize: 24, fontWeight: 'bold', color: (stats.localSalesRatio || 0) < 30 ? '#f5222d' : '#52c41a' }}>{stats.localSalesRatio || 0}</span>
+                <span style={{ fontSize: 14, color: (stats.localSalesRatio || 0) < 30 ? '#f5222d' : '#52c41a' }}>%</span>
+              </div>
+            </div>
           </Card>
         </Col>
       </Row>

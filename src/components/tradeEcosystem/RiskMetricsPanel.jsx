@@ -23,24 +23,22 @@ const RiskMetricsPanel = ({ metrics }) => {
       tooltip: '综合客户集中度、供应商集中度、毛利率、本地配套率等指标计算得出',
     },
     {
-      title: '客户集中度(CR5)',
-      value: (metrics.customerCR5 * 100).toFixed(1),
-      suffix: '%',
-      icon: <TeamOutlined />,
-      color: metrics.customerCR5 > 0.5 ? '#f5222d' : metrics.customerCR5 > 0.4 ? '#faad14' : '#52c41a',
-      progress: true,
-
-      tooltip: '前5大客户销售额占总销售额的比例',
-    },
-    {
       title: '供应商集中度(CR5)',
       value: (metrics.supplierCR5 * 100).toFixed(1),
       suffix: '%',
       icon: <ShoppingCartOutlined />,
       color: metrics.supplierCR5 > 0.5 ? '#f5222d' : metrics.supplierCR5 > 0.4 ? '#faad14' : '#52c41a',
       progress: true,
-
       tooltip: '前5大供应商采购额占总采购额的比例',
+    },
+    {
+      title: '客户集中度(CR5)',
+      value: (metrics.customerCR5 * 100).toFixed(1),
+      suffix: '%',
+      icon: <TeamOutlined />,
+      color: metrics.customerCR5 > 0.5 ? '#f5222d' : metrics.customerCR5 > 0.4 ? '#faad14' : '#52c41a',
+      progress: true,
+      tooltip: '前5大客户销售额占总销售额的比例',
     },
     {
       title: '毛利率估算',
@@ -49,26 +47,25 @@ const RiskMetricsPanel = ({ metrics }) => {
       icon: <PercentageOutlined />,
       color: metrics.grossMargin < 0.1 ? '#f5222d' : metrics.grossMargin < 0.2 ? '#faad14' : '#52c41a',
       progress: true,
-
       tooltip: '(销售额 - 采购额) / 销售额',
     },
     {
-      title: '本地销售占比',
-      value: (metrics.localSalesRatio * 100).toFixed(1),
-      suffix: '%',
-      icon: <PieChartOutlined />,
-      color: '#1677ff',
-      progress: true,
-      tooltip: '本地客户销售额占总销售额的比例',
-    },
-    {
-      title: '本地采购占比',
+      title: '本地采购率',
       value: (metrics.localPurchaseRatio * 100).toFixed(1),
       suffix: '%',
       icon: <PieChartOutlined />,
       color: '#52c41a',
       progress: true,
       tooltip: '本地供应商采购额占总采购额的比例',
+    },
+    {
+      title: '本地销售率',
+      value: (metrics.localSalesRatio * 100).toFixed(1),
+      suffix: '%',
+      icon: <PieChartOutlined />,
+      color: '#1677ff',
+      progress: true,
+      tooltip: '本地客户销售额占总销售额的比例',
     },
   ];
 

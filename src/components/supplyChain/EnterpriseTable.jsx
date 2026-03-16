@@ -11,6 +11,7 @@ const EnterpriseTable = ({
   pagination,
   onPageChange,
   loading,
+  industryName,
 }) => {
   const navigate = useNavigate();
 
@@ -137,7 +138,7 @@ const EnterpriseTable = ({
           type="primary"
           size="small"
           icon={<BarChartOutlined />}
-          onClick={() => navigate(`/industry/trade/detail/${record.id}`)}
+          onClick={() => navigate(`/industry/trade/detail/${record.id}${industryName ? `?industry=${encodeURIComponent(industryName)}` : ''}`)}
         >
           详细分析
         </Button>
