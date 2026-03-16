@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { Card, Button } from 'antd';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { ArrowLeftOutlined } from '@ant-design/icons';
+import { ArrowLeftOutlined, ExportOutlined } from '@ant-design/icons';
 import { useSupplyChainList } from '../hooks/useSupplyChainList';
 
 // 子组件
@@ -86,19 +86,29 @@ const TradeEcosystemList = () => {
       )}
 
       {/* 下半部分：核心企业清单 */}
-      <Card title="产业核心企业清单" variant="borderless" className="mb-4">
+      <Card
+        title={
+          <div className="flex items-center justify-between">
+            <span>产业核心企业清单{industryName ? `-${industryName}` : ''}</span>
+            <Button icon={<ExportOutlined />} onClick={handleExport}>
+              导出
+            </Button>
+          </div>
+        }
+        variant="borderless"
+        className="mb-4"
+      >
+        {/* 统计卡片 */}
+        <StatCards stats={overviewStats} />
+
         {/* 筛选栏 */}
         <FilterBar
           filters={filters}
           filterOptions={filterOptions}
           onFilterChange={handleFilterChange}
           onReset={handleReset}
-          onExport={handleExport}
           loading={loading}
         />
-
-        {/* 统计卡片 */}
-        <StatCards stats={overviewStats} />
 
         {/* 企业列表 */}
         <Card variant="borderless" className="mt-4">
