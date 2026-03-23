@@ -84,14 +84,14 @@ const CapitalGenealogyDetail = () => {
       key: 'cashcow',
       label: (
         <span>
-          <Badge color="red" /> 外地高产出现金牛（盯存量）
+          <Badge color="red" /> 外地高贡献存量企业（盯存量）
           <Tag color="red" className="ml-2">{cashCowList.length}家</Tag>
         </span>
       ),
       children: (
-        <SnipeListTable 
-          type="cashcow" 
-          dataSource={cashCowList} 
+        <SnipeListTable
+          type="cashcow"
+          dataSource={cashCowList}
           loading={loading}
           onAddToPool={handleAddToPool}
         />
@@ -101,14 +101,14 @@ const CapitalGenealogyDetail = () => {
       key: 'newproject',
       label: (
         <span>
-          <Badge color="orange" /> 外地高能级新项目（盯增量）
+          <Badge color="orange" /> 外地高能级增量企业（盯增量）
           <Tag color="orange" className="ml-2">{newProjectList.length}家</Tag>
         </span>
       ),
       children: (
-        <SnipeListTable 
-          type="newproject" 
-          dataSource={newProjectList} 
+        <SnipeListTable
+          type="newproject"
+          dataSource={newProjectList}
           loading={loading}
           onAddToPool={handleAddToPool}
         />
