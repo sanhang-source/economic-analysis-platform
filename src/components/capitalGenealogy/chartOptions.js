@@ -3,11 +3,15 @@ import { ANT_COLORS } from '../../constants/colors';
 
 const CHART_COLORS = ['#1677ff', '#52c41a', '#fa8c16', '#f5222d', '#722ed1', '#13c2c2'];
 
+// 图表文字颜色 - 白色
+const TEXT_COLOR = '#ffffff';
+const TEXT_COLOR_SECONDARY = 'rgba(255, 255, 255, 0.8)';
+
 export const createIndustryGapOption = (data) => ({
   title: { 
     text: '全国 vs 前海 行业营收落差分析', 
     left: 'center',
-    textStyle: { fontSize: 16, fontWeight: 'bold' }
+    textStyle: { fontSize: 16, fontWeight: 'bold', color: TEXT_COLOR }
   },
   tooltip: { 
     trigger: 'axis', 
@@ -22,23 +26,34 @@ export const createIndustryGapOption = (data) => ({
               <span style="color:${ANT_COLORS.error}">落差: ${gap}亿元</span>`;
     }
   },
-  legend: { data: ['全国营收', '前海营收'], bottom: 0 },
+  legend: { 
+    data: [
+      { name: '全国营收', icon: 'roundRect', itemStyle: { color: ANT_COLORS.primary } },
+      { name: '前海营收', icon: 'roundRect', itemStyle: { color: ANT_COLORS.success } }
+    ], 
+    bottom: 0,
+    textStyle: { color: TEXT_COLOR }
+  },
   grid: { left: '8%', right: '8%', bottom: '12%', top: '12%', containLabel: true },
   xAxis: {
     type: 'value',
     name: '营收（亿元）',
     nameLocation: 'middle',
     nameGap: 25,
+    nameTextStyle: { color: TEXT_COLOR },
     axisLabel: { 
-      formatter: (value) => `${Math.abs(value)}亿`
+      formatter: (value) => `${Math.abs(value)}亿`,
+      color: TEXT_COLOR_SECONDARY
     },
-    splitLine: { show: true, lineStyle: { type: 'dashed' } }
+    axisLine: { lineStyle: { color: TEXT_COLOR_SECONDARY } },
+    splitLine: { show: true, lineStyle: { type: 'dashed', color: 'rgba(255, 255, 255, 0.1)' } }
   },
   yAxis: { 
     type: 'category', 
     data: data.map(d => d.industry),
-    axisLabel: { fontSize: 12 },
-    axisTick: { show: false }
+    axisLabel: { fontSize: 12, color: TEXT_COLOR },
+    axisTick: { show: false },
+    axisLine: { lineStyle: { color: TEXT_COLOR_SECONDARY } }
   },
   series: [
     {
@@ -47,7 +62,7 @@ export const createIndustryGapOption = (data) => ({
       data: data.map(d => ({
         value: -d.nationalRevenue,
         itemStyle: {
-          color: d.qianhaiRevenue === 0 ? '#9ca3af' : ANT_COLORS.primary,
+          color: ANT_COLORS.primary,
           borderRadius: [4, 0, 0, 4]
         }
       })),
@@ -71,13 +86,16 @@ export const createInvestmentTrendOption = (data) => ({
   title: { 
     text: '近三年战略投资偏好（注册资本分布）', 
     left: 'center',
-    textStyle: { fontSize: 16, fontWeight: 'bold' }
+    textStyle: { fontSize: 16, fontWeight: 'bold', color: TEXT_COLOR }
   },
   tooltip: { 
     trigger: 'item',
     formatter: '{b}: {c}亿元 ({d}%)'
   },
-  legend: { bottom: 0 },
+  legend: { 
+    bottom: 0,
+    textStyle: { color: TEXT_COLOR }
+  },
   series: [{
     type: 'pie',
     radius: [30, 120],
@@ -97,7 +115,7 @@ export const createCityFlowOption = (data) => ({
   title: { 
     text: '高能级新项目截流城市榜单（Top 5）', 
     left: 'center',
-    textStyle: { fontSize: 16, fontWeight: 'bold' }
+    textStyle: { fontSize: 16, fontWeight: 'bold', color: TEXT_COLOR }
   },
   tooltip: { 
     trigger: 'axis', 
@@ -110,12 +128,19 @@ export const createCityFlowOption = (data) => ({
     name: '注册资本（亿元）',
     nameLocation: 'middle',
     nameGap: 25,
-    axisLabel: { formatter: '{value}亿' }
+    nameTextStyle: { color: TEXT_COLOR },
+    axisLabel: { 
+      formatter: '{value}亿',
+      color: TEXT_COLOR_SECONDARY
+    },
+    axisLine: { lineStyle: { color: TEXT_COLOR_SECONDARY } },
+    splitLine: { show: true, lineStyle: { color: 'rgba(255, 255, 255, 0.1)' } }
   },
   yAxis: { 
     type: 'category', 
     data: data.map(d => d.city).reverse(),
-    axisLabel: { fontSize: 12, fontWeight: 'bold' }
+    axisLabel: { fontSize: 12, fontWeight: 'bold', color: TEXT_COLOR },
+    axisLine: { lineStyle: { color: TEXT_COLOR_SECONDARY } }
   },
   series: [{
     type: 'bar',

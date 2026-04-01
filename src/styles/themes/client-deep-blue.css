@@ -1,0 +1,219 @@
+/**
+ * 主题：client-deep-blue
+ * 描述：标准数据可视化深蓝配色（参考截图）
+ * 适用：集团系挖潜列表页 + 挖潜详情页
+ * 特点：纯蓝背景 + 黄色/金色数据高亮
+ */
+
+:root[data-theme="client-deep-blue"] {
+  /* ========== 页面背景层级 ========== */
+  /* 主背景：用户指定色号 #022066 */
+  --bg-page: #022066;           /* 深蓝 - 页面底层 #022066 */
+  --bg-card: #0a2d7a;           /* 亮蓝 - 卡片背景 */
+  --bg-elevated: #12388f;       /* 更亮蓝 - 悬浮层 */
+  --bg-hover: rgba(255, 193, 7, 0.08);  /* 金色微光悬停 */
+  --bg-inner: #051d5c;          /* 内部区域 */
+  --bg-highlight: rgba(255, 193, 7, 0.12);  /* 金色高亮背景 */
+
+  /* ========== 文字层级 ========== */
+  --text-primary: #ffffff;      /* 纯白 - 主要文字 */
+  --text-secondary: #a3c2ea;    /* 淡蓝 - 次要文字 */
+  --text-muted: #6b8ab5;        /* 灰蓝 - 弱化文字 */
+  --text-placeholder: #4a6b94;  /* 深灰蓝 - 占位符 */
+  --text-inverse: #0a1f44;      /* 反色文字（浅色背景上） */
+
+  /* ========== 强调色（数据高亮）========== */
+  /* 截图中的黄色/金色数据高亮 */
+  --accent-primary: #ffc107;    /* 金色 - 主高亮（如1766.45） */
+  --accent-gold: #ffc107;       /* 金色别名 */
+  --accent-success: #4ade80;    /* 翠绿 - 增长 */
+  --accent-warning: #f59e0b;    /* 琥珀 - 警告 */
+  --accent-danger: #ef4444;     /* 红色 - 危险/高潜能 */
+  --accent-info: #60a5fa;       /* 亮蓝 - 信息 */
+  --accent-cyan: #22d3ee;       /* 青色 */
+  --accent-purple: #a78bfa;     /* 紫色 */
+  --accent-orange: #fb923c;     /* 橙色 */
+
+  /* ========== 模型标签专用色 ========== */
+  --model-blue: #3b82f6;        /* 产贸分离 */
+  --model-purple: #a855f7;      /* 新兴总部 */
+  --model-orange: #f59e0b;      /* 产值统筹 */
+  --model-green: #22c55e;       /* 供应链金融 */
+
+  /* ========== 语义化Tag颜色 ========== */
+  --tag-red: #ef4444;
+  --tag-orange: #f97316;
+  --tag-blue: #3b82f6;
+  --tag-green: #22c55e;
+  --tag-cyan: #06b6d4;
+
+  /* ========== 边框分割 ========== */
+  --border-color: rgba(163, 194, 234, 0.15);   /* 淡蓝边框 */
+  --border-light: rgba(163, 194, 234, 0.08);   /* 更淡边框 */
+  --border-dark: rgba(163, 194, 234, 0.25);    /* 明显边框 */
+
+  /* ========== 图表专用 ========== */
+  --chart-grid: rgba(163, 194, 234, 0.1);     /* 网格线 - 淡蓝 */
+  --chart-line-1: #60a5fa;      /* 亮蓝 - 主线条 */
+  --chart-line-2: #22d3ee;      /* 青色 */
+  --chart-line-3: #ffc107;      /* 金色 */
+  --chart-line-4: #4ade80;      /* 翠绿 */
+  --chart-area-start: rgba(96, 165, 250, 0.4);   /* 蓝色渐变开始 */
+  --chart-area-end: rgba(96, 165, 250, 0.05);    /* 蓝色渐变结束 */
+  --chart-tooltip-bg: rgba(10, 31, 68, 0.98);    /* 深蓝 tooltip */
+  --chart-tooltip-border: rgba(255, 193, 7, 0.2); /* 金色边框 */
+  --chart-text: #a3c2ea;        /* 淡蓝文字 */
+
+  /* ========== 阴影 ========== */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+  --shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.5);
+
+  /* ========== 圆角 ========== */
+  --radius-sm: 6px;
+  --radius: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+
+  /* ========== 间距 ========== */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+}
+
+/* ========== Ant Design 组件覆盖 ========== */
+
+/* Radio.Button 深色主题 - 只在集团系挖潜页面应用 */
+.theme-deep-blue .ant-radio-button-wrapper {
+  background-color: var(--bg-elevated) !important;
+  border-color: var(--border-color) !important;
+  color: var(--text-primary) !important;
+}
+
+.theme-deep-blue .ant-radio-button-wrapper:not(:first-child)::before {
+  background-color: var(--border-color) !important;
+}
+
+.theme-deep-blue .ant-radio-button-wrapper:hover {
+  color: var(--accent-primary) !important;
+}
+
+.theme-deep-blue .ant-radio-button-wrapper-checked {
+  background-color: var(--accent-primary) !important;
+  border-color: var(--accent-primary) !important;
+  color: var(--text-inverse) !important;
+}
+
+/* Input 深色主题 - 只在集团系挖潜页面应用 */
+.theme-deep-blue .ant-input {
+  background-color: var(--bg-elevated) !important;
+  border-color: var(--border-color) !important;
+  color: var(--text-primary) !important;
+}
+
+.theme-deep-blue .ant-input::placeholder {
+  color: var(--text-placeholder) !important;
+}
+
+.theme-deep-blue .ant-input-affix-wrapper {
+  background-color: var(--bg-elevated) !important;
+  border-color: var(--border-color) !important;
+}
+
+.theme-deep-blue .ant-input-clear-icon {
+  color: var(--text-muted) !important;
+}
+
+/* Table 深色主题 - 只在集团系挖潜页面应用 */
+.theme-deep-blue .ant-table {
+  background-color: transparent !important;
+}
+
+.theme-deep-blue .ant-table-thead > tr > th {
+  background-color: var(--bg-elevated) !important;
+  color: var(--text-primary) !important;
+  border-bottom-color: var(--border-color) !important;
+}
+
+.theme-deep-blue .ant-table-tbody > tr > td {
+  border-bottom-color: var(--border-color) !important;
+  color: var(--text-secondary) !important;
+}
+
+.theme-deep-blue .ant-table-tbody > tr:hover > td {
+  background-color: var(--bg-hover) !important;
+}
+
+/* Pagination 深色主题 - 只在集团系挖潜页面应用 */
+.theme-deep-blue .ant-pagination-item {
+  background-color: var(--bg-elevated) !important;
+  border-color: var(--border-color) !important;
+}
+
+.theme-deep-blue .ant-pagination-item a {
+  color: var(--text-secondary) !important;
+}
+
+.theme-deep-blue .ant-pagination-item-active {
+  background-color: var(--accent-primary) !important;
+  border-color: var(--accent-primary) !important;
+}
+
+.theme-deep-blue .ant-pagination-item-active a {
+  color: var(--text-inverse) !important;
+}
+
+.theme-deep-blue .ant-pagination-prev button,
+.theme-deep-blue .ant-pagination-next button {
+  background-color: var(--bg-elevated) !important;
+  border-color: var(--border-color) !important;
+  color: var(--text-secondary) !important;
+}
+
+/* Pagination Select 深色主题 - 每页条数选择器 */
+.theme-deep-blue .ant-pagination-options .ant-select-selector {
+  background-color: var(--bg-elevated) !important;
+  border-color: var(--border-color) !important;
+  color: var(--text-primary) !important;
+}
+
+.theme-deep-blue .ant-pagination-options .ant-select-selection-item {
+  color: var(--text-primary) !important;
+}
+
+.theme-deep-blue .ant-pagination-options .ant-select-arrow {
+  color: var(--text-secondary) !important;
+}
+
+/* Select Dropdown 深色主题 */
+.theme-deep-blue .ant-select-dropdown {
+  background-color: var(--bg-card) !important;
+  border: 1px solid var(--border-color) !important;
+}
+
+.theme-deep-blue .ant-select-item {
+  color: var(--text-secondary) !important;
+  background-color: transparent !important;
+}
+
+.theme-deep-blue .ant-select-item:hover {
+  background-color: var(--bg-hover) !important;
+  color: var(--text-primary) !important;
+}
+
+.theme-deep-blue .ant-select-item-option-selected {
+  background-color: var(--bg-elevated) !important;
+  color: var(--accent-primary) !important;
+}
+
+/* Empty 深色主题 - 只在集团系挖潜页面应用 */
+.theme-deep-blue .ant-empty-description {
+  color: var(--text-muted) !important;
+}
+
+/* Progress 深色主题 - 只在集团系挖潜页面应用 */
+.theme-deep-blue .ant-progress-text {
+  color: var(--text-secondary) !important;
+}

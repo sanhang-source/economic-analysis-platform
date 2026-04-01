@@ -41,15 +41,15 @@ const ClanHeaderCard = memo(({ clanInfo, penetrationRate, getPenetrationStatus }
   const StatItem = ({ icon, label, value, unit, color }) => (
     <div className="flex flex-col items-center justify-center h-full px-3">
       <IconBg color={color}>{icon}</IconBg>
-      <div className="text-xs text-slate-500 mb-1 font-medium tracking-wide">{label}</div>
+      <div className="text-xs text-white mb-1 font-medium tracking-wide">{label}</div>
       <div className="text-xl font-bold" style={{ color }}>
-        {value}<span className="text-sm font-medium ml-1 opacity-80">{unit}</span>
+        {value}<span className="text-sm font-medium ml-1 text-white">{unit}</span>
       </div>
     </div>
   );
 
   return (
-    <Card className="mb-6 shadow-sm border-slate-200" variant="borderless">
+    <Card className="mb-6 bg-card border-custom" variant="borderless">
       <Row gutter={24} align="middle">
         {/* 左侧：集团信息 */}
         <Col span={6}>
@@ -64,8 +64,8 @@ const ClanHeaderCard = memo(({ clanInfo, penetrationRate, getPenetrationStatus }
               {clanInfo.name.charAt(0)}
             </div>
             <div className="min-w-0">
-              <Title level={4} className="!mb-1 truncate text-lg text-slate-800">{clanInfo.name}</Title>
-              <Text type="secondary" className="text-xs line-clamp-1 text-slate-500">{clanInfo.coreCompany}</Text>
+              <Title level={4} className="!mb-1 truncate text-lg" style={{ color: '#ffffff' }}>{clanInfo.name}</Title>
+              <Text className="text-xs line-clamp-1 text-white">{clanInfo.coreCompany}</Text>
             </div>
           </div>
         </Col>
@@ -80,7 +80,7 @@ const ClanHeaderCard = memo(({ clanInfo, penetrationRate, getPenetrationStatus }
               unit="家" 
               color={SAAS_COLORS.primary}
             />
-            <div className="w-px h-10 bg-slate-200" />
+            <div className="w-px h-10 bg-border-custom" />
             <StatItem 
               icon={<BankOutlined style={{ fontSize: 20 }} />}
               label="前海企业" 

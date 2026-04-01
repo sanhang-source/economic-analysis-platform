@@ -1,0 +1,80 @@
+/**
+ * 主题：client-default
+ * 描述：基于现有白色/浅灰色背景的默认配色方案
+ * 适用：集团系挖潜列表页 + 挖潜详情页
+ */
+
+:root[data-theme="client-default"] {
+  /* ========== 页面背景层级 ========== */
+  --bg-page: #f9fafb;           /* 页面最底层背景 bg-gray-50 */
+  --bg-card: #ffffff;           /* 卡片背景 white */
+  --bg-elevated: #ffffff;       /* 悬浮层/ elevated */
+  --bg-hover: rgba(0, 0, 0, 0.02);  /* 悬停背景 */
+  --bg-inner: #f3f4f6;          /* 内部区域 bg-gray-100 */
+  --bg-highlight: #eff6ff;      /* 高亮背景 blue-50 */
+
+  /* ========== 文字层级 ========== */
+  --text-primary: #1f2937;      /* 主要文字 gray-800 */
+  --text-secondary: #4b5563;    /* 次要文字 gray-600 */
+  --text-muted: #6b7280;        /* 弱化文字 gray-500 */
+  --text-placeholder: #9ca3af;  /* 占位符 gray-400 */
+  --text-inverse: #ffffff;      /* 反色文字（深色背景上） */
+
+  /* ========== 强调色（数据高亮）========== */
+  --accent-primary: #6366f1;    /* 主色 indigo-500 */
+  --accent-success: #10b981;    /* 成功/前海相关 emerald-500 */
+  --accent-warning: #f59e0b;    /* 警告/重点 amber-500 */
+  --accent-danger: #ef4444;     /* 危险/高潜能 red-500 */
+  --accent-info: #3b82f6;       /* 信息 blue-500 */
+  --accent-purple: #8b5cf6;     /* 辅助 violet-500 */
+  --accent-orange: '#f97316',   /* 橙色 */
+  --accent-cyan: #22d3ee;       /* 青色 */
+
+  /* ========== 模型标签专用色 ========== */
+  --model-blue: #3b82f6;        /* 产贸分离 */
+  --model-purple: #8b5cf6;      /* 新兴总部 */
+  --model-orange: #f59e0b;      /* 产值统筹 */
+  --model-green: #10b981;       /* 供应链金融 */
+
+  /* ========== 语义化Tag颜色 ========== */
+  --tag-red: #f5222d;
+  --tag-orange: #fa8c16;
+  --tag-blue: #1677ff;
+  --tag-green: #52c41a;
+  --tag-cyan: #13c2c2;
+
+  /* ========== 边框分割 ========== */
+  --border-color: #e5e7eb;      /* gray-200 */
+  --border-light: #f3f4f6;      /* gray-100 */
+  --border-dark: #d1d5db;       /* gray-300 */
+
+  /* ========== 图表专用 ========== */
+  --chart-grid: #e2e8f0;        /* slate-200 */
+  --chart-line-1: #6366f1;      /* indigo-500 */
+  --chart-line-2: #8b5cf6;      /* violet-500 */
+  --chart-line-3: #3b82f6;      /* blue-500 */
+  --chart-line-4: #10b981;      /* emerald-500 */
+  --chart-area-start: rgba(99, 102, 241, 0.4);
+  --chart-area-end: rgba(139, 92, 246, 0.2);
+  --chart-tooltip-bg: rgba(255, 255, 255, 0.95);
+  --chart-tooltip-border: #e2e8f0;
+  --chart-text: #334155;        /* slate-700 */
+
+  /* ========== 阴影 ========== */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+
+  /* ========== 圆角 ========== */
+  --radius-sm: 6px;
+  --radius: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+
+  /* ========== 间距（可选）========== */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+}

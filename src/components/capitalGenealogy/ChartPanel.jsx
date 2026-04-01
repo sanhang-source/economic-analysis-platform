@@ -27,8 +27,9 @@ const ChartPanel = memo(({
 
   return (
     <Card 
-      title={renderTitle()} 
+      title={<span className="text-primary-text">{renderTitle()}</span>} 
       variant="borderless"
+      className="bg-card border-custom"
       styles={{ body: { padding: 12 } }}
     >
       <Spin spinning={loading}>

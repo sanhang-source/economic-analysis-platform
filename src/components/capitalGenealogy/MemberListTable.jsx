@@ -42,57 +42,60 @@ const MemberListTable = memo(({
 
   const columns = useMemo(() => [
     {
-      title: '企业名称',
+      title: <span className="text-white">企业名称</span>,
       dataIndex: 'name',
       render: (text, record) => (
         <div>
-          <div className="font-medium">{text}</div>
+          <div className="font-medium text-white">{text}</div>
           <Tag size="small" color="cyan">{record.industry}</Tag>
         </div>
       ),
     },
     {
-      title: '所在地区',
+      title: <span className="text-white">所在地区</span>,
       dataIndex: 'regionName',
       width: 120,
+      render: (text) => <span className="text-white">{text}</span>,
     },
     {
-      title: '成员级别',
+      title: <span className="text-white">成员级别</span>,
       dataIndex: 'level',
       width: 120,
       render: (level) => <Tag color="blue">{LEVEL_MAP[level] || level}</Tag>,
     },
     {
-      title: '注册资本',
+      title: <span className="text-white">注册资本</span>,
       dataIndex: 'capital',
       width: 120,
+      render: (text) => <span className="text-white">{text}</span>,
     },
     {
-      title: '成立日期',
+      title: <span className="text-white">成立日期</span>,
       dataIndex: 'foundedDate',
       width: 120,
+      render: (text) => <span className="text-white">{text}</span>,
     },
     {
-      title: '营业收入',
+      title: <span className="text-white">营业收入</span>,
       dataIndex: 'revenue',
       width: 120,
-      render: (value) => value ? `${value}亿` : '-',
+      render: (value) => <span className="text-white">{value ? `${value}亿` : '-'}</span>,
     },
 
   ], [onAddToPool]);
 
   const FilterTags = useMemo(() => (
     <div className="flex items-center gap-2">
-      <span className="text-sm text-gray-500">筛选：</span>
+      <span className="text-sm text-white">筛选：</span>
       {[
         { key: 'all', label: `全部 (${memberCounts.all})`, color: 'blue' },
         { key: 'local', label: `本地 (${memberCounts.local})`, color: 'green' },
         { key: 'outside', label: `外地 (${memberCounts.outside})`, color: 'orange' }
       ].map(item => (
-        <Tag 
+        <Tag
           key={item.key}
           color={memberFilter === item.key ? item.color : 'default'}
-          className="cursor-pointer"
+          className="cursor-pointer bg-elevated text-white border-custom"
           onClick={() => onFilterChange(item.key)}
         >
           {item.label}
@@ -105,28 +108,30 @@ const MemberListTable = memo(({
     <Card 
       title={
         <div className="flex items-center justify-between">
-          <Title level={5} className="!mb-0">成员企业清单</Title>
+          <Title level={5} className="!mb-0 text-primary-text">成员企业清单</Title>
           <div className="flex items-center gap-4">
             {FilterTags}
             <Button 
               icon={<ExportOutlined />}
               onClick={handleExport}
+              className="bg-elevated text-primary-text border-custom hover:text-accent"
             >
               导出
             </Button>
           </div>
         </div>
       }
+      className="bg-card border-custom"
       variant="borderless"
     >
       <Table
         columns={columns}
         dataSource={dataSource}
         rowKey="id"
-        pagination={{ 
-          pageSize: 10, 
-          showSizeChanger: true, 
-          showTotal: (total) => `共 ${total} 家企业` 
+        pagination={{
+          pageSize: 10,
+          showSizeChanger: true,
+          showTotal: (total) => <span className="text-white">共 {total} 家企业</span>
         }}
         size="small"
         loading={loading}

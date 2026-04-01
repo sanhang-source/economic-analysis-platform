@@ -53,17 +53,17 @@ const CapitalGenealogyDetail = () => {
 
   if (!clanInfo) {
     return (
-      <div className="-m-4 p-4 bg-gray-50 min-h-full flex items-center justify-center">
-        <Empty description="未找到该集团信息" />
+      <div className="-m-4 p-4 bg-page min-h-full flex items-center justify-center">
+        <Empty description="未找到该集团信息" className="text-secondary-text" />
       </div>
     );
   }
 
   return (
-    <div className="-m-4 p-4 bg-gray-50 min-h-full">
+    <div className="-m-4 p-4 bg-page min-h-full theme-deep-blue">
       <Button 
         icon={<ArrowLeftOutlined />} 
-        className="mb-4"
+        className="mb-4 bg-elevated text-primary-text border-custom hover:text-accent"
         onClick={handleBack}
       >
         返回集团大盘

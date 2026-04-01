@@ -78,9 +78,8 @@ const ModelContent = ({ config }) => {
   ];
   
   return (
-    <div 
-      className="bg-white rounded-xl p-4 shadow-sm border-l-4 h-full"
-      style={{ borderLeftColor: config.badgeColor }}
+    <div
+      className="h-full"
     >
       <div className="h-full flex flex-col justify-between py-1">
         {fields.map((field) => (
@@ -92,17 +91,17 @@ const ModelContent = ({ config }) => {
             />
             <div className="flex-1">
               {/* 字段标签 - 带背景色 */}
-              <div 
+              <div
                 className="inline-block text-xs font-semibold px-2 py-0.5 rounded mb-1"
-                style={{ 
-                  color: field.color, 
-                  backgroundColor: field.bgColor 
+                style={{
+                  color: '#ffffff',
+                  backgroundColor: field.color
                 }}
               >
                 {field.label}
               </div>
               {/* 字段内容 */}
-              <div className="text-sm text-slate-700 leading-snug">
+              <div className="text-sm text-white leading-snug">
                 {config.content[field.key]}
               </div>
             </div>
@@ -130,10 +129,10 @@ const SnipeListTable = memo(({
       text: '招商机会分布',
       left: 'center',
       top: 5,
-      textStyle: { 
-        fontSize: 14, 
+      textStyle: {
+        fontSize: 14,
         fontWeight: 600,
-        color: '#334155'
+        color: '#ffffff'
       }
     },
     radar: {
@@ -146,25 +145,25 @@ const SnipeListTable = memo(({
       radius: '55%',
       center: ['50%', '55%'],
       axisName: {
-        color: '#64748b',
+        color: '#ffffff',
         fontSize: 11,
         fontWeight: 500,
       },
       splitArea: {
         show: true,
         areaStyle: {
-          color: ['rgba(99, 102, 241, 0.02)', 'rgba(99, 102, 241, 0.06)', 'rgba(99, 102, 241, 0.10)', 'rgba(99, 102, 241, 0.14)'],
+          color: ['rgba(100, 255, 218, 0.02)', 'rgba(100, 255, 218, 0.04)', 'rgba(100, 255, 218, 0.06)', 'rgba(100, 255, 218, 0.08)'],
         },
       },
       splitLine: {
         lineStyle: {
-          color: '#e2e8f0',
+          color: 'var(--chart-grid)',
           width: 1,
         },
       },
       axisLine: {
         lineStyle: {
-          color: '#cbd5e1',
+          color: 'var(--chart-grid)',
           width: 1,
         },
       },
@@ -200,22 +199,22 @@ const SnipeListTable = memo(({
     }],
     tooltip: {
       trigger: 'item',
-      backgroundColor: 'rgba(255, 255, 255, 0.98)',
-      borderColor: '#e2e8f0',
+      backgroundColor: 'var(--chart-tooltip-bg)',
+      borderColor: 'var(--chart-tooltip-border)',
       borderWidth: 1,
       textStyle: {
-        color: '#334155',
+        color: 'var(--chart-text)',
       },
       padding: 12,
       formatter: (params) => {
         const indicators = ['产贸分离', '新兴总部', '产值统筹', '供应链金融'];
         const values = params.value;
-        let html = `<div style="font-weight:600;margin-bottom:8px;color:#1e293b;">${params.name}</div>`;
+        let html = `<div style="font-weight:600;margin-bottom:8px;color:var(--text-primary);">${params.name}</div>`;
         indicators.forEach((ind, i) => {
-          const color = values[i] > 0 ? '#6366f1' : '#94a3b8';
+          const color = values[i] > 0 ? 'var(--accent-primary)' : 'var(--text-muted)';
           html += `<div style="display:flex;align-items:center;margin:4px 0;font-size:13px;">
             <span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:${color};margin-right:8px;"></span>
-            <span style="flex:1;color:#64748b;">${ind}:</span>
+            <span style="flex:1;color:var(--text-muted);">${ind}:</span>
             <span style="font-weight:600;color:${color};">${values[i]}家</span>
           </div>`;
         });
@@ -254,17 +253,17 @@ const SnipeListTable = memo(({
 
   const columns = [
     {
-      title: '企业名称',
+      title: <span className="text-white">企业名称</span>,
       dataIndex: 'name',
       render: (text, record) => (
         <div>
-          <div className="font-medium">{text}</div>
+          <div className="font-medium text-white">{text}</div>
           <Tag size="small" color="cyan">{record.industry}</Tag>
         </div>
       ),
     },
     {
-      title: '招商机会',
+      title: <span className="text-white">招商机会</span>,
       width: 120,
       render: () => (
         <Tag size="small" style={{ backgroundColor: currentConfig.badgeColor + '20', color: currentConfig.badgeColor, borderColor: currentConfig.badgeColor }}>
@@ -273,31 +272,34 @@ const SnipeListTable = memo(({
       ),
     },
     {
-      title: '所在地区',
+      title: <span className="text-white">所在地区</span>,
       dataIndex: 'regionName',
       width: 120,
+      render: (text) => <span className="text-white">{text}</span>,
     },
     {
-      title: '成员级别',
+      title: <span className="text-white">成员级别</span>,
       dataIndex: 'level',
       width: 120,
       render: (level) => <Tag color="blue">{LEVEL_MAP[level] || level}</Tag>,
     },
     {
-      title: '注册资本',
+      title: <span className="text-white">注册资本</span>,
       dataIndex: 'capital',
       width: 120,
+      render: (text) => <span className="text-white">{text}</span>,
     },
     {
-      title: '成立日期',
+      title: <span className="text-white">成立日期</span>,
       dataIndex: 'foundedDate',
       width: 120,
+      render: (text) => <span className="text-white">{text}</span>,
     },
     {
-      title: '营业收入',
+      title: <span className="text-white">营业收入</span>,
       dataIndex: 'revenue',
       width: 120,
-      render: (value) => value ? `${value}亿` : '-',
+      render: (value) => <span className="text-white">{value ? `${value}亿` : '-'}</span>,
     },
   ];
 
@@ -339,15 +341,15 @@ const SnipeListTable = memo(({
 
   return (
     <Card 
-      title={<span className="text-slate-700 font-semibold">靶向招商清单</span>}
-      className="mb-6 shadow-sm border-slate-200"
+      title={<span className="text-primary-text font-semibold">靶向招商清单</span>}
+      className="mb-6 bg-card border-custom"
       variant="borderless"
     >
       {/* 上方布局：左侧雷达图 + 右侧控制面板 */}
       <div className="flex gap-6 mb-6">
         {/* 左侧：雷达图 */}
         <div className="w-1/3">
-          <div className="h-64 bg-white rounded-xl p-2 border border-slate-200 shadow-sm">
+          <div className="h-64 bg-card rounded-xl p-2 border-2 border-white/20 shadow-lg">
             <ReactECharts
               option={radarOption}
               style={{ height: '100%', width: '100%' }}
@@ -357,12 +359,12 @@ const SnipeListTable = memo(({
         </div>
 
         {/* 右侧：模型Tab + 模型内容 */}
-        <div className="w-2/3 h-64 flex flex-col">
+        <div className="w-2/3 h-64 flex flex-col bg-card rounded-xl border-2 border-white/20 shadow-lg p-3">
           {/* 模型Tab */}
           {ModelTabs}
 
           {/* 当前模型内容 - 高度和左侧雷达图一致 */}
-          <div className="flex-1 min-h-0 pb-[1px] pr-[1px]">
+          <div className="flex-1 min-h-0 pb-[1px] pr-[1px] overflow-auto">
             <ModelContent config={currentConfig} />
           </div>
         </div>
@@ -373,6 +375,7 @@ const SnipeListTable = memo(({
         <Button 
           icon={<ExportOutlined />}
           onClick={handleExport}
+          className="bg-elevated text-primary-text border-custom hover:text-accent"
         >
           导出
         </Button>
@@ -389,7 +392,7 @@ const SnipeListTable = memo(({
           loading={loading}
         />
       ) : (
-        <Empty description="暂无符合条件的企业" className="text-slate-400" />
+        <Empty description="暂无符合条件的企业" className="text-muted" />
       )}
     </Card>
   );
