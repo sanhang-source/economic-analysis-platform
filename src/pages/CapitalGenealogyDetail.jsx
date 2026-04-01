@@ -1,19 +1,17 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useMemo, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Button, Card, Typography, Empty, Spin, Row, Col } from 'antd';
+import { Button, Empty, Spin, Row, Col } from 'antd';
 import { ArrowLeftOutlined } from '@ant-design/icons';
-import { 
-  ClanHeaderCard, 
-  ChartPanel, 
-  SnipeListTable, 
+import {
+  ClanHeaderCard,
+  ChartPanel,
+  SnipeListTable,
   MemberListTable,
   createIndustryGapOption,
   createInvestmentTrendOption,
   createCityFlowOption
 } from '../components/capitalGenealogy';
 import useCapitalGenealogyDetail from '../hooks/useCapitalGenealogyDetail';
-
-const { Title } = Typography;
 
 const CapitalGenealogyDetail = () => {
   const { id } = useParams();
@@ -40,9 +38,14 @@ const CapitalGenealogyDetail = () => {
     navigate('/industry/capital');
   }, [navigate]);
 
+  /**
+   * TODO: 实现加入招商库功能
+   * 需要接入全局状态管理或调用 API 将企业加入招商库
+   * @param {Object} record - 企业数据
+   */
   const handleAddToPool = useCallback((record) => {
-    // 这里可以接入全局消息或状态管理
     console.log(`已将 ${record.name} 加入招商库`);
+    // TODO: 接入实际的后端 API 或全局状态管理
   }, []);
 
   const chartConfigs = useMemo(() => ({

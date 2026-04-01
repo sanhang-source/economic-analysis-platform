@@ -7,30 +7,39 @@ const CHART_COLORS = ['#1677ff', '#52c41a', '#fa8c16', '#f5222d', '#722ed1', '#1
 const TEXT_COLOR = '#ffffff';
 const TEXT_COLOR_SECONDARY = 'rgba(255, 255, 255, 0.8)';
 
+// 兼容映射
+const ANT_COLORS_COMPAT = {
+  primary: ANT_COLORS.BLUE,
+  success: ANT_COLORS.GREEN,
+  warning: ANT_COLORS.ORANGE,
+  error: ANT_COLORS.RED,
+  ...ANT_COLORS
+};
+
 export const createIndustryGapOption = (data) => ({
-  title: { 
-    text: '全国 vs 前海 行业营收落差分析', 
+  title: {
+    text: '全国 vs 前海 行业营收落差分析',
     left: 'center',
     textStyle: { fontSize: 16, fontWeight: 'bold', color: TEXT_COLOR }
   },
-  tooltip: { 
-    trigger: 'axis', 
+  tooltip: {
+    trigger: 'axis',
     axisPointer: { type: 'shadow' },
     formatter: (params) => {
       const qianhai = params.find(p => p.seriesName === '前海营收');
       const national = params.find(p => p.seriesName === '全国营收');
       const gap = Math.abs(national?.value || 0) - (qianhai?.value || 0);
       return `<b>${params[0].name}</b><br/>
-              <span style="color:${ANT_COLORS.primary}">全国营收: ${Math.abs(national?.value || 0)}亿元</span><br/>
-              <span style="color:${ANT_COLORS.success}">前海营收: ${qianhai?.value || 0}亿元</span><br/>
-              <span style="color:${ANT_COLORS.error}">落差: ${gap}亿元</span>`;
+              <span style="color:${ANT_COLORS_COMPAT.primary}">全国营收: ${Math.abs(national?.value || 0)}亿元</span><br/>
+              <span style="color:${ANT_COLORS_COMPAT.success}">前海营收: ${qianhai?.value || 0}亿元</span><br/>
+              <span style="color:${ANT_COLORS_COMPAT.error}">落差: ${gap}亿元</span>`;
     }
   },
-  legend: { 
+  legend: {
     data: [
-      { name: '全国营收', icon: 'roundRect', itemStyle: { color: ANT_COLORS.primary } },
-      { name: '前海营收', icon: 'roundRect', itemStyle: { color: ANT_COLORS.success } }
-    ], 
+      { name: '全国营收', icon: 'roundRect', itemStyle: { color: ANT_COLORS_COMPAT.primary } },
+      { name: '前海营收', icon: 'roundRect', itemStyle: { color: ANT_COLORS_COMPAT.success } }
+    ],
     bottom: 0,
     textStyle: { color: TEXT_COLOR }
   },
@@ -41,15 +50,15 @@ export const createIndustryGapOption = (data) => ({
     nameLocation: 'middle',
     nameGap: 25,
     nameTextStyle: { color: TEXT_COLOR },
-    axisLabel: { 
+    axisLabel: {
       formatter: (value) => `${Math.abs(value)}亿`,
       color: TEXT_COLOR_SECONDARY
     },
     axisLine: { lineStyle: { color: TEXT_COLOR_SECONDARY } },
     splitLine: { show: true, lineStyle: { type: 'dashed', color: 'rgba(255, 255, 255, 0.1)' } }
   },
-  yAxis: { 
-    type: 'category', 
+  yAxis: {
+    type: 'category',
     data: data.map(d => d.industry),
     axisLabel: { fontSize: 12, color: TEXT_COLOR },
     axisTick: { show: false },
@@ -62,7 +71,7 @@ export const createIndustryGapOption = (data) => ({
       data: data.map(d => ({
         value: -d.nationalRevenue,
         itemStyle: {
-          color: ANT_COLORS.primary,
+          color: ANT_COLORS_COMPAT.primary,
           borderRadius: [4, 0, 0, 4]
         }
       })),
@@ -73,8 +82,8 @@ export const createIndustryGapOption = (data) => ({
       name: '前海营收',
       type: 'bar',
       data: data.map(d => d.qianhaiRevenue),
-      itemStyle: { 
-        color: ANT_COLORS.success,
+      itemStyle: {
+        color: ANT_COLORS_COMPAT.success,
         borderRadius: [0, 4, 4, 0]
       },
       label: { show: false }
@@ -145,10 +154,10 @@ export const createCityFlowOption = (data) => ({
   series: [{
     type: 'bar',
     data: data.map(d => parseFloat(d.capital)).reverse(),
-    itemStyle: { 
+    itemStyle: {
       color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
         { offset: 0, color: '#ff7875' },
-        { offset: 1, color: ANT_COLORS.error }
+        { offset: 1, color: ANT_COLORS_COMPAT.error }
       ]),
       borderRadius: [0, 4, 4, 0]
     },

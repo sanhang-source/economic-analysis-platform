@@ -3,21 +3,9 @@ import { Card, Tag, Progress, Input, Radio, Typography, Badge, Row, Col, Empty, 
 import { SearchOutlined, QuestionCircleOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { groupList } from '../mock/capitalGenealogyMock';
+import { getPenetrationLevel, formatAmount } from '../utils/formatters';
 
 const { Title, Text } = Typography;
-
-// 工具函数：提取到组件外，避免每次渲染重新创建
-const getPenetrationLevel = (rate) => {
-  if (rate < 10) return { label: '高潜能攻坚', color: '#f5222d', tagColor: 'error' };
-  if (rate < 25) return { label: '重点扩容', color: '#fa8c16', tagColor: 'warning' };
-  return { label: '稳健护盘', color: '#1677ff', tagColor: 'processing' };
-};
-
-const formatAmount = (amount) => {
-  if (!amount) return { value: '0', unit: '亿' };
-  if (amount >= 10000) return { value: (amount / 10000).toFixed(1), unit: '万亿' };
-  return { value: amount.toString(), unit: '亿' };
-};
 
 /**
  * CapitalGenealogy - 集团系挖潜
@@ -77,40 +65,53 @@ const CapitalGenealogy = () => {
     return [...filteredGroups].sort((a, b) => a.penetrationRate - b.penetrationRate);
   }, [filteredGroups]);
 
-  // 缓存统计值，避免重复计算
-  const stats = useMemo(() => ({
-    total: sortedGroups.length,
-    highPotential: sortedGroups.filter(g => g.penetrationRate < 10).length,
-    mediumPotential: sortedGroups.filter(g => g.penetrationRate >= 10 && g.penetrationRate < 25).length,
-    totalRevenue: sortedGroups.reduce((sum, g) => sum + (g.groupTotalRevenue || 0), 0)
-  }), [sortedGroups]);
+  // 缓存统计值，避免重复计算 - 使用单次遍历优化性能
+  const stats = useMemo(() => {
+    let highPotential = 0;
+    let mediumPotential = 0;
+    let totalRevenue = 0;
+
+    sortedGroups.forEach(g => {
+      if (g.penetrationRate < 10) highPotential++;
+      else if (g.penetrationRate < 25) mediumPotential++;
+      totalRevenue += g.groupTotalRevenue || 0;
+    });
+
+    return {
+      total: sortedGroups.length,
+      highPotential,
+      mediumPotential,
+      totalRevenue
+    };
+  }, [sortedGroups]);
 
   return (
-    <div className="-m-4 p-4 bg-gray-50 min-h-full">
+    <div className="-m-4 p-4 bg-page min-h-full theme-deep-blue">
       {/* 页面标题 */}
       <div className="flex items-center justify-between mb-4">
         <div>
-          <Title level={4} className="!mb-0">集团系挖潜</Title>
-          <Text type="secondary">聚焦重点企业，开展集团系增量挖潜，精准识别招商机会</Text>
+          <Title level={4} className="!mb-0" style={{ color: '#ffffff' }}>集团系挖潜</Title>
+          <Text className="text-secondary-text">聚焦重点企业，开展集团系增量挖潜，精准识别招商机会</Text>
         </div>
       </div>
 
       {/* 筛选栏 */}
-      <Card className="mb-6" variant="borderless">
+      <Card className="mb-6 bg-card border-custom" variant="borderless">
         <div className="flex flex-wrap gap-4 items-center">
           {/* 渗透率快捷筛选 */}
           <Radio.Group 
             value={penetrationFilter} 
             onChange={(e) => setPenetrationFilter(e.target.value)}
+            className="theme-radio-group"
           >
-            <Radio.Button value="all">全部</Radio.Button>
-            <Radio.Button value="high">
+            <Radio.Button value="all" className="bg-elevated text-primary-text border-custom">全部</Radio.Button>
+            <Radio.Button value="high" className="bg-elevated text-primary-text border-custom">
               <Badge color="red" /> 高潜能攻坚
             </Radio.Button>
-            <Radio.Button value="medium">
+            <Radio.Button value="medium" className="bg-elevated text-primary-text border-custom">
               <Badge color="orange" /> 重点扩容
             </Radio.Button>
-            <Radio.Button value="low">
+            <Radio.Button value="low" className="bg-elevated text-primary-text border-custom">
               <Badge color="blue" /> 稳健护盘
             </Radio.Button>
           </Radio.Group>
@@ -145,7 +146,7 @@ const CapitalGenealogy = () => {
             placement="bottomLeft"
             overlayStyle={{ maxWidth: 400 }}
           >
-            <QuestionCircleOutlined className="text-gray-400 hover:text-blue-500 cursor-pointer text-base ml-1" />
+            <QuestionCircleOutlined className="text-muted hover:text-accent cursor-pointer text-base ml-1" />
           </Tooltip>
 
           <div className="flex-1" />
@@ -153,10 +154,11 @@ const CapitalGenealogy = () => {
           {/* 搜索框 */}
           <Input
             placeholder="搜索集团名称"
-            prefix={<SearchOutlined />}
+            prefix={<SearchOutlined className="text-muted" />}
             value={searchValue}
             onChange={(e) => setSearchValue(e.target.value)}
-            style={{ width: 240 }}
+            style={{ width: 240, backgroundColor: 'var(--bg-elevated)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
+            className="theme-input"
             allowClear
           />
         </div>
@@ -166,38 +168,38 @@ const CapitalGenealogy = () => {
       <div className="mb-6">
         <Row gutter={16}>
           <Col span={6}>
-            <Card variant="borderless">
-              <div className="text-gray-500 text-sm mb-1">集团总数</div>
-              <div className="text-2xl font-bold text-gray-800">
-                {stats.total} <span className="text-sm font-normal">家</span>
+            <Card variant="borderless" className="bg-card border-custom">
+              <div className="text-sm mb-1" style={{ color: '#ffffff' }}>集团总数</div>
+              <div className="text-2xl font-bold" style={{ color: '#ffffff' }}>
+                {stats.total} <span className="text-sm font-normal" style={{ color: '#ffffff' }}>家</span>
               </div>
             </Card>
           </Col>
           <Col span={6}>
-            <Card variant="borderless">
-              <div className="text-gray-500 text-sm mb-1">高潜能攻坚集团</div>
-              <div className="text-2xl font-bold text-red-500">
-                {stats.highPotential} <span className="text-sm font-normal">家</span>
+            <Card variant="borderless" className="bg-card border-custom">
+              <div className="text-sm mb-1" style={{ color: '#ffffff' }}>高潜能攻坚集团</div>
+              <div className="text-2xl font-bold text-accent-danger">
+                {stats.highPotential} <span className="text-sm font-normal" style={{ color: '#ffffff' }}>家</span>
               </div>
             </Card>
           </Col>
           <Col span={6}>
-            <Card variant="borderless">
-              <div className="text-gray-500 text-sm mb-1">重点扩容集团</div>
-              <div className="text-2xl font-bold text-orange-500">
-                {stats.mediumPotential} <span className="text-sm font-normal">家</span>
+            <Card variant="borderless" className="bg-card border-custom">
+              <div className="text-sm mb-1" style={{ color: '#ffffff' }}>重点扩容集团</div>
+              <div className="text-2xl font-bold text-accent-warning">
+                {stats.mediumPotential} <span className="text-sm font-normal" style={{ color: '#ffffff' }}>家</span>
               </div>
             </Card>
           </Col>
           <Col span={6}>
-            <Card variant="borderless">
-              <div className="text-gray-500 text-sm mb-1">集团总营收规模</div>
-              <div className="text-2xl font-bold text-blue-500">
+            <Card variant="borderless" className="bg-card border-custom">
+              <div className="text-sm mb-1" style={{ color: '#ffffff' }}>集团总营收规模</div>
+              <div className="text-2xl font-bold text-accent-info">
                 {(() => {
                   const { value, unit } = formatAmount(stats.totalRevenue);
                   return (
                     <>
-                      {value} <span className="text-sm font-normal">{unit}</span>
+                      {value} <span className="text-sm font-normal" style={{ color: '#ffffff' }}>{unit}</span>
                     </>
                   );
                 })()}
@@ -215,7 +217,7 @@ const CapitalGenealogy = () => {
             return (
               <Card
                 key={group.id}
-                className="cursor-pointer hover:shadow-lg transition-shadow"
+                className="cursor-pointer hover:shadow-lg transition-shadow bg-card border-custom"
                 variant="borderless"
                 onClick={() => navigate(`/industry/capital/detail/${group.id}`)}
                 styles={{ body: { padding: 16 } }}
@@ -228,9 +230,9 @@ const CapitalGenealogy = () => {
                         className="w-3 h-3 rounded-full flex-shrink-0" 
                         style={{ backgroundColor: group.color }}
                       />
-                      <Text strong className="text-lg truncate">{group.name}</Text>
+                      <Text strong className="text-lg truncate text-primary-text">{group.name}</Text>
                     </div>
-                    <Text type="secondary" className="text-sm line-clamp-1">
+                    <Text className="text-sm line-clamp-1 text-secondary-text">
                       {group.coreCompany}
                     </Text>
                   </div>
@@ -241,18 +243,18 @@ const CapitalGenealogy = () => {
 
                 {/* 核心指标 */}
                 <div className="grid grid-cols-2 gap-4 mb-4">
-                  <div className="bg-gray-50 rounded-lg p-3">
-                    <div className="text-xs text-gray-500 mb-1">集团营收</div>
-                    <div className="text-lg font-bold text-gray-800">
+                  <div className="rounded-lg p-3" style={{ backgroundColor: '#022066' }}>
+                    <div className="text-xs mb-1" style={{ color: '#ffffff' }}>集团营收</div>
+                    <div className="text-lg font-bold text-primary-text">
                       {(() => {
                         const { value, unit } = formatAmount(group.groupTotalRevenue);
                         return `${value}${unit}`;
                       })()}
                     </div>
                   </div>
-                  <div className="bg-blue-50 rounded-lg p-3">
-                    <div className="text-xs text-blue-600 mb-1">前海营收</div>
-                    <div className="text-lg font-bold text-blue-600">
+                  <div className="bg-highlight rounded-lg p-3">
+                    <div className="text-xs text-accent mb-1">前海营收</div>
+                    <div className="text-lg font-bold text-accent">
                       {(() => {
                         const { value, unit } = formatAmount(group.qianhaiRevenue);
                         return `${value}${unit}`;
@@ -264,7 +266,7 @@ const CapitalGenealogy = () => {
                 {/* 渗透率进度条 */}
                 <div className="mb-3">
                   <div className="flex justify-between text-sm mb-1">
-                    <Text type="secondary">前海营收渗透率</Text>
+                    <Text style={{ color: '#ffffff' }}>前海营收渗透率</Text>
                     <Text strong style={{ color: level.color }}>
                       {group.penetrationRate.toFixed(1)}%
                     </Text>
@@ -279,7 +281,7 @@ const CapitalGenealogy = () => {
                 </div>
 
                 {/* 底部统计 */}
-                <div className="flex justify-between text-sm text-gray-500 pt-3 border-t border-gray-100">
+                <div className="flex justify-between text-sm pt-3 border-t border-custom" style={{ color: '#ffffff' }}>
                   <span>成员企业: {group.count}家</span>
                   <span>前海企业: {group.shenzhenCount}家</span>
                 </div>
@@ -290,7 +292,7 @@ const CapitalGenealogy = () => {
       ) : (
         <Empty 
           description="暂无符合条件的集团" 
-          className="py-20"
+          className="py-20 text-secondary-text"
         />
       )}
     </div>

@@ -108,7 +108,7 @@ const MemberListTable = memo(({
     <Card 
       title={
         <div className="flex items-center justify-between">
-          <Title level={5} className="!mb-0 text-primary-text">成员企业清单</Title>
+          <Title level={5} className="!mb-0" style={{ color: '#ffffff' }}>成员企业清单</Title>
           <div className="flex items-center gap-4">
             {FilterTags}
             <Button 

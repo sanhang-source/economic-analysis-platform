@@ -2,41 +2,219 @@ import { useState, useMemo } from 'react';
 import dayjs from 'dayjs';
 import { allClanList, memberCompaniesData, parseCapitalToNumber } from '../mock/capitalGenealogyMock';
 
+// ==================== 常量定义 ====================
+
+// 时间常量
 const THREE_YEARS_AGO = dayjs().subtract(3, 'years');
 
+// 成员级别筛选
 const LEVEL_FILTER = ['core', 'first', 'second'];
+const CORE_LEVELS = ['first', 'second'];
 
-// 前海三大支柱产业
-const PILLAR_INDUSTRIES = ['金融', '现代物流', '科技服务', '互联网', '软件', '信息技术', '人工智能'];
+// 金额阈值（万元）
+const THRESHOLDS = {
+  MIN_CAPITAL: 5000,           // 最低注册资本
+  MIN_REVENUE_MODEL1: 1,       // 模型1最低营收（亿）
+  MIN_REVENUE_MANUFACTURING: 0.5, // 制造业最低营收（亿）
+  LARGE_GROUP_MIN_MEMBERS: 30, // 大型集团最小成员数
+};
 
-// 战略新兴产业
-const EMERGING_INDUSTRIES = ['人工智能', '新能源', '低空经济', 'AI', '新能源汽车', '生物医药', '半导体', '芯片'];
+// 评分配置
+const SCORES = {
+  PILLAR_BASE: 90,           // 支柱产业基础分
+  PILLAR_RANGE: 10,          // 支柱产业随机范围
+  EMERGING_BASE: 70,         // 新兴产业基础分
+  EMERGING_RANGE: 15,        // 新兴产业随机范围
+  OTHER_BASE: 40,            // 其他产业基础分
+  OTHER_RANGE: 20,           // 其他产业随机范围
+  LEVEL: {                   // 地位分
+    core: 40,
+    first: 30,
+    second: 20,
+    associate: 10,
+  },
+  PENETRATION_MULTIPLIER: 1.5, // 渗透率乘数
+  PENETRATION_MAX: 60,       // 渗透率最大分值
+  TOTAL_MAX: 100,            // 总分最大值
+};
 
-// 制造业相关产业
-const MANUFACTURING_INDUSTRIES = ['制造业', '能源', '重工', '电气机械', '汽车制造', '装备制造', '金属制品'];
+// 产业分类
+const INDUSTRIES = {
+  // 前海三大支柱产业
+  PILLAR: ['金融', '现代物流', '科技服务', '互联网', '软件', '信息技术', '人工智能'],
+  // 战略新兴产业
+  EMERGING: ['人工智能', '新能源', '低空经济', 'AI', '新能源汽车', '生物医药', '半导体', '芯片'],
+  // 制造业相关产业
+  MANUFACTURING: ['制造业', '能源', '重工', '电气机械', '汽车制造', '装备制造', '金属制品'],
+  // 商贸类产业关键词
+  TRADING_KEYWORDS: ['批发', '贸易', '零售'],
+  // 金融类产业关键词
+  FINANCE_KEYWORDS: ['金融', '保险', '融资'],
+};
 
-// 计算产业聚集度评分 (0-100)
+// ==================== 工具函数 ====================
+
+/**
+ * 计算产业聚集度评分 (0-100)
+ * 使用基于产业名称的哈希算法确保结果稳定
+ * @param {string} industry - 产业名称
+ * @returns {number} 评分
+ */
 const calcIndustryScore = (industry) => {
-  if (PILLAR_INDUSTRIES.includes(industry)) return 90 + Math.floor(Math.random() * 10);
-  if ([...MANUFACTURING_INDUSTRIES, ...EMERGING_INDUSTRIES].includes(industry)) return 70 + Math.floor(Math.random() * 15);
-  return 40 + Math.floor(Math.random() * 20);
+  // 生成稳定的哈希值
+  const hash = industry.split('').reduce((acc, char) => {
+    return ((acc << 5) - acc) + char.charCodeAt(0) | 0;
+  }, 0);
+  const normalizedHash = Math.abs(hash) % 100 / 100;
+
+  if (INDUSTRIES.PILLAR.includes(industry)) {
+    return SCORES.PILLAR_BASE + Math.floor(normalizedHash * SCORES.PILLAR_RANGE);
+  }
+  if ([...INDUSTRIES.MANUFACTURING, ...INDUSTRIES.EMERGING].includes(industry)) {
+    return SCORES.EMERGING_BASE + Math.floor(normalizedHash * SCORES.EMERGING_RANGE);
+  }
+  return SCORES.OTHER_BASE + Math.floor(normalizedHash * SCORES.OTHER_RANGE);
 };
 
-// 计算集团紧密度评分 (0-100)
+/**
+ * 计算集团紧密度评分 (0-100)
+ * @param {string} level - 成员级别
+ * @param {number} groupPenetrationRate - 集团渗透率
+ * @returns {number} 评分
+ */
 const calcClosenessScore = (level, groupPenetrationRate) => {
-  // 地位分：core=40, first=30, second=20, associate=10
-  const levelScore = { core: 40, first: 30, second: 20, associate: 10 }[level] || 10;
-  // 熟客分：渗透率越高分越高 (0-60分)
-  const penetrationScore = Math.min(Math.round(groupPenetrationRate * 1.5), 60);
-  return Math.min(levelScore + penetrationScore, 100);
+  const levelScore = SCORES.LEVEL[level] || SCORES.LEVEL.associate;
+  const penetrationScore = Math.min(
+    Math.round(groupPenetrationRate * SCORES.PENETRATION_MULTIPLIER),
+    SCORES.PENETRATION_MAX
+  );
+  return Math.min(levelScore + penetrationScore, SCORES.TOTAL_MAX);
 };
+
+/**
+ * 检查产业是否匹配列表中的某个产业
+ * @param {string} industry - 产业名称
+ * @param {string[]} industryList - 产业列表
+ * @returns {boolean}
+ */
+const matchesIndustry = (industry, industryList) => {
+  return industryList.some(ind => industry.includes(ind) || ind.includes(industry));
+};
+
+/**
+ * 检查企业产业是否包含关键词
+ * @param {string} industry - 产业名称
+ * @param {string[]} keywords - 关键词列表
+ * @returns {boolean}
+ */
+const hasIndustryKeyword = (industry, keywords) => {
+  return keywords.some(keyword => industry.includes(keyword));
+};
+
+// ==================== 模型筛选函数 ====================
+
+/**
+ * 模型1：产贸分离机会
+ * 筛选条件：异地 + 核心层级(1/2级) + 营收>1亿 + 制造业/能源/重工 + 集团前海无商贸子公司
+ */
+const filterModel1 = (members, membersWithScore) => {
+  const hasQianhaiTrading = members.some(m =>
+    m.region === 'local' &&
+    hasIndustryKeyword(m.industry, INDUSTRIES.TRADING_KEYWORDS)
+  );
+
+  if (hasQianhaiTrading) return [];
+
+  return membersWithScore
+    .filter(m =>
+      m.region !== 'local' &&
+      CORE_LEVELS.includes(m.level) &&
+      (m.revenue || 0) >= THRESHOLDS.MIN_REVENUE_MODEL1 &&
+      matchesIndustry(m.industry, INDUSTRIES.MANUFACTURING)
+    )
+    .sort((a, b) => (b.revenue || 0) - (a.revenue || 0));
+};
+
+/**
+ * 模型2：新兴产业功能总部引入
+ * 筛选条件：异地 + 核心层级(1/2级) + 近3年新成立 + 注资>5000万 + 战略新兴产业
+ */
+const filterModel2 = (membersWithScore) => {
+  return membersWithScore
+    .filter(m => {
+      const foundedDate = dayjs(m.foundedDate);
+      const capitalNum = parseCapitalToNumber(m.capital);
+      return (
+        m.region !== 'local' &&
+        CORE_LEVELS.includes(m.level) &&
+        foundedDate.isAfter(THREE_YEARS_AGO) &&
+        capitalNum >= THRESHOLDS.MIN_CAPITAL &&
+        matchesIndustry(m.industry, INDUSTRIES.EMERGING)
+      );
+    })
+    .sort((a, b) => parseCapitalToNumber(b.capital) - parseCapitalToNumber(a.capital));
+};
+
+/**
+ * 模型3：跨区域制造产值统筹与结算归集
+ * 筛选条件：前海有实体制造(>5000万) + 异地有同类核心子公司(>5000万)
+ */
+const filterModel3 = (members, membersWithScore) => {
+  const hasQianhaiManufacturing = members.some(m =>
+    m.region === 'local' &&
+    (m.revenue || 0) >= THRESHOLDS.MIN_REVENUE_MANUFACTURING &&
+    matchesIndustry(m.industry, INDUSTRIES.MANUFACTURING)
+  );
+
+  if (!hasQianhaiManufacturing) return [];
+
+  return membersWithScore
+    .filter(m =>
+      m.region !== 'local' &&
+      CORE_LEVELS.includes(m.level) &&
+      (m.revenue || 0) >= THRESHOLDS.MIN_REVENUE_MANUFACTURING &&
+      matchesIndustry(m.industry, INDUSTRIES.MANUFACTURING)
+    )
+    .sort((a, b) => (b.revenue || 0) - (a.revenue || 0));
+};
+
+/**
+ * 模型4：大型实体集团供应链金融中心引入
+ * 筛选条件：千亿级/百亿级大集团 + 成员>50家 + 前海无金融类子公司
+ */
+const filterModel4 = (members, clanInfo, penetrationRate, clanId) => {
+  const isLargeGroup = members.length > THRESHOLDS.LARGE_GROUP_MIN_MEMBERS;
+
+  const hasQianhaiFinance = members.some(m =>
+    m.region === 'local' &&
+    hasIndustryKeyword(m.industry, INDUSTRIES.FINANCE_KEYWORDS)
+  );
+
+  if (!isLargeGroup || hasQianhaiFinance) return [];
+
+  return [{
+    id: `model4-${clanId}`,
+    name: clanInfo?.coreCompany || '',
+    industry: '供应链金融',
+    region: 'outside',
+    regionName: '异地总部',
+    capital: '100亿人民币',
+    foundedDate: clanInfo?.coreInfo?.foundedDate || '-',
+    revenue: 0,
+    level: 'core',
+    industryScore: 95,
+    closenessScore: calcClosenessScore('core', penetrationRate),
+    isModel4Target: true,
+  }];
+};
+
+// ==================== Hook 主函数 ====================
 
 export const useCapitalGenealogyDetail = (clanId) => {
   const [loading, setLoading] = useState(false);
   const [memberFilter, setMemberFilter] = useState('all');
 
   const clanInfo = useMemo(() => allClanList.find(c => c.id === clanId), [clanId]);
-
   const members = useMemo(() => memberCompaniesData[clanId] || [], [clanId]);
 
   const penetrationRate = useMemo(() => {
@@ -53,100 +231,16 @@ export const useCapitalGenealogyDetail = (clanId) => {
     }));
   }, [members, penetrationRate]);
 
-  // 模型1：产贸分离机会
-  // 筛选条件：异地 + 核心层级(1/2级) + 营收>1亿 + 制造业/能源/重工 + 集团前海无商贸子公司
-  const model1Data = useMemo(() => {
-    // 检查集团在前海是否有商贸类子公司（简化：检查是否有"商贸""贸易"类企业）
-    const hasQianhaiTrading = members.some(m => 
-      m.region === 'local' && 
-      (m.industry.includes('批发') || m.industry.includes('贸易') || m.industry.includes('零售'))
-    );
-    
-    if (hasQianhaiTrading) return []; // 已有商贸子公司则不显示
-    
-    return membersWithScore
-      .filter(m => 
-        m.region !== 'local' &&
-        ['first', 'second'].includes(m.level) &&
-        (m.revenue || 0) >= 1 &&
-        MANUFACTURING_INDUSTRIES.some(ind => m.industry.includes(ind) || ind.includes(m.industry))
-      )
-      .sort((a, b) => (b.revenue || 0) - (a.revenue || 0));
-  }, [membersWithScore]);
+  // 四个模型的数据
+  const model1Data = useMemo(() => filterModel1(members, membersWithScore), [members, membersWithScore]);
+  const model2Data = useMemo(() => filterModel2(membersWithScore), [membersWithScore]);
+  const model3Data = useMemo(() => filterModel3(members, membersWithScore), [members, membersWithScore]);
+  const model4Data = useMemo(
+    () => filterModel4(members, clanInfo, penetrationRate, clanId),
+    [members, clanInfo, penetrationRate, clanId]
+  );
 
-  // 模型2：新兴产业功能总部引入
-  // 筛选条件：异地 + 核心层级(1/2级) + 近3年新成立 + 注资>5000万 + 战略新兴产业
-  const model2Data = useMemo(() => {
-    return membersWithScore
-      .filter(m => {
-        const foundedDate = dayjs(m.foundedDate);
-        const capitalNum = parseCapitalToNumber(m.capital);
-        return (
-          m.region !== 'local' &&
-          ['first', 'second'].includes(m.level) &&
-          foundedDate.isAfter(THREE_YEARS_AGO) &&
-          capitalNum >= 5000 &&
-          EMERGING_INDUSTRIES.some(ind => m.industry.includes(ind) || ind.includes(m.industry))
-        );
-      })
-      .sort((a, b) => parseCapitalToNumber(b.capital) - parseCapitalToNumber(a.capital));
-  }, [membersWithScore]);
-
-  // 模型3：跨区域制造产值统筹与结算归集
-  // 筛选条件：前海有实体制造(>5000万) + 异地有同类核心子公司(>5000万)
-  const model3Data = useMemo(() => {
-    // 检查前海是否有制造业且营收>5000万
-    const hasQianhaiManufacturing = members.some(m =>
-      m.region === 'local' &&
-      (m.revenue || 0) >= 0.5 &&
-      MANUFACTURING_INDUSTRIES.some(ind => m.industry.includes(ind) || ind.includes(m.industry))
-    );
-    
-    if (!hasQianhaiManufacturing) return [];
-    
-    // 返回异地的同类制造业企业
-    return membersWithScore
-      .filter(m =>
-        m.region !== 'local' &&
-        ['first', 'second'].includes(m.level) &&
-        (m.revenue || 0) >= 0.5 &&
-        MANUFACTURING_INDUSTRIES.some(ind => m.industry.includes(ind) || ind.includes(m.industry))
-      )
-      .sort((a, b) => (b.revenue || 0) - (a.revenue || 0));
-  }, [membersWithScore, members]);
-
-  // 模型4：大型实体集团供应链金融中心引入
-  // 筛选条件：千亿级/百亿级大集团 + 成员>50家 + 前海无金融类子公司
-  const model4Data = useMemo(() => {
-    // 简化：成员数>30家视为大型集团
-    const isLargeGroup = members.length > 30;
-    
-    // 检查前海是否已有金融类子公司
-    const hasQianhaiFinance = members.some(m =>
-      m.region === 'local' &&
-      (m.industry.includes('金融') || m.industry.includes('保险') || m.industry.includes('融资'))
-    );
-    
-    if (!isLargeGroup || hasQianhaiFinance) return [];
-    
-    // 返回集团本身作为目标客户
-    return [{
-      id: `model4-${clanId}`,
-      name: clanInfo?.coreCompany || '',
-      industry: '供应链金融',
-      region: 'outside',
-      regionName: '异地总部',
-      capital: '100亿人民币',
-      foundedDate: clanInfo?.coreInfo?.foundedDate || '-',
-      revenue: 0,
-      level: 'core',
-      industryScore: 95,
-      closenessScore: calcClosenessScore('core', penetrationRate),
-      isModel4Target: true, // 标记为模型4特殊目标
-    }];
-  }, [membersWithScore, members, clanInfo, penetrationRate, clanId]);
-
-  // 4个模型的统计数据（用于雷达图）
+  // 模型统计数据（用于雷达图）
   const modelStats = useMemo(() => ({
     model1: model1Data.length,
     model2: model2Data.length,
@@ -162,16 +256,16 @@ export const useCapitalGenealogyDetail = (clanId) => {
     model4: model4Data,
   }), [model1Data, model2Data, model3Data, model4Data]);
 
-  // 原有数据（保留用于现有图表）
+  // 产业落差数据
   const industryGapData = useMemo(() => {
     const industryMap = {};
-    
+
     members.forEach(m => {
       if (!industryMap[m.industry]) {
-        industryMap[m.industry] = { 
-          industry: m.industry, 
-          nationalRevenue: 0, 
-          qianhaiRevenue: 0 
+        industryMap[m.industry] = {
+          industry: m.industry,
+          nationalRevenue: 0,
+          qianhaiRevenue: 0
         };
       }
       industryMap[m.industry].nationalRevenue += (m.revenue || 0);
@@ -179,7 +273,7 @@ export const useCapitalGenealogyDetail = (clanId) => {
         industryMap[m.industry].qianhaiRevenue += (m.revenue || 0);
       }
     });
-    
+
     return Object.values(industryMap)
       .filter(item => item.nationalRevenue > 0)
       .map(item => ({
@@ -190,6 +284,7 @@ export const useCapitalGenealogyDetail = (clanId) => {
       .slice(0, 8);
   }, [members]);
 
+  // 投资趋势数据
   const investmentTrendData = useMemo(() => {
     const newCompanies = members.filter(m => {
       const foundedDate = dayjs(m.foundedDate);
@@ -197,20 +292,21 @@ export const useCapitalGenealogyDetail = (clanId) => {
       return (
         foundedDate.isAfter(THREE_YEARS_AGO) &&
         LEVEL_FILTER.includes(m.level) &&
-        capitalNum >= 5000
+        capitalNum >= THRESHOLDS.MIN_CAPITAL
       );
     });
-    
+
     const industryCapital = {};
     newCompanies.forEach(m => {
       industryCapital[m.industry] = (industryCapital[m.industry] || 0) + parseCapitalToNumber(m.capital);
     });
-    
+
     return Object.entries(industryCapital)
       .map(([industry, capital]) => ({ industry, capital: (capital / 10000).toFixed(1) }))
       .sort((a, b) => parseFloat(b.capital) - parseFloat(a.capital));
   }, [members]);
 
+  // 城市流向数据
   const cityFlowData = useMemo(() => {
     const outsideNewCompanies = members.filter(m => {
       const foundedDate = dayjs(m.foundedDate);
@@ -218,34 +314,34 @@ export const useCapitalGenealogyDetail = (clanId) => {
       return (
         foundedDate.isAfter(THREE_YEARS_AGO) &&
         LEVEL_FILTER.includes(m.level) &&
-        capitalNum >= 5000 &&
+        capitalNum >= THRESHOLDS.MIN_CAPITAL &&
         m.region !== 'local'
       );
     });
-    
+
     const cityCapital = {};
     outsideNewCompanies.forEach(m => {
       cityCapital[m.regionName] = (cityCapital[m.regionName] || 0) + parseCapitalToNumber(m.capital);
     });
-    
+
     return Object.entries(cityCapital)
       .map(([city, capital]) => ({ city, capital: (capital / 10000).toFixed(1) }))
       .sort((a, b) => parseFloat(b.capital) - parseFloat(a.capital))
       .slice(0, 5);
   }, [members]);
 
-  // 保留原有cashCowList和newProjectList用于兼容性
-  const cashCowList = useMemo(() => 
+  // 保留原有列表用于兼容性
+  const cashCowList = useMemo(() =>
     members
-      .filter(m => 
+      .filter(m =>
         m.region !== 'local' &&
         LEVEL_FILTER.includes(m.level) &&
-        (m.revenue || 0) >= 1
+        (m.revenue || 0) >= THRESHOLDS.MIN_REVENUE_MODEL1
       )
       .sort((a, b) => (b.revenue || 0) - (a.revenue || 0))
   , [members]);
 
-  const newProjectList = useMemo(() => 
+  const newProjectList = useMemo(() =>
     members
       .filter(m => {
         const foundedDate = dayjs(m.foundedDate);
@@ -254,12 +350,13 @@ export const useCapitalGenealogyDetail = (clanId) => {
           m.region !== 'local' &&
           LEVEL_FILTER.includes(m.level) &&
           foundedDate.isAfter(THREE_YEARS_AGO) &&
-          capitalNum >= 5000
+          capitalNum >= THRESHOLDS.MIN_CAPITAL
         );
       })
       .sort((a, b) => parseCapitalToNumber(b.capital) - parseCapitalToNumber(a.capital))
   , [members]);
 
+  // 成员筛选
   const filteredMembers = useMemo(() => {
     switch (memberFilter) {
       case 'local': return members.filter(m => m.region === 'local');
@@ -268,12 +365,18 @@ export const useCapitalGenealogyDetail = (clanId) => {
     }
   }, [members, memberFilter]);
 
-  const memberCounts = useMemo(() => ({
-    all: members.length,
-    local: members.filter(m => m.region === 'local').length,
-    outside: members.filter(m => m.region !== 'local').length
-  }), [members]);
+  // 成员统计
+  const memberCounts = useMemo(() => {
+    let local = 0;
+    let outside = 0;
+    members.forEach(m => {
+      if (m.region === 'local') local++;
+      else outside++;
+    });
+    return { all: members.length, local, outside };
+  }, [members]);
 
+  // 渗透率状态
   const getPenetrationStatus = (rate) => {
     if (rate < 10) return { color: '#ef4444', tagColor: 'error', label: '高潜能攻坚' };
     if (rate < 25) return { color: '#f97316', tagColor: 'warning', label: '重点扩容' };
@@ -296,7 +399,6 @@ export const useCapitalGenealogyDetail = (clanId) => {
     filteredMembers,
     memberCounts,
     getPenetrationStatus,
-    // 新增
     modelData,
     modelStats,
   };
