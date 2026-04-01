@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Button, Tabs, Badge, Tag, Card, Typography, Empty, Spin, message, Row, Col } from 'antd';
-import { ArrowLeftOutlined, ExportOutlined } from '@ant-design/icons';
+import { Button, Card, Typography, Empty, Spin, Row, Col } from 'antd';
+import { ArrowLeftOutlined } from '@ant-design/icons';
 import { 
   ClanHeaderCard, 
   ChartPanel, 
@@ -15,12 +15,9 @@ import useCapitalGenealogyDetail from '../hooks/useCapitalGenealogyDetail';
 
 const { Title } = Typography;
 
-const LEVEL_MAP = { core: '0级', first: '1级', second: '2级' };
-
 const CapitalGenealogyDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('cashcow');
 
   const {
     loading,
@@ -29,13 +26,14 @@ const CapitalGenealogyDetail = () => {
     industryGapData,
     investmentTrendData,
     cityFlowData,
-    cashCowList,
-    newProjectList,
     filteredMembers,
     memberFilter,
     memberCounts,
     setMemberFilter,
-    getPenetrationStatus
+    getPenetrationStatus,
+    // 新增
+    modelData,
+    modelStats,
   } = useCapitalGenealogyDetail(id);
 
   const handleBack = useCallback(() => {
@@ -43,78 +41,15 @@ const CapitalGenealogyDetail = () => {
   }, [navigate]);
 
   const handleAddToPool = useCallback((record) => {
-    message.success(`已将 ${record.name} 加入招商库`);
+    // 这里可以接入全局消息或状态管理
+    console.log(`已将 ${record.name} 加入招商库`);
   }, []);
-
-  const handleExportSnipeList = useCallback(() => {
-    const dataSource = activeTab === 'cashcow' ? cashCowList : newProjectList;
-    const exportData = dataSource.map(item => ({
-      '企业名称': item.name,
-      '行业': item.industry,
-      '所在地区': item.regionName,
-      '注册资本': item.capital,
-      '成立日期': item.foundedDate,
-      '营业收入': item.revenue ? `${item.revenue}亿` : '-',
-      '成员级别': LEVEL_MAP[item.level] || item.level,
-    }));
-    
-    const headers = Object.keys(exportData[0] || {});
-    const csvContent = [
-      headers.join(','),
-      ...exportData.map(row => headers.map(h => row[h] || '-').join(','))
-    ].join('\n');
-    
-    const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = `${activeTab === 'cashcow' ? '盯存量企业清单' : '盯增量企业清单'}_${new Date().toLocaleDateString()}.csv`;
-    link.click();
-    
-    message.success(`已导出 ${dataSource.length} 家企业数据`);
-  }, [activeTab, cashCowList, newProjectList]);
 
   const chartConfigs = useMemo(() => ({
     industryGap: createIndustryGapOption(industryGapData),
     investmentTrend: createInvestmentTrendOption(investmentTrendData),
     cityFlow: createCityFlowOption(cityFlowData)
   }), [industryGapData, investmentTrendData, cityFlowData]);
-
-  const tabItems = useMemo(() => [
-    {
-      key: 'cashcow',
-      label: (
-        <span>
-          <Badge color="red" /> 外地高贡献存量企业（盯存量）
-          <Tag color="red" className="ml-2">{cashCowList.length}家</Tag>
-        </span>
-      ),
-      children: (
-        <SnipeListTable
-          type="cashcow"
-          dataSource={cashCowList}
-          loading={loading}
-          onAddToPool={handleAddToPool}
-        />
-      ),
-    },
-    {
-      key: 'newproject',
-      label: (
-        <span>
-          <Badge color="orange" /> 外地高能级增量企业（盯增量）
-          <Tag color="orange" className="ml-2">{newProjectList.length}家</Tag>
-        </span>
-      ),
-      children: (
-        <SnipeListTable
-          type="newproject"
-          dataSource={newProjectList}
-          loading={loading}
-          onAddToPool={handleAddToPool}
-        />
-      ),
-    },
-  ], [cashCowList, newProjectList, loading, handleAddToPool]);
 
   if (!clanInfo) {
     return (
@@ -135,12 +70,14 @@ const CapitalGenealogyDetail = () => {
       </Button>
 
       <Spin spinning={loading} tip="加载中...">
+        {/* 集团信息头 */}
         <ClanHeaderCard 
           clanInfo={clanInfo}
           penetrationRate={penetrationRate}
           getPenetrationStatus={getPenetrationStatus}
         />
 
+        {/* 原有3个图表保留 */}
         <Row gutter={16} className="mb-6">
           <Col span={8}>
             <ChartPanel 
@@ -173,29 +110,15 @@ const CapitalGenealogyDetail = () => {
           </Col>
         </Row>
 
-        <Card 
-          title={
-            <div className="flex items-center justify-between">
-              <Title level={5} className="!mb-0">靶向狙击清单</Title>
-              <Button 
-                icon={<ExportOutlined />}
-                onClick={handleExportSnipeList}
-              >
-                导出
-              </Button>
-            </div>
-          }
-          className="mb-6"
-          variant="borderless"
-          styles={{ body: { paddingTop: 8 } }}
-        >
-          <Tabs 
-            activeKey={activeTab} 
-            onChange={setActiveTab}
-            items={tabItems}
-          />
-        </Card>
+        {/* 4模型靶向狙击清单（含雷达图+控制面板+企业列表） */}
+        <SnipeListTable
+          modelData={modelData}
+          modelStats={modelStats}
+          loading={loading}
+          onAddToPool={handleAddToPool}
+        />
 
+        {/* 成员企业清单 */}
         <MemberListTable 
           dataSource={filteredMembers}
           memberFilter={memberFilter}

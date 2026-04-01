@@ -1,6 +1,6 @@
 import React, { memo, useMemo } from 'react';
 import { Table, Tag, Card, Typography, Button, message } from 'antd';
-import { PlusOutlined, ExportOutlined } from '@ant-design/icons';
+import { ExportOutlined } from '@ant-design/icons';
 
 const { Title } = Typography;
 
@@ -54,48 +54,31 @@ const MemberListTable = memo(({
     {
       title: '所在地区',
       dataIndex: 'regionName',
-      width: 100,
+      width: 120,
     },
     {
       title: '成员级别',
       dataIndex: 'level',
-      width: 90,
+      width: 120,
       render: (level) => <Tag color="blue">{LEVEL_MAP[level] || level}</Tag>,
     },
     {
       title: '注册资本',
       dataIndex: 'capital',
-      width: 130,
+      width: 120,
     },
     {
       title: '成立日期',
       dataIndex: 'foundedDate',
-      width: 110,
+      width: 120,
     },
     {
       title: '营业收入',
       dataIndex: 'revenue',
-      width: 100,
+      width: 120,
       render: (value) => value ? `${value}亿` : '-',
     },
-    {
-      title: '操作',
-      key: 'action',
-      width: 130,
-      render: (_, record) => {
-        if (record.region === 'local') return null;
-        return (
-          <Button 
-            type="primary" 
-            size="small" 
-            icon={<PlusOutlined />}
-            onClick={() => onAddToPool?.(record)}
-          >
-            加入招商库
-          </Button>
-        );
-      },
-    },
+
   ], [onAddToPool]);
 
   const FilterTags = useMemo(() => (

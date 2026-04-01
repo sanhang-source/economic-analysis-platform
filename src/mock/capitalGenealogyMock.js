@@ -213,20 +213,20 @@ export const groupList = [
     id: '10',
     name: '京东系',
     coreCompany: '京东集团股份有限公司',
-    count: 18,
-    shenzhenCount: 6,
-    totalCapital: '300亿',
+    count: 45,
+    shenzhenCount: 9,
+    totalCapital: '380亿',
     owner: '刘强东',
     color: '#f5222d',
     groupTotalRevenue: 10462,
-    qianhaiRevenue: 180,
+    qianhaiRevenue: 220,
     coreInfo: {
       foundedDate: '1998-06-18',
       registeredCapital: '3亿人民币',
       creditCode: '9111030277265104XY',
       address: '北京市大兴区亦庄经济开发区科创十一街18号',
       employees: '约45万人',
-      industries: ['电商', '物流', '科技', '健康'],
+      industries: ['电商', '物流', '科技', '健康', '人工智能', '新能源', '智能制造'],
       email: 'contact@jd.com',
     }
   },
@@ -552,40 +552,71 @@ export const memberCompaniesData = {
   ],
   
   // 京东系成员 - 前海营收约180亿
+  // 数据丰富说明：
+  // 模型1(产贸分离)：异地+核心层级+营收>1亿+制造业 - 已有京东智能制造(东莞)等
+  // 模型2(新兴总部)：异地+核心层级+近3年+注资>5000万+新兴产业 - 新增AI/新能源/低空经济企业
+  // 模型3(产值统筹)：前海制造(>5000万)+异地同类制造(>5000万) - 新增前海智能制造企业+异地配套工厂
+  // 模型4(供应链金融)：大型集团+成员>50家+前海无金融子公司 - 前海金融类企业已移除
   '10': [
-    // 前海本地企业（存量）- 营收总和约180亿
+    // ========== 前海本地企业（存量）- 营收总和约180亿 ==========
+    // 核心企业
     { id: '1001', name: '京东集团华南总部', level: 'core', capital: '10亿人民币', region: 'local', regionName: '前海', industry: '互联网', revenue: 65, creditCode: '91440300MA5D8N9R8K', foundedDate: '2015-06-18', address: '深圳市前海深港合作区前湾一路1号' },
-    { id: '1002', name: '京东物流华南有限公司', level: 'first', capital: '5亿人民币', region: 'local', regionName: '前海', industry: '物流运输', revenue: 42, creditCode: '91440300MA5F8N9R7K', foundedDate: '2017-03-22', address: '深圳市前海深港合作区前湾一路1号' },
+    { id: '1002', name: '京东物流华南有限公司', level: 'first', capital: '5亿人民币', region: 'local', regionName: '前海', industry: '现代物流', revenue: 42, creditCode: '91440300MA5F8N9R7K', foundedDate: '2017-03-22', address: '深圳市前海深港合作区前湾一路1号' },
     { id: '1003', name: '京东科技（深圳）有限公司', level: 'first', capital: '3亿人民币', region: 'local', regionName: '前海', industry: '信息技术', revenue: 28, creditCode: '91440300MA5G8Q3R8N', foundedDate: '2018-09-10', address: '深圳市前海深港合作区前湾一路1号' },
     { id: '1004', name: '京东健康华南运营中心', level: 'second', capital: '2亿人民币', region: 'local', regionName: '前海', industry: '卫生', revenue: 18, creditCode: '91440300MA5H8Q3R8N', foundedDate: '2019-05-15', address: '深圳市前海深港合作区前湾一路1号' },
     { id: '1005', name: '京东云计算（深圳）有限公司', level: 'second', capital: '1.5亿人民币', region: 'local', regionName: '前海', industry: '信息技术', revenue: 15, creditCode: '91440300MA5J8Q3R8N', foundedDate: '2020-03-20', address: '深圳市前海深港合作区前湾一路1号' },
-    { id: '1006', name: '京东数科深圳分公司', level: 'second', capital: '8000万人民币', region: 'local', regionName: '前海', industry: '金融', revenue: 12, creditCode: '91440300MA5K8Q3R8N', foundedDate: '2020-08-12', address: '深圳市前海深港合作区前湾一路1号' },
     
-    // 外地企业（近3年成立）- 高能级新项目
-    { id: '1007', name: '京东智能产业园（上海）有限公司', level: 'first', capital: '15亿人民币', region: 'outside', regionName: '上海', industry: '房地产', revenue: 0, creditCode: '91310000MA1FL7R80D', foundedDate: '2024-01-15', address: '上海市嘉定区京东智能产业园' },
-    { id: '1008', name: '京东物流华北枢纽有限公司', level: 'first', capital: '12亿人民币', region: 'outside', regionName: '北京', industry: '物流运输', revenue: 0, creditCode: '91110000MA1G8Q3R8N', foundedDate: '2024-03-20', address: '北京市大兴区京东物流园' },
-    { id: '1009', name: '京东智能制造（苏州）有限公司', level: 'first', capital: '10亿人民币', region: 'outside', regionName: '苏州', industry: '制造', revenue: 0, creditCode: '91320500MA1H8Q3R8N', foundedDate: '2024-05-10', address: '苏州市工业园区京东智造园' },
-    { id: '1010', name: '京东云计算（杭州）有限公司', level: 'first', capital: '8亿人民币', region: 'outside', regionName: '杭州', industry: '信息技术', revenue: 0, creditCode: '91330100MA1I8Q3R8N', foundedDate: '2024-06-18', address: '杭州市余杭区京东云计算中心' },
-    { id: '1011', name: '京东健康产业（成都）有限公司', level: 'first', capital: '6亿人民币', region: 'outside', regionName: '成都', industry: '卫生', revenue: 0, creditCode: '91510100MA1J8Q3R8N', foundedDate: '2024-08-22', address: '成都市高新区京东健康产业园' },
-    { id: '1012', name: '京东新能源科技（合肥）有限公司', level: 'second', capital: '5亿人民币', region: 'outside', regionName: '合肥', industry: '电气机械', revenue: 0, creditCode: '91340100MA1K8Q3R8N', foundedDate: '2024-09-15', address: '合肥市经开区京东新能源基地' },
-    { id: '1013', name: '京东跨境电商（广州）有限公司', level: 'second', capital: '4亿人民币', region: 'outside', regionName: '广州', industry: '批发零售', revenue: 0, creditCode: '91440100MA1L8Q3R8N', foundedDate: '2025-01-10', address: '广州市南沙区京东跨境电商园' },
-    { id: '1014', name: '京东冷链物流（武汉）有限公司', level: 'second', capital: '3.5亿人民币', region: 'outside', regionName: '武汉', industry: '物流运输', revenue: 0, creditCode: '91420100MA1M8Q3R8N', foundedDate: '2025-02-28', address: '武汉市东西湖区京东冷链中心' },
-    { id: '1015', name: '京东数字科技（南京）有限公司', level: 'second', capital: '3亿人民币', region: 'outside', regionName: '南京', industry: '金融', revenue: 0, creditCode: '91320100MA1N8Q3R8N', foundedDate: '2025-03-18', address: '南京市建邺区京东数字科技园' },
-    { id: '1016', name: '京东智慧供应链（青岛）有限公司', level: 'second', capital: '2.5亿人民币', region: 'outside', regionName: '青岛', industry: '物流运输', revenue: 0, creditCode: '91370200MA1O8Q3R8N', foundedDate: '2025-04-22', address: '青岛市西海岸新区京东智慧供应链中心' },
+    // 【模型3】前海本地制造业（支撑产值统筹模型）
+    { id: '1030', name: '京东智能制造（深圳）有限公司', level: 'first', capital: '8亿人民币', region: 'local', regionName: '前海', industry: '制造', revenue: 12.5, creditCode: '91440300MA5X8N9R8K', foundedDate: '2019-08-20', address: '深圳市前海深港合作区智能制造产业园' },
+    { id: '1031', name: '京东新能源装备（深圳）有限公司', level: 'first', capital: '6亿人民币', region: 'local', regionName: '前海', industry: '电气机械', revenue: 8.8, creditCode: '91440300MA5Y8N9R8K', foundedDate: '2020-05-12', address: '深圳市前海深港合作区新能源产业园' },
+    { id: '1032', name: '京东工业机器人（深圳）有限公司', level: 'second', capital: '3.5亿人民币', region: 'local', regionName: '前海', industry: '装备制造', revenue: 6.2, creditCode: '91440300MA5Z8N9R8K', foundedDate: '2021-03-08', address: '深圳市前海深港合作区机器人产业园' },
     
-    // 外地高营收企业（存量外流）- 现金牛
+    // ========== 外地企业（近3年成立）- 战略新兴产业（模型2） ==========
+    // 【模型2】人工智能/低空经济/新能源类（近3年成立+高注资）
+    { id: '1101', name: '京东人工智能科技（上海）有限公司', level: 'first', capital: '15亿人民币', region: 'outside', regionName: '上海', industry: '人工智能', revenue: 0, creditCode: '91310000MA2J8Q3R8N', foundedDate: '2024-02-18', address: '上海市浦东新区张江人工智能岛' },
+    { id: '1102', name: '京东低空经济产业（深圳宝安）有限公司', level: 'first', capital: '12亿人民币', region: 'outside', regionName: '深圳宝安', industry: '低空经济', revenue: 0, creditCode: '91440300MA2K8Q3R8N', foundedDate: '2024-06-20', address: '深圳市宝安区低空经济产业园' },
+    { id: '1103', name: '京东无人机科技（广州）有限公司', level: 'first', capital: '10亿人民币', region: 'outside', regionName: '广州', industry: '低空经济', revenue: 0, creditCode: '91440100MA2L8Q3R8N', foundedDate: '2024-08-15', address: '广州市黄埔区无人机产业园' },
+    { id: '1104', name: '京东自动驾驶（北京）有限公司', level: 'first', capital: '8亿人民币', region: 'outside', regionName: '北京', industry: '人工智能', revenue: 0, creditCode: '91110000MA2M8Q3R8N', foundedDate: '2024-03-10', address: '北京市海淀区中关村自动驾驶示范区' },
+    { id: '1105', name: '京东氢能科技（佛山）有限公司', level: 'first', capital: '8亿人民币', region: 'outside', regionName: '佛山', industry: '新能源', revenue: 0, creditCode: '91440600MA2N8Q3R8N', foundedDate: '2024-09-01', address: '佛山市南海区氢能产业园' },
+    { id: '1106', name: '京东固态电池研究院（宁波）有限公司', level: 'first', capital: '6亿人民币', region: 'outside', regionName: '宁波', industry: '新能源', revenue: 0, creditCode: '91330200MA2O8Q3R8N', foundedDate: '2024-11-20', address: '宁波市鄞州区固态电池产业园' },
+    { id: '1107', name: '京东智能机器人（苏州）有限公司', level: 'second', capital: '5.5亿人民币', region: 'outside', regionName: '苏州', industry: '人工智能', revenue: 0, creditCode: '91320500MA2P8Q3R8N', foundedDate: '2024-07-08', address: '苏州市工业园区机器人产业园' },
+    { id: '1108', name: '京东AIGC大模型（杭州）有限公司', level: 'second', capital: '5亿人民币', region: 'outside', regionName: '杭州', industry: '人工智能', revenue: 0, creditCode: '91330100MA2Q8Q3R8N', foundedDate: '2025-01-15', address: '杭州市余杭区人工智能小镇' },
+    { id: '1109', name: '京东智能物流装备（武汉）有限公司', level: 'second', capital: '5亿人民币', region: 'outside', regionName: '武汉', industry: '人工智能', revenue: 0, creditCode: '91420100MA2R8Q3R8N', foundedDate: '2025-02-28', address: '武汉市东湖高新区智能装备产业园' },
+    { id: '1110', name: '京东光伏科技（西安）有限公司', level: 'second', capital: '4.5亿人民币', region: 'outside', regionName: '西安', industry: '新能源', revenue: 0, creditCode: '91610100MA2S8Q3R8N', foundedDate: '2025-03-10', address: '西安市高新区光伏产业园' },
+    
+    // 【模型1&3】外地高营收制造业（支撑产贸分离+产值统筹模型）
+    { id: '1201', name: '京东家电制造（合肥）有限公司', level: 'first', capital: '20亿人民币', region: 'outside', regionName: '合肥', industry: '制造', revenue: 185, creditCode: '91340100MA60ABC01K', foundedDate: '2015-06-20', address: '合肥市经开区京东家电产业园' },
+    { id: '1202', name: '京东智能装备（长沙）有限公司', level: 'first', capital: '18亿人民币', region: 'outside', regionName: '长沙', industry: '装备制造', revenue: 142, creditCode: '91430100MA60ABC02K', foundedDate: '2016-08-15', address: '长沙市高新区智能装备产业园' },
+    { id: '1203', name: '京东新能源汽车（常州）有限公司', level: 'first', capital: '25亿人民币', region: 'outside', regionName: '常州', industry: '汽车制造', revenue: 238, creditCode: '91320400MA60ABC03K', foundedDate: '2017-11-10', address: '常州市新北区新能源汽车产业园' },
+    { id: '1204', name: '京东电子制造（成都）有限公司', level: 'first', capital: '15亿人民币', region: 'outside', regionName: '成都', industry: '制造', revenue: 128, creditCode: '91510100MA60ABC04K', foundedDate: '2016-05-22', address: '成都市高新区电子制造产业园' },
+    { id: '1205', name: '京东重工机械（徐州）有限公司', level: 'first', capital: '12亿人民币', region: 'outside', regionName: '徐州', industry: '装备制造', revenue: 98, creditCode: '91320300MA60ABC05K', foundedDate: '2014-09-08', address: '徐州市经开区重工机械园' },
+    { id: '1206', name: '京东精密制造（苏州）有限公司', level: 'second', capital: '8亿人民币', region: 'outside', regionName: '苏州', industry: '制造', revenue: 68, creditCode: '91320500MA60ABC06K', foundedDate: '2018-03-18', address: '苏州市工业园区精密制造园' },
+    { id: '1207', name: '京东新材料（宁波）有限公司', level: 'second', capital: '6.5亿人民币', region: 'outside', regionName: '宁波', industry: '制造', revenue: 52, creditCode: '91330200MA60ABC07K', foundedDate: '2017-07-12', address: '宁波市北仑区新材料产业园' },
+    
+    // 【模型3】外地制造业配套（与前海制造业同类，支撑产值统筹）
+    { id: '1211', name: '京东智能制造（合肥）有限公司', level: 'first', capital: '10亿人民币', region: 'outside', regionName: '合肥', industry: '制造', revenue: 15.8, creditCode: '91340100MA60ABC11K', foundedDate: '2018-09-15', address: '合肥市经开区智能制造产业园' },
+    { id: '1212', name: '京东智能制造（成都）有限公司', level: 'first', capital: '8亿人民币', region: 'outside', regionName: '成都', industry: '制造', revenue: 12.5, creditCode: '91510100MA60ABC12K', foundedDate: '2019-04-20', address: '成都市高新区智能制造园' },
+    { id: '1213', name: '京东新能源装备（长沙）有限公司', level: 'first', capital: '7.5亿人民币', region: 'outside', regionName: '长沙', industry: '电气机械', revenue: 11.2, creditCode: '91430100MA60ABC13K', foundedDate: '2019-11-08', address: '长沙市高新区新能源装备园' },
+    { id: '1214', name: '京东工业机器人（东莞）有限公司', level: 'second', capital: '5亿人民币', region: 'outside', regionName: '东莞', industry: '装备制造', revenue: 8.8, creditCode: '91441900MA60ABC14K', foundedDate: '2020-06-12', address: '东莞市松山湖机器人产业园' },
+    
+    // ========== 外地高营收企业（存量外流）- 模型1产贸分离目标客户 ==========
     { id: '1017', name: '京东零售集团', level: 'first', capital: '50亿人民币', region: 'outside', regionName: '北京', industry: '批发零售', revenue: 5800, creditCode: '9111030277265104XY', foundedDate: '1998-06-18', address: '北京市大兴区亦庄经济开发区科创十一街18号' },
-    { id: '1018', name: '京东物流股份有限公司', level: 'first', capital: '30亿人民币', region: 'outside', regionName: '北京', industry: '物流运输', revenue: 1650, creditCode: '9111030277265104XZ', foundedDate: '2012-08-17', address: '北京市大兴区亦庄经济开发区科创十一街18号' },
+    { id: '1018', name: '京东物流股份有限公司', level: 'first', capital: '30亿人民币', region: 'outside', regionName: '北京', industry: '现代物流', revenue: 1650, creditCode: '9111030277265104XZ', foundedDate: '2012-08-17', address: '北京市大兴区亦庄经济开发区科创十一街18号' },
     { id: '1019', name: '京东科技控股股份有限公司', level: 'first', capital: '20亿人民币', region: 'outside', regionName: '北京', industry: '信息技术', revenue: 420, creditCode: '9111030277265104YA', foundedDate: '2013-09-01', address: '北京市大兴区亦庄经济开发区科创十一街18号' },
     { id: '1020', name: '京东健康股份有限公司', level: 'first', capital: '15亿人民币', region: 'outside', regionName: '北京', industry: '卫生', revenue: 380, creditCode: '9111030277265104YB', foundedDate: '2019-05-10', address: '北京市大兴区亦庄经济开发区科创十一街18号' },
     { id: '1021', name: '京东工业品有限公司', level: 'first', capital: '10亿人民币', region: 'outside', regionName: '上海', industry: '批发零售', revenue: 285, creditCode: '91310000MA1FL7R80E', foundedDate: '2018-03-15', address: '上海市嘉定区京东工业品中心' },
-    { id: '1022', name: '京东数科（上海）有限公司', level: 'second', capital: '8亿人民币', region: 'outside', regionName: '上海', industry: '金融', revenue: 156, creditCode: '91310000MA1FL7R80F', foundedDate: '2016-07-20', address: '上海市浦东新区京东数科中心' },
     
-    // 产业缺口企业（外地高营收，前海无布局）
+    // ========== 产业缺口企业（外地高营收，前海无布局） ==========
     { id: '1023', name: '京东智能制造（东莞）有限公司', level: 'first', capital: '25亿人民币', region: 'outside', regionName: '东莞', industry: '制造', revenue: 320, creditCode: '91441900MA60ABCDEF', foundedDate: '2020-06-15', address: '东莞市松山湖高新区京东智造园' },
     { id: '1024', name: '京东汽车服务有限公司', level: 'first', capital: '18亿人民币', region: 'outside', regionName: '天津', industry: '居民服务', revenue: 195, creditCode: '91120000MA60GHIJKL', foundedDate: '2021-03-22', address: '天津市武清区京东汽车服务园' },
     { id: '1025', name: '京东国际跨境贸易（杭州）有限公司', level: 'second', capital: '12亿人民币', region: 'outside', regionName: '杭州', industry: '批发零售', revenue: 168, creditCode: '91330100MA60MNOPQR', foundedDate: '2020-09-18', address: '杭州市滨江区京东国际中心' },
     { id: '1026', name: '京东农业科技（寿光）有限公司', level: 'second', capital: '8亿人民币', region: 'outside', regionName: '潍坊', industry: '农林牧渔', revenue: 95, creditCode: '91370700MA60STUVWX', foundedDate: '2021-06-10', address: '寿光市京东农业科技园' },
+    
+    // 新增更多产业缺口企业
+    { id: '1301', name: '京东半导体（无锡）有限公司', level: 'first', capital: '30亿人民币', region: 'outside', regionName: '无锡', industry: '半导体', revenue: 285, creditCode: '91320200MA70ABC01K', foundedDate: '2019-08-20', address: '无锡市新吴区半导体产业园' },
+    { id: '1302', name: '京东生物医药（苏州）有限公司', level: 'first', capital: '22亿人民币', region: 'outside', regionName: '苏州', industry: '生物医药', revenue: 195, creditCode: '91320500MA70ABC02K', foundedDate: '2018-11-15', address: '苏州市工业园区生物医药园' },
+    { id: '1303', name: '京东航空航天（天津）有限公司', level: 'second', capital: '15亿人民币', region: 'outside', regionName: '天津', industry: '航空航天', revenue: 125, creditCode: '91120000MA70ABC03K', foundedDate: '2017-05-20', address: '天津市滨海新区航空航天产业园' },
+    { id: '1304', name: '京东化工新材料（烟台）有限公司', level: 'second', capital: '12亿人民币', region: 'outside', regionName: '烟台', industry: '化工', revenue: 98, creditCode: '91370600MA70ABC04K', foundedDate: '2016-09-10', address: '烟台市开发区化工新材料园' },
   ],
   
   // 阿里系成员 - 前海营收120亿
