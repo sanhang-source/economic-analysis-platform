@@ -142,8 +142,8 @@ export const useStrategicMining = (members, clanInfo) => {
     // ==========================================
     // 6. 前海渗透率计算
     // ==========================================
-    const qianhaiPenetrationRate = clanInfo?.groupTotalRevenue && clanInfo?.qianhaiRevenue
-      ? ((clanInfo.qianhaiRevenue / clanInfo.groupTotalRevenue) * 100)
+    const qianhaiPenetrationRate = clanInfo?.groupTotalRevenue && clanInfo?.localRevenue
+      ? ((clanInfo.localRevenue / clanInfo.groupTotalRevenue) * 100)
       : 0;
 
     // ==========================================

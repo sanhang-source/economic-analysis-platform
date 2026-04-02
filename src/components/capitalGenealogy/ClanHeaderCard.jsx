@@ -100,7 +100,7 @@ const ClanHeaderCard = memo(({ clanInfo, penetrationRate, getPenetrationStatus }
             <StatItem 
               icon={<WalletOutlined style={{ fontSize: 20 }} />}
               label="前海营收" 
-              value={clanInfo.qianhaiRevenue} 
+              value={clanInfo.localRevenue} 
               unit="亿" 
               color={SAAS_COLORS.success}
             />

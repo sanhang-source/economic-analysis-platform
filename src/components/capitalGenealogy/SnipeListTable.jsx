@@ -286,8 +286,12 @@ const SnipeListTable = memo(({
     {
       title: <span className="text-white">注册资本</span>,
       dataIndex: 'capital',
-      width: 120,
-      render: (text) => <span className="text-white">{text}</span>,
+      width: 180,
+      render: (text) => {
+        // 将亿人民币转换为万元（1亿人民币 = 10000万元）
+        const valueInWan = parseFloat(text) * 10000;
+        return <span className="text-white">{valueInWan.toLocaleString('zh-CN')}万元人民币</span>;
+      },
     },
     {
       title: <span className="text-white">成立日期</span>,

@@ -30,7 +30,7 @@ export const groupList = [
     owner: '马明哲',
     color: '#fa8c16',
     groupTotalRevenue: 11000,
-    qianhaiRevenue: 4200,
+    localRevenue: 4200,
     coreInfo: {
       foundedDate: '1988-03-21',
       registeredCapital: '182.8亿人民币',
@@ -51,7 +51,7 @@ export const groupList = [
     owner: '缪建民',
     color: '#13c2c2',
     groupTotalRevenue: 4200,
-    qianhaiRevenue: 1680,
+    localRevenue: 1680,
     coreInfo: {
       foundedDate: '1872-12-26',
       registeredCapital: '169亿人民币',
@@ -72,7 +72,7 @@ export const groupList = [
     owner: '王卫',
     color: '#f5222d',
     groupTotalRevenue: 2675,
-    qianhaiRevenue: 680,
+    localRevenue: 680,
     coreInfo: {
       foundedDate: '1993-03-26',
       registeredCapital: '49亿人民币',
@@ -93,7 +93,7 @@ export const groupList = [
     owner: '马化腾',
     color: '#1677ff',
     groupTotalRevenue: 5601,
-    qianhaiRevenue: 420,
+    localRevenue: 420,
     coreInfo: {
       foundedDate: '1998-11-11',
       registeredCapital: '1000万港元',
@@ -114,7 +114,7 @@ export const groupList = [
     owner: '朱鹤新',
     color: '#722ed1',
     groupTotalRevenue: 6200,
-    qianhaiRevenue: 280,
+    localRevenue: 280,
     coreInfo: {
       foundedDate: '1979-10-04',
       registeredCapital: '2053亿人民币',
@@ -135,7 +135,7 @@ export const groupList = [
     owner: '王祥明',
     color: '#1890ff',
     groupTotalRevenue: 6860,
-    qianhaiRevenue: 520,
+    localRevenue: 520,
     coreInfo: {
       foundedDate: '1938-01-01',
       registeredCapital: '200亿人民币',
@@ -156,7 +156,7 @@ export const groupList = [
     owner: '麦伯良',
     color: '#fa541c',
     groupTotalRevenue: 1275,
-    qianhaiRevenue: 420,
+    localRevenue: 420,
     coreInfo: {
       foundedDate: '1980-01-14',
       registeredCapital: '53.9亿人民币',
@@ -177,7 +177,7 @@ export const groupList = [
     owner: '郁亮',
     color: '#52c41a',
     groupTotalRevenue: 5038,
-    qianhaiRevenue: 380,
+    localRevenue: 380,
     coreInfo: {
       foundedDate: '1984-05-30',
       registeredCapital: '116.3亿人民币',
@@ -198,7 +198,7 @@ export const groupList = [
     owner: '顾敏',
     color: '#eb2f96',
     groupTotalRevenue: 380,
-    qianhaiRevenue: 380,
+    localRevenue: 380,
     coreInfo: {
       foundedDate: '2014-12-16',
       registeredCapital: '42亿人民币',
@@ -219,7 +219,7 @@ export const groupList = [
     owner: '刘强东',
     color: '#f5222d',
     groupTotalRevenue: 10462,
-    qianhaiRevenue: 220,
+    localRevenue: 220,
     coreInfo: {
       foundedDate: '1998-06-18',
       registeredCapital: '3亿人民币',
@@ -240,7 +240,7 @@ export const groupList = [
     owner: '张勇',
     color: '#fa8c16',
     groupTotalRevenue: 8687,
-    qianhaiRevenue: 120,
+    localRevenue: 120,
     coreInfo: {
       foundedDate: '1999-06-28',
       registeredCapital: '50亿美元',
@@ -261,7 +261,7 @@ export const groupList = [
     owner: '李华',
     color: '#13c2c2',
     groupTotalRevenue: 680,
-    qianhaiRevenue: 280,
+    localRevenue: 280,
     coreInfo: {
       foundedDate: '1996-06-21',
       registeredCapital: '25亿人民币',

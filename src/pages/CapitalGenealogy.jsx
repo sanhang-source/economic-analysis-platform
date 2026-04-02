@@ -1,5 +1,5 @@
-import React, { useState, useMemo } from 'react';
-import { Card, Tag, Progress, Input, Radio, Typography, Badge, Row, Col, Empty, Tooltip } from 'antd';
+import React, { useState, useMemo, useEffect } from 'react';
+import { Card, Tag, Progress, Input, Radio, Typography, Badge, Row, Col, Empty, Tooltip, Pagination } from 'antd';
 import { SearchOutlined, QuestionCircleOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { groupList } from '../mock/capitalGenealogyMock';
@@ -23,12 +23,21 @@ const CapitalGenealogy = () => {
   const [searchValue, setSearchValue] = useState('');
   const [penetrationFilter, setPenetrationFilter] = useState('all'); // all | high | medium | low
 
+  // 分页状态
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(12);
+
+  // 筛选变化时重置分页
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchValue, penetrationFilter]);
+
   // 集团数据（仅集团系）- 计算渗透率
   const allGroups = useMemo(() => {
     return groupList.map(group => ({
       ...group,
-      penetrationRate: group.groupTotalRevenue && group.qianhaiRevenue
-        ? ((group.qianhaiRevenue / group.groupTotalRevenue) * 100)
+      penetrationRate: group.groupTotalRevenue && group.localRevenue
+        ? ((group.localRevenue / group.groupTotalRevenue) * 100)
         : 0,
     }));
   }, []);
@@ -64,6 +73,13 @@ const CapitalGenealogy = () => {
   const sortedGroups = useMemo(() => {
     return [...filteredGroups].sort((a, b) => a.penetrationRate - b.penetrationRate);
   }, [filteredGroups]);
+
+  // 分页数据
+  const paginatedGroups = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    const end = start + pageSize;
+    return sortedGroups.slice(start, end);
+  }, [sortedGroups, currentPage, pageSize]);
 
   // 缓存统计值，避免重复计算 - 使用单次遍历优化性能
   const stats = useMemo(() => {
@@ -169,7 +185,7 @@ const CapitalGenealogy = () => {
         <Row gutter={16}>
           <Col span={6}>
             <Card variant="borderless" className="bg-card border-custom">
-              <div className="text-sm mb-1" style={{ color: '#ffffff' }}>集团总数</div>
+              <div className="text-sm mb-1" style={{ color: '#ffffff' }}>集团总数量</div>
               <div className="text-2xl font-bold" style={{ color: '#ffffff' }}>
                 {stats.total} <span className="text-sm font-normal" style={{ color: '#ffffff' }}>家</span>
               </div>
@@ -193,13 +209,14 @@ const CapitalGenealogy = () => {
           </Col>
           <Col span={6}>
             <Card variant="borderless" className="bg-card border-custom">
-              <div className="text-sm mb-1" style={{ color: '#ffffff' }}>集团总营收规模</div>
+              <div className="text-sm mb-1" style={{ color: '#ffffff' }}>集团总营收</div>
               <div className="text-2xl font-bold text-accent-info">
                 {(() => {
-                  const { value, unit } = formatAmount(stats.totalRevenue);
+                  // 统一使用亿为单位，超过1万亿也显示为亿
+                  const value = stats.totalRevenue ? stats.totalRevenue.toLocaleString('zh-CN') : '0';
                   return (
                     <>
-                      {value} <span className="text-sm font-normal" style={{ color: '#ffffff' }}>{unit}</span>
+                      {value} <span className="text-sm font-normal" style={{ color: '#ffffff' }}>亿</span>
                     </>
                   );
                 })()}
@@ -211,8 +228,9 @@ const CapitalGenealogy = () => {
 
       {/* 集团卡片列表 */}
       {sortedGroups.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {sortedGroups.map((group) => {
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-4">
+            {paginatedGroups.map((group) => {
             const level = getPenetrationLevel(group.penetrationRate);
             return (
               <Card
@@ -247,8 +265,9 @@ const CapitalGenealogy = () => {
                     <div className="text-xs mb-1" style={{ color: '#ffffff' }}>集团营收</div>
                     <div className="text-lg font-bold text-primary-text">
                       {(() => {
-                        const { value, unit } = formatAmount(group.groupTotalRevenue);
-                        return `${value}${unit}`;
+                        // 统一使用亿为单位展示，超过1万亿也显示为亿
+                        const value = group.groupTotalRevenue ? group.groupTotalRevenue.toLocaleString('zh-CN') : '0';
+                        return `${value}亿`;
                       })()}
                     </div>
                   </div>
@@ -256,7 +275,7 @@ const CapitalGenealogy = () => {
                     <div className="text-xs text-accent mb-1">前海营收</div>
                     <div className="text-lg font-bold text-accent">
                       {(() => {
-                        const { value, unit } = formatAmount(group.qianhaiRevenue);
+                        const { value, unit } = formatAmount(group.localRevenue);
                         return `${value}${unit}`;
                       })()}
                     </div>
@@ -288,7 +307,27 @@ const CapitalGenealogy = () => {
               </Card>
             );
           })}
-        </div>
+          </div>
+
+          {/* 分页器 */}
+          <div className="flex justify-end mt-4">
+            <Pagination
+              current={currentPage}
+              pageSize={pageSize}
+              total={sortedGroups.length}
+              showSizeChanger
+              showTotal={(total) => <span style={{ color: '#ffffff' }}>共 {total} 个集团</span>}
+              pageSizeOptions={['12', '24', '48']}
+              onChange={(page, size) => {
+                setCurrentPage(page);
+                if (size !== pageSize) {
+                  setPageSize(size);
+                  setCurrentPage(1);
+                }
+              }}
+            />
+          </div>
+        </>
       ) : (
         <Empty 
           description="暂无符合条件的集团" 

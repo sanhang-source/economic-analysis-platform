@@ -81,7 +81,7 @@ export const createIndustryGapOption = (data) => ({
     {
       name: '前海营收',
       type: 'bar',
-      data: data.map(d => d.qianhaiRevenue),
+      data: data.map(d => d.localRevenue),
       itemStyle: {
         color: ANT_COLORS_COMPAT.success,
         borderRadius: [0, 4, 4, 0]

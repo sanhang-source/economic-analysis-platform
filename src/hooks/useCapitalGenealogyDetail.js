@@ -218,8 +218,8 @@ export const useCapitalGenealogyDetail = (clanId) => {
   const members = useMemo(() => memberCompaniesData[clanId] || [], [clanId]);
 
   const penetrationRate = useMemo(() => {
-    if (!clanInfo?.qianhaiRevenue || !clanInfo?.groupTotalRevenue) return 0;
-    return (clanInfo.qianhaiRevenue / clanInfo.groupTotalRevenue) * 100;
+    if (!clanInfo?.localRevenue || !clanInfo?.groupTotalRevenue) return 0;
+    return (clanInfo.localRevenue / clanInfo.groupTotalRevenue) * 100;
   }, [clanInfo]);
 
   // 给成员添加评分
@@ -265,12 +265,12 @@ export const useCapitalGenealogyDetail = (clanId) => {
         industryMap[m.industry] = {
           industry: m.industry,
           nationalRevenue: 0,
-          qianhaiRevenue: 0
+          localRevenue: 0
         };
       }
       industryMap[m.industry].nationalRevenue += (m.revenue || 0);
       if (m.region === 'local') {
-        industryMap[m.industry].qianhaiRevenue += (m.revenue || 0);
+        industryMap[m.industry].localRevenue += (m.revenue || 0);
       }
     });
 
@@ -278,7 +278,7 @@ export const useCapitalGenealogyDetail = (clanId) => {
       .filter(item => item.nationalRevenue > 0)
       .map(item => ({
         ...item,
-        gap: item.nationalRevenue - item.qianhaiRevenue
+        gap: item.nationalRevenue - item.localRevenue
       }))
       .sort((a, b) => a.gap - b.gap)
       .slice(0, 8);
